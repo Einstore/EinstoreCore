@@ -32,50 +32,10 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "Boost::ApiCoreTests"
-               BuildableName = "ApiCoreTests.xctest"
-               BlueprintName = "ApiCoreTests"
-               ReferencedContainer = "container:Boost.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "Boost::AppTests"
-               BuildableName = "AppTests.xctest"
-               BlueprintName = "AppTests"
-               ReferencedContainer = "container:Boost.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "Boost::BoostCoreTests"
+               BlueprintIdentifier = "BoostCore::BoostCoreTests"
                BuildableName = "BoostCoreTests.xctest"
                BlueprintName = "BoostCoreTests"
-               ReferencedContainer = "container:Boost.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "Boost::DbCoreTests"
-               BuildableName = "DbCoreTests.xctest"
-               BlueprintName = "DbCoreTests"
-               ReferencedContainer = "container:Boost.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "Boost::ErrorsCoreTests"
-               BuildableName = "ErrorsCoreTests.xctest"
-               BlueprintName = "ErrorsCoreTests"
-               ReferencedContainer = "container:Boost.xcodeproj">
+               ReferencedContainer = "container:BoostCore.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>

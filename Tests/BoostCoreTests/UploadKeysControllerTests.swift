@@ -10,7 +10,7 @@ import Vapor
 import VaporTestTools
 import FluentTestTools
 import ApiCoreTestTools
-import BoostTestTools
+import BoostCoreTestTools
 @testable import ApiCore
 @testable import BoostCore
 

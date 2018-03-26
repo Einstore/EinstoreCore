@@ -11,7 +11,7 @@ import Vapor
 import VaporTestTools
 import FluentTestTools
 import ApiCoreTestTools
-import BoostTestTools
+import BoostCoreTestTools
 import ErrorsCore
 @testable import ApiCore
 @testable import BoostCore
@@ -151,7 +151,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
     }
     
     func testBadTokenUpload() {
-        let appUrl = Application.testable.paths.resourcesUrl.appendingPathComponent("Demo").appendingPathComponent("app.ipa")
+        let appUrl = Application.testable.paths.resourcesUrl.appendingPathComponent("apps").appendingPathComponent("app.ipa")
         let postData = try! Data(contentsOf: appUrl)
         let req = HTTPRequest.testable.post(uri: "/apps?token=bad_token_yo", data: postData, headers: [
             "Content-Type": "application/octet-stream"
@@ -184,7 +184,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
 extension AppsControllerTests {
     
     private func doTestTokenUpload(appFileName fileName: String, platform: App.Platform, name: String, identifier: String, version: String? = nil, build: String? = nil, tags: [String] = ["tagging_like_crazy", "All Year Round"], iconSize: Int? = nil) {
-        let appUrl = Application.testable.paths.resourcesUrl.appendingPathComponent("Demo").appendingPathComponent(fileName)
+        let appUrl = Application.testable.paths.resourcesUrl.appendingPathComponent("apps").appendingPathComponent(fileName)
         let postData = try! Data(contentsOf: appUrl)
         let encodedTags: String = tags.joined(separator: "|").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
         let req = HTTPRequest.testable.post(uri: "/apps?tags=\(encodedTags)&token=\(key1.token)", data: postData, headers: [
@@ -196,7 +196,7 @@ extension AppsControllerTests {
     }
     
     private func doTestJWTUpload(appFileName fileName: String, platform: App.Platform, name: String, identifier: String, version: String? = nil, build: String? = nil, tags: [String] = ["tagging_like_crazy", "All Year Round"], iconSize: Int? = nil) {
-        let appUrl = Application.testable.paths.resourcesUrl.appendingPathComponent("Demo").appendingPathComponent(fileName)
+        let appUrl = Application.testable.paths.resourcesUrl.appendingPathComponent("apps").appendingPathComponent(fileName)
         let postData = try! Data(contentsOf: appUrl)
         let encodedTags: String = tags.joined(separator: "|").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
         let req = HTTPRequest.testable.post(uri: "/teams/\(team1.id!.uuidString)/apps?tags=\(encodedTags)", data: postData, headers: [

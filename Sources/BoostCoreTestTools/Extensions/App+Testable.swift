@@ -1,6 +1,6 @@
 //
 //  App+Testable.swift
-//  BoostTestTools
+//  BoostCoreTestTools
 //
 //  Created by Ondrej Rafaj on 05/03/2018.
 //

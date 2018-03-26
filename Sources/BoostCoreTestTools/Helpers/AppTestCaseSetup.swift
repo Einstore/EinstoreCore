@@ -1,6 +1,6 @@
 //
 //  AppTestCaseSetup.swift
-//  BoostTestTools
+//  BoostCoreTestTools
 //
 //  Created by Ondrej Rafaj on 05/03/2018.
 //
@@ -28,7 +28,7 @@ extension AppTestCaseSetup {
     var demoUrl: URL {
         let config = DirectoryConfig.detect()
         var url: URL = URL(fileURLWithPath: config.workDir).appendingPathComponent("Resources")
-        url.appendPathComponent("Demo")
+        url.appendPathComponent("apps")
         return url
     }
     

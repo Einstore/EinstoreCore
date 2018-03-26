@@ -1,6 +1,6 @@
 //
-//  BoostTestTools.swift
-//  BoostTestTools
+//  BoostCoreTestTools.swift
+//  BoostCoreTestTools
 //
 //  Created by Ondrej Rafaj on 05/03/2018.
 //
