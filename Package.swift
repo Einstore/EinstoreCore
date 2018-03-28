@@ -22,14 +22,14 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "App",
+            name: "BoostApp",
             dependencies: [
                 "Vapor",
                 "BoostCore"
             ]
         ),
-        .target(name: "Run", dependencies: [
-            "App"
+        .target(name: "BoostRun", dependencies: [
+            "BoostApp"
             ]
         ),
         .target(name: "BoostCore", dependencies: [
