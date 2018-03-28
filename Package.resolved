@@ -24,8 +24,8 @@
         "repositoryURL": "https://github.com/vapor/core.git",
         "state": {
           "branch": null,
-          "revision": "6d3da8dc3f84cb082f0c587948edc038fcc13255",
-          "version": "3.0.0-rc.2.4"
+          "revision": "f758c50d70a691249b97fedaed6551e637bfc597",
+          "version": "3.0.0-rc.2.5.1"
         }
       },
       {
@@ -78,8 +78,8 @@
         "repositoryURL": "https://github.com/vapor/fluent.git",
         "state": {
           "branch": null,
-          "revision": "55c0a9698ef7aa2b08d5f3063ed7511eb223a402",
-          "version": "3.0.0-rc.2.3"
+          "revision": "eb63485dfd6fbd0773a25e1b94830fbcedaa8266",
+          "version": "3.0.0-rc.2.3.1"
         }
       },
       {

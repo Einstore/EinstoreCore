@@ -18,7 +18,15 @@ public typealias Apps = [App]
 
 final public class App: DbCoreModel {
     
-    public enum Platform: String, Codable, KeyStringDecodable, PostgreSQLType {
+    public enum Platform: String, Codable, ReflectionCodable, PostgreSQLType {
+        
+        public static func reflectTrue() throws -> App.Platform {
+            return .unknown
+        }
+        
+        public static func reflectFalse() throws -> App.Platform {
+            return .unknown
+        }
         
         case unknown
         case ios = "ios"
@@ -28,9 +36,6 @@ final public class App: DbCoreModel {
         case android = "android"
         case macos = "macos"
         case windows = "windows"
-        
-        public static var keyStringTrue: App.Platform = .unknown
-        public static var keyStringFalse: App.Platform = .unknown
         
         public var fileExtension: String {
             switch self {

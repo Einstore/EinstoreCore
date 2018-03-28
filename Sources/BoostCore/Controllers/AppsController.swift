@@ -28,7 +28,7 @@ extension QueryBuilder where Model == App {
     func safeApp(appId: DbCoreIdentifier, teamIds: [DbCoreIdentifier]) throws -> Self {
         return try group(.and) { and in
             try and.filter(\App.id == appId)
-            try and.filter(\App.teamId, in: teamIds)
+            try and.filter(\App.teamId ~~ teamIds)
         }
     }
     
@@ -58,7 +58,7 @@ class AppsController: Controller {
         // Overview
         router.get("apps") { (req) -> Future<Apps> in
             return try req.me.teams().flatMap(to: Apps.self) { teams in
-                return try App.query(on: req).filter(\App.teamId, in: teams.ids).appFilters().all()
+                return try App.query(on: req).filter(\App.teamId ~~ teams.ids).appFilters().all()
             }
         }
         
@@ -70,7 +70,7 @@ class AppsController: Controller {
                 }
                 // TODO: Add group by!!!!
                 return try App.query(on: req).group(.and) { and in
-                    try and.filter(\App.teamId, in: teams.ids)
+                    try and.filter(\App.teamId ~~ teams.ids)
                     try and.filter(\App.teamId == teamId)
                 }.decode(App.Overview.self).all()
             }
@@ -82,7 +82,7 @@ class AppsController: Controller {
                 guard teams.contains(teamId) else {
                     throw ErrorsCore.HTTPError.notFound
                 }
-                return try App.query(on: req).filter(\App.teamId, in: teams.ids).all()
+                return try App.query(on: req).filter(\App.teamId ~~ teams.ids).all()
             }
         }
         
