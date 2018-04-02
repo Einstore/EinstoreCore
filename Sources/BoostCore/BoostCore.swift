@@ -23,6 +23,7 @@ public class Boost {
     }
     
     static var controllers: [Controller.Type] = [
+        BoostController.self,
         TagsController.self,
         AppsController.self,
         UploadKeyController.self
@@ -79,6 +80,7 @@ public class Boost {
         
         ApiAuthMiddleware.allowedGetUri.append("/apps/plist")
         ApiAuthMiddleware.allowedGetUri.append("/apps/file")
+        ApiAuthMiddleware.allowedGetUri.append("/info")
         ApiAuthMiddleware.allowedPostUri.append("/apps")
         
         DbCore.migrationConfig.add(model: App.self, database: .db)

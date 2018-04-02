@@ -79,8 +79,13 @@
       </CommandLineArguments>
       <EnvironmentVariables>
          <EnvironmentVariable
-            key = "JWT_SECRET"
-            value = "secret"
+            key = "BOOST_NAME"
+            value = "Local Beast"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "BOOST_URL"
+            value = "http://localhost:8080"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
@@ -96,7 +101,7 @@
          <EnvironmentVariable
             key = "DB_LOGGING"
             value = "1"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "DB_NAME"
@@ -111,6 +116,11 @@
          <EnvironmentVariable
             key = "DB_PORT"
             value = "5432"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "JWT_SECRET"
+            value = "secret"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable

@@ -62,6 +62,29 @@ class AppsController: Controller {
             }
         }
         
+        router.get("apps", "overview") { (req) -> Future<[App.Overview]> in
+            return try req.me.teams().flatMap(to: [App.Overview].self) { teams in
+                return req.requestPooledConnection(to: .db).flatMap(to: [App.Overview].self) { connection in
+                    return try connection.query("SELECT platform, identifier, COUNT(id) as count FROM apps GROUP BY platform, identifier").map(to: [App.Overview].self) { data in
+                        return try data.map({ row -> App.Overview in
+                            let genericData: [QueryField: PostgreSQLData] = row.reduce(into: [:]) { (row, cell) in
+                                row[QueryField(name: cell.key.name)] = cell.value
+                            }
+                            return try QueryDataDecoder(PostgreSQLDatabase.self, entity: App.entity).decode(App.Overview.self, from: genericData)
+                        })
+                    }
+                }
+            }.catch({ (error) in
+                fatalError()
+            })
+        }
+        
+        router.get("teams", DbCoreIdentifier.parameter, "apps", "overview") { (req) -> Future<Apps> in
+            return try req.me.teams().flatMap(to: Apps.self) { teams in
+                return try App.query(on: req).filter(\App.teamId ~~ teams.ids).appFilters().all()
+            }
+        }
+        
         router.get("teams", DbCoreIdentifier.parameter, "apps") { (req) -> Future<[App.Overview]> in
             let teamId = try req.parameter(DbCoreIdentifier.self)
             return try req.me.teams().flatMap(to: [App.Overview].self) { teams in

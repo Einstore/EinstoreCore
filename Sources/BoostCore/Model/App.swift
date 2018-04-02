@@ -18,14 +18,14 @@ public typealias Apps = [App]
 
 final public class App: DbCoreModel {
     
-    public enum Platform: String, Codable, ReflectionCodable, PostgreSQLType {
+    public enum Platform: String, Codable, ReflectionDecodable, PostgreSQLType {
         
-        public static func reflectTrue() throws -> App.Platform {
-            return .unknown
+        public static func keyStringIsTrue(_ item: App.Platform) -> Bool {
+            return true
         }
         
-        public static func reflectFalse() throws -> App.Platform {
-            return .unknown
+        public static func reflectDecoded() throws -> (App.Platform, App.Platform) {
+            return (.ios, .unknown)
         }
         
         case unknown
@@ -78,7 +78,7 @@ final public class App: DbCoreModel {
     }
     
     public struct Overview: Content {
-        public var id: DbCoreIdentifier
+        public var platform: Platform
         public var identifier: String
         public var count: Int
     }
