@@ -16,7 +16,7 @@ import ApiCore
 public typealias Apps = [App]
 
 
-final public class App: DbCoreModel {
+final public class App: DbCoreModel, Entity {
     
     public enum Platform: String, Codable, ReflectionDecodable, PostgreSQLType {
         
@@ -77,7 +77,9 @@ final public class App: DbCoreModel {
         
     }
     
-    public struct Overview: Content {
+    public struct Overview: Entity {
+        public static var entity: String = App.entity
+        
         public var platform: Platform
         public var identifier: String
         public var count: Int
