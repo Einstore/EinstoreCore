@@ -260,48 +260,48 @@ extension AppsController {
             // TODO: Change to copy file when https://github.com/vapor/core/pull/83 is done
             return req.fileData.flatMap(to: Response.self) { (data) -> Future<Response> in
                 // TODO: -------- REFACTOR ---------
-                try Boost.tempFileHandler.createFolderStructure(url: App.tempAppFolder(on: req))
-                
-                let tempFilePath = App.tempAppFile(on: req)
-                try data.write(to: tempFilePath)
-                
-                let output: RunOutput = SwiftShell.run("unzip", "-l", tempFilePath.path)
-                
-                let platform: App.Platform
-                if output.succeeded {
-                    print(output.stdout)
+                return try Boost.tempFileHandler.createFolderStructure(url: App.tempAppFolder(on: req), on: req).flatMap(to: Response.self) { _ in
+                    let tempFilePath = App.tempAppFile(on: req)
+                    try data.write(to: tempFilePath)
                     
-                    if output.stdout.contains("Payload/") {
-                        platform = .ios
-                    }
-                    else if output.stdout.contains("AndroidManifest.xml") {
-                        platform = .android
+                    let output: RunOutput = SwiftShell.run("unzip", "-l", tempFilePath.path)
+                    
+                    let platform: App.Platform
+                    if output.succeeded {
+                        print(output.stdout)
+                        
+                        if output.stdout.contains("Payload/") {
+                            platform = .ios
+                        }
+                        else if output.stdout.contains("AndroidManifest.xml") {
+                            platform = .android
+                        }
+                        else {
+                            throw ExtractorError.invalidAppContent
+                        }
                     }
                     else {
+                        print(output.stderror)
                         throw ExtractorError.invalidAppContent
                     }
-                }
-                else {
-                    print(output.stderror)
-                    throw ExtractorError.invalidAppContent
-                }
-                // */ -------- REFACTOR END (or just carry on and make me better!) ---------
-                
-                let extractor: Extractor = try BaseExtractor.decoder(file: tempFilePath.path, platform: platform, on: req)
-                do {
-                    let promise: Promise<App> = try extractor.process(teamId: teamId)
-                    return promise.futureResult.flatMap(to: Response.self) { (app) -> Future<Response> in
-                        return app.save(on: req).flatMap(to: Response.self) { (app) -> Future<Response> in
-                            return try extractor.save(app, request: req, Boost.storageFileHandler).flatMap(to: Response.self) { (_) -> Future<Response> in
-                                return try handleTags(on: req, app: app).flatMap(to: Response.self) { (_) -> Future<Response> in
-                                    return try app.asResponse(.created, to: req)
+                    // */ -------- REFACTOR END (or just carry on and make me better!) ---------
+                    
+                    let extractor: Extractor = try BaseExtractor.decoder(file: tempFilePath.path, platform: platform, on: req)
+                    do {
+                        let promise: Promise<App> = try extractor.process(teamId: teamId)
+                        return promise.futureResult.flatMap(to: Response.self) { (app) -> Future<Response> in
+                            return app.save(on: req).flatMap(to: Response.self) { (app) -> Future<Response> in
+                                return try extractor.save(app, request: req, Boost.storageFileHandler).flatMap(to: Response.self) { (_) -> Future<Response> in
+                                    return try handleTags(on: req, app: app).flatMap(to: Response.self) { (_) -> Future<Response> in
+                                        return try app.asResponse(.created, to: req)
+                                    }
                                 }
                             }
                         }
+                    } catch {
+                        try extractor.cleanUp()
+                        throw error
                     }
-                } catch {
-                    try extractor.cleanUp()
-                    throw error
                 }
             }
         }

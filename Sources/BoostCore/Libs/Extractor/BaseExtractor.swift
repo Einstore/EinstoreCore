@@ -30,7 +30,7 @@ class BaseExtractor {
         self.request = req
         self.file = file
         self.archive = App.tempAppFolder(on: req)
-        try Boost.tempFileHandler.createFolderStructure(url: self.archive)
+        try Boost.tempFileHandler.createFolderStructure(url: self.archive, on: req).wait()
     }
     
     static func decoder(file: String, platform: App.Platform, on req: Request) throws -> Extractor {

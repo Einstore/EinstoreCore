@@ -1,55 +1,26 @@
 //
-//  FileHandler.swift
+//  LocalFileHandler.swift
 //  BoostCore
 //
-//  Created by Ondrej Rafaj on 08/03/2018.
+//  Created by Ondrej Rafaj on 07/04/2018.
 //
 
 import Foundation
 import Vapor
 
 
-public struct StorageFileConfig {
-    public var mainFolderPath: String = "/Boost/storage"
-}
-
-public struct TempFileConfig {
-    public var mainFolderPath: String = "/Boost/tmp"
-}
-
-
-
-public protocol FileHandler {
-    
-    static var `default`: FileHandler { get }
-    
-    func createFolderStructure(path: String) throws
-    func createFolderStructure(url: URL) throws
-    
-    func delete(path: String, on: Request) throws -> Future<Void>
-    func delete(url: URL, on: Request) throws -> Future<Void>
-    
-    func save(data: Data, to: String, on: Request) throws -> Future<Void>
-    func save(data: Data, to: URL, on: Request) throws -> Future<Void>
-    
-    func move(from: String, to: String, on: Request) throws -> Future<Void>
-    func move(from: URL, to: URL, on: Request) throws -> Future<Void>
-    
-    func copy(from: String, to: String, on: Request) throws -> Future<Void>
-    func copy(from: URL, to: URL, on: Request) throws -> Future<Void>
-}
-
-
 public class LocalFileHandler: FileHandler {
     
     public static var `default`: FileHandler = LocalFileHandler()
     
-    public func createFolderStructure(path: String) throws {
+    public func createFolderStructure(path: String, on req: Request) throws -> Future<Void> {
         try FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: true)
+        return req.eventLoop.newSucceededFuture(result: Void())
     }
     
-    public func createFolderStructure(url: URL) throws {
+    public func createFolderStructure(url: URL, on req: Request) throws -> Future<Void> {
         try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+        return req.eventLoop.newSucceededFuture(result: Void())
     }
     
     public func delete(path: String, on req: Request) throws -> Future<Void> {
@@ -94,6 +65,12 @@ public class LocalFileHandler: FileHandler {
     public func copy(from: URL, to: URL, on req: Request) throws -> Future<Void> {
         try FileManager.default.copyItem(at: from, to: to)
         return req.eventLoop.newSucceededFuture(result: Void())
+    }
+    
+    // MARK: Initialization
+    
+    public init() {
+        
     }
     
 }

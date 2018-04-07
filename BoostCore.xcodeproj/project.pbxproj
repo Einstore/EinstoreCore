@@ -21,6 +21,8 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		150CC0F62078A055003B335F /* StorageConfigs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150CC0F52078A055003B335F /* StorageConfigs.swift */; };
+		150CC0F82078A07E003B335F /* LocalFileHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150CC0F72078A07E003B335F /* LocalFileHandler.swift */; };
 		OBJ_1081 /* ApiCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_77 /* ApiCore.swift */; };
 		OBJ_1082 /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_79 /* Configuration.swift */; };
 		OBJ_1083 /* AuthController.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_81 /* AuthController.swift */; };
@@ -280,7 +282,7 @@
 		OBJ_1581 /* BaseExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_44 /* BaseExtractor.swift */; };
 		OBJ_1582 /* Ipa.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_46 /* Ipa.swift */; };
 		OBJ_1583 /* Extractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_48 /* Extractor.swift */; };
-		OBJ_1584 /* TempFileHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_50 /* TempFileHandler.swift */; };
+		OBJ_1584 /* FileHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_50 /* FileHandler.swift */; };
 		OBJ_1585 /* Install.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_52 /* Install.swift */; };
 		OBJ_1586 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_54 /* App.swift */; };
 		OBJ_1587 /* AppPlist.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_55 /* AppPlist.swift */; };
@@ -9519,6 +9521,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		150CC0F52078A055003B335F /* StorageConfigs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageConfigs.swift; sourceTree = "<group>"; };
+		150CC0F72078A07E003B335F /* LocalFileHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalFileHandler.swift; sourceTree = "<group>"; };
 		"ApiCore::ApiCore::Product" /* ApiCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ApiCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"ApiCore::ApiCoreTestTools::Product" /* ApiCoreTestTools.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ApiCoreTestTools.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"BoostCore::BoostApp::Product" /* BoostApp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = BoostApp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -9894,7 +9898,7 @@
 		OBJ_496 /* Sessions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sessions.swift; sourceTree = "<group>"; };
 		OBJ_497 /* SessionsConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionsConfig.swift; sourceTree = "<group>"; };
 		OBJ_498 /* SessionsMiddleware.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionsMiddleware.swift; sourceTree = "<group>"; };
-		OBJ_50 /* TempFileHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TempFileHandler.swift; sourceTree = "<group>"; };
+		OBJ_50 /* FileHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileHandler.swift; sourceTree = "<group>"; };
 		OBJ_500 /* AnyResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyResponse.swift; sourceTree = "<group>"; };
 		OBJ_501 /* BCryptHasher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BCryptHasher.swift; sourceTree = "<group>"; };
 		OBJ_502 /* Exports.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Exports.swift; sourceTree = "<group>"; };
@@ -13162,7 +13166,9 @@
 		OBJ_49 /* Files */ = {
 			isa = PBXGroup;
 			children = (
-				OBJ_50 /* TempFileHandler.swift */,
+				OBJ_50 /* FileHandler.swift */,
+				150CC0F52078A055003B335F /* StorageConfigs.swift */,
+				150CC0F72078A07E003B335F /* LocalFileHandler.swift */,
 			);
 			path = Files;
 			sourceTree = "<group>";
@@ -13193,7 +13199,7 @@
 			path = Utilities;
 			sourceTree = "<group>";
 		};
-		OBJ_5 /*  */ = {
+		OBJ_5 = {
 			isa = PBXGroup;
 			children = (
 				OBJ_6 /* Package.swift */,
@@ -13204,7 +13210,6 @@
 				OBJ_66 /* Dependencies */,
 				OBJ_1017 /* Products */,
 			);
-			name = "";
 			sourceTree = "<group>";
 		};
 		OBJ_504 /* View */ = {
@@ -17088,7 +17093,7 @@
 			knownRegions = (
 				en,
 			);
-			mainGroup = OBJ_5 /*  */;
+			mainGroup = OBJ_5;
 			productRefGroup = OBJ_1017 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -17315,6 +17320,7 @@
 				OBJ_1567 /* BoostCore.swift in Sources */,
 				OBJ_1568 /* AppsController.swift in Sources */,
 				OBJ_1569 /* BoostController.swift in Sources */,
+				150CC0F62078A055003B335F /* StorageConfigs.swift in Sources */,
 				OBJ_1570 /* TagsController.swift in Sources */,
 				OBJ_1571 /* UploadKeyController.swift in Sources */,
 				OBJ_1572 /* App+Filename.swift in Sources */,
@@ -17323,13 +17329,14 @@
 				OBJ_1575 /* Tag+Equatable.swift in Sources */,
 				OBJ_1576 /* Team+UploadKeys.swift in Sources */,
 				OBJ_1577 /* BoostConfig.swift in Sources */,
+				150CC0F82078A07E003B335F /* LocalFileHandler.swift in Sources */,
 				OBJ_1578 /* Apk.swift in Sources */,
 				OBJ_1579 /* ApkManifest.swift in Sources */,
 				OBJ_1580 /* ApkStrings.swift in Sources */,
 				OBJ_1581 /* BaseExtractor.swift in Sources */,
 				OBJ_1582 /* Ipa.swift in Sources */,
 				OBJ_1583 /* Extractor.swift in Sources */,
-				OBJ_1584 /* TempFileHandler.swift in Sources */,
+				OBJ_1584 /* FileHandler.swift in Sources */,
 				OBJ_1585 /* Install.swift in Sources */,
 				OBJ_1586 /* App.swift in Sources */,
 				OBJ_1587 /* AppPlist.swift in Sources */,

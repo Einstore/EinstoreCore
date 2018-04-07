@@ -84,15 +84,15 @@ extension Extractor {
             throw ExtractorError.errorSavingFile
         }
         
-        try Boost.storageFileHandler.createFolderStructure(url: folder)
-        
-        let tempFile = App.tempAppFile(on: req)
-        saves.append(try fileHandler.move(from: tempFile, to: path, on: request))
-        if let iconData = iconData, let path = app.iconPath?.path {
-            saves.append(try fileHandler.save(data: iconData, to: path, on: request))
-        }
-        return saves.flatten(on: req).map(to: Void.self) { _ in
-            try self.cleanUp()
+        return try Boost.storageFileHandler.createFolderStructure(url: folder, on: req).flatMap(to: Void.self) { _ in
+            let tempFile = App.tempAppFile(on: req)
+            saves.append(try fileHandler.move(from: tempFile, to: path, on: self.request))
+            if let iconData = self.iconData, let path = app.iconPath?.path {
+                saves.append(try fileHandler.save(data: iconData, to: path, on: self.request))
+            }
+            return saves.flatten(on: req).map(to: Void.self) { _ in
+                try self.cleanUp()
+            }
         }
     }
     
