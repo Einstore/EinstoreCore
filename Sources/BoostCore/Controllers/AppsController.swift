@@ -54,6 +54,22 @@ class AppsController: Controller {
         
     }
     
+    // TODO: Remove when GROUP BY becomes available
+    static func overview(from apps: Apps) -> [App.Overview] {
+        var dic: [String: App.Overview] = [:]
+        apps.forEach({ (app) in
+            let key = "\(app.platform)-\(app.identifier)"
+            if dic[key] == nil {
+                dic[key] = App.Overview(platform: app.platform, identifier: app.identifier, count: 1)
+            } else {
+                dic[key]?.count += 1
+            }
+        })
+        return dic.map({ (key, value) -> App.Overview in
+            return value
+        })
+    }
+    
     static func boot(router: Router) throws {
         // Overview
         router.get("apps") { (req) -> Future<Apps> in
@@ -63,14 +79,24 @@ class AppsController: Controller {
         }
         
         router.get("apps", "overview") { (req) -> Future<[App.Overview]> in
-            return req.requestPooledConnection(to: .db).flatMap(to: [App.Overview].self) { connection in
-                return try App.Overview.raw("SELECT platform, identifier, COUNT(id) as count FROM apps GROUP BY platform, identifier", on: connection)
+//            return req.requestPooledConnection(to: .db).flatMap(to: [App.Overview].self) { connection in
+//                return try App.Overview.raw("SELECT platform, identifier, COUNT(id) as count FROM apps GROUP BY platform, identifier", on: connection)
+//            }
+            // TODO: Replace the below with GROUP BY query once the PSQL row decoder becomes public
+            return try req.me.teams().flatMap(to: [App.Overview].self) { teams in
+                return try App.query(on: req).filter(\App.teamId ~~ teams.ids).appFilters().all().map(to: [App.Overview].self) { apps in
+                    return overview(from: apps)
+                }
             }
         }
         
-        router.get("teams", DbCoreIdentifier.parameter, "apps", "overview") { (req) -> Future<Apps> in
-            return try req.me.teams().flatMap(to: Apps.self) { teams in
-                return try App.query(on: req).filter(\App.teamId ~~ teams.ids).appFilters().all()
+        router.get("teams", DbCoreIdentifier.parameter, "apps", "overview") { (req) -> Future<[App.Overview]> in
+            let teamId = try req.parameter(DbCoreIdentifier.self)
+            return try req.me.teams().flatMap(to: [App.Overview].self) { teams in
+                // TODO: Replace the below with GROUP BY query once the PSQL row decoder becomes public
+                return try App.query(on: req).filter(\App.teamId ~~ teams.ids).filter(\App.teamId == teamId).appFilters().all().map(to: [App.Overview].self) { apps in
+                    return overview(from: apps)
+                }
             }
         }
         
