@@ -15,13 +15,49 @@ import ErrorsCore
 import SwiftShell
 
 
+fileprivate struct RequestFilters: Codable {
+    let limit: Int?
+    let page: Int?
+    let platform: App.Platform?
+    let identifier: String?
+    let search: String?
+}
+
+
 extension QueryBuilder where Model == App {
     
-    func appFilters() -> Self {
+    func appFilters(on req: Request) throws -> Self {
+        let query = try req.query.decode(RequestFilters.self)
         var s = self
-        // TODO: Do pagination!!!!!!
-        s = s.range(lower: 0, upper: 1000)
-//        s = s.filter(\App.platform == App.Platform.ios.rawValue)
+        
+        // Limit & pagination
+        if let limit = query.limit {
+            let page = query.page ?? 0
+            let lower = (page * limit)
+            s = s.range(lower: lower, upper: (lower + limit))
+        }
+        
+        // Basic search
+        if let search = query.search {
+            s = try s.group(.or) { or in
+                try or.filter(\App.name ~~ search)
+                try or.filter(\App.identifier ~~ search)
+                try or.filter(\App.info ~~ search)
+                try or.filter(\App.version ~~ search)
+                try or.filter(\App.build ~~ search)
+            }
+        }
+        
+        // Platform
+        if let platform = query.platform {
+            s = try s.filter(\App.platform == platform)
+        }
+        
+        // Identifier
+        if let identifier = query.identifier {
+            s = try s.filter(\App.identifier ~~ identifier)
+        }
+        
         return s
     }
     
@@ -74,7 +110,7 @@ class AppsController: Controller {
         // Overview
         router.get("apps") { (req) -> Future<Apps> in
             return try req.me.teams().flatMap(to: Apps.self) { teams in
-                return try App.query(on: req).filter(\App.teamId ~~ teams.ids).appFilters().all()
+                return try App.query(on: req).filter(\App.teamId ~~ teams.ids).appFilters(on: req).all()
             }
         }
         
@@ -84,7 +120,7 @@ class AppsController: Controller {
 //            }
             // TODO: Replace the below with GROUP BY query once the PSQL row decoder becomes public
             return try req.me.teams().flatMap(to: [App.Overview].self) { teams in
-                return try App.query(on: req).filter(\App.teamId ~~ teams.ids).appFilters().all().map(to: [App.Overview].self) { apps in
+                return try App.query(on: req).filter(\App.teamId ~~ teams.ids).appFilters(on: req).all().map(to: [App.Overview].self) { apps in
                     return overview(from: apps)
                 }
             }
@@ -94,7 +130,7 @@ class AppsController: Controller {
             let teamId = try req.parameter(DbCoreIdentifier.self)
             return try req.me.teams().flatMap(to: [App.Overview].self) { teams in
                 // TODO: Replace the below with GROUP BY query once the PSQL row decoder becomes public
-                return try App.query(on: req).filter(\App.teamId ~~ teams.ids).filter(\App.teamId == teamId).appFilters().all().map(to: [App.Overview].self) { apps in
+                return try App.query(on: req).filter(\App.teamId ~~ teams.ids).filter(\App.teamId == teamId).appFilters(on: req).all().map(to: [App.Overview].self) { apps in
                     return overview(from: apps)
                 }
             }
@@ -110,17 +146,7 @@ class AppsController: Controller {
                 return try App.query(on: req).group(.and) { and in
                     try and.filter(\App.teamId ~~ teams.ids)
                     try and.filter(\App.teamId == teamId)
-                }.decode(App.Overview.self).all()
-            }
-        }
-        
-        router.get("teams", DbCoreIdentifier.parameter, "overview") { (req) -> Future<Apps> in
-            let teamId = try req.parameter(DbCoreIdentifier.self)
-            return try req.me.teams().flatMap(to: Apps.self) { teams in
-                guard teams.contains(teamId) else {
-                    throw ErrorsCore.HTTPError.notFound
-                }
-                return try App.query(on: req).filter(\App.teamId ~~ teams.ids).all()
+                }.appFilters(on: req).decode(App.Overview.self).all()
             }
         }
         
