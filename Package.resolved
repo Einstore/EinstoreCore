@@ -6,7 +6,7 @@
         "repositoryURL": "https://github.com/LiveUI/ApiCore.git",
         "state": {
           "branch": "master",
-          "revision": "fea5a8983429246b8c31100d715ba8b707323fe1",
+          "revision": "0bcd5c92b23a89502da9c8d6ec1bc9d38a9bd339",
           "version": null
         }
       },
@@ -69,7 +69,7 @@
         "repositoryURL": "https://github.com/LiveUI/ErrorsCore.git",
         "state": {
           "branch": "master",
-          "revision": "89c79697282c3d5543f20861f4e9cf941e991c50",
+          "revision": "ac96d417f82dbc4db3925f8e64fb1aecf11abc6c",
           "version": null
         }
       },

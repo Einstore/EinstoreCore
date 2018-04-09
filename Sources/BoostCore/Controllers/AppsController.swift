@@ -16,11 +16,8 @@ import SwiftShell
 
 
 fileprivate struct RequestFilters: Codable {
-    let limit: Int?
-    let page: Int?
     let platform: App.Platform?
     let identifier: String?
-    let search: String?
 }
 
 
@@ -28,17 +25,10 @@ extension QueryBuilder where Model == App {
     
     func appFilters(on req: Request) throws -> Self {
         let query = try req.query.decode(RequestFilters.self)
-        var s = self
-        
-        // Limit & pagination
-        if let limit = query.limit {
-            let page = query.page ?? 0
-            let lower = (page * limit)
-            s = s.range(lower: lower, upper: (lower + limit))
-        }
+        var s = try paginate(on: req)
         
         // Basic search
-        if let search = query.search {
+        if let search = req.query.search {
             s = try s.group(.or) { or in
                 try or.filter(\App.name ~~ search)
                 try or.filter(\App.identifier ~~ search)
