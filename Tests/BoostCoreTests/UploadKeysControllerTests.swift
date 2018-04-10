@@ -22,6 +22,7 @@ class UploadKeysControllerTests: XCTestCase, UploadKeyTestCaseSetup, LinuxTests 
     var user1: User!
     var user2: User!
     
+    var adminTeam: Team!
     var team1: Team!
     var team2: Team!
     

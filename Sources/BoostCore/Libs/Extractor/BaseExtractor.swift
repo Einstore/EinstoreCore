@@ -24,13 +24,17 @@ class BaseExtractor {
     var file: URL
     var archive: URL
     
+    let createFolderStructure: Future<Void>
+    
     // MARK: Initialization
     
     required init(file: URL, request req: Request) throws {
         self.request = req
         self.file = file
         self.archive = App.tempAppFolder(on: req)
-        try Boost.tempFileHandler.createFolderStructure(url: self.archive, on: req).wait()
+        
+        // TODO: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Following needs to be refactored so the structure 100% exists before we do anything else !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        self.createFolderStructure = try Boost.tempFileHandler.createFolderStructure(url: self.archive, on: req)
     }
     
     static func decoder(file: String, platform: App.Platform, on req: Request) throws -> Extractor {
