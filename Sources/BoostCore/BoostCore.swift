@@ -88,7 +88,6 @@ public class Boost {
         DbCore.migrationConfig.add(model: Tag.self, database: .db)
         DbCore.migrationConfig.add(model: AppTag.self, database: .db)
         DbCore.migrationConfig.add(model: UploadKey.self, database: .db)
-        DbCore.migrationConfig.add(model: ErrorLog.self, database: .db)
         
         try SettingsCore.configure(&config, &env, &services)
         
