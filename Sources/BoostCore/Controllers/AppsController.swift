@@ -80,7 +80,7 @@ class AppsController: Controller {
         
     }
     
-    // TODO: Remove when GROUP BY becomes available
+    // TODO: Remove when GROUP BY becomes available!!!!!!!!!!!!!!!!
     static func overview(from apps: Apps) -> [App.Overview] {
         var dic: [String: App.Overview] = [:]
         apps.forEach({ (app) in
