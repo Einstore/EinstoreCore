@@ -16,10 +16,11 @@ import ApiCore
 public typealias Apps = [App]
 
 
-final public class App: DbCoreModel, Entity {
+final public class App: DbCoreModel {
     
     public enum Platform: String, Codable, ReflectionDecodable, PostgreSQLType {
         
+        // TODO: The following needs to be refactored as it only contains "guessed" values!!!!!!!!!
         public static func keyStringIsTrue(_ item: App.Platform) -> Bool {
             return true
         }
@@ -77,12 +78,24 @@ final public class App: DbCoreModel, Entity {
         
     }
     
-    public struct Overview: Entity {
-        public static var entity: String = App.entity
+    public struct Overview: Content {
         
         public var platform: Platform
         public var identifier: String
         public var count: Int
+        
+        static func query(teams: Teams, with parameters: [PostgreSQLDataConvertible] = [], on connector: PostgreSQLConnection) throws -> Future<[Overview]> {
+            return try connector.query("SELECT platform, identifier, COUNT(id) as count FROM apps WHERE team_id = $1 GROUP BY platform, identifier", [teams.ids]).map(to: [Overview].self) { data in
+                return try data.map { row in
+                    let p: String = try row.firstValue(forColumn: "platform")!.decode(String.self)
+                    return try Overview(
+                        platform: App.Platform.init(rawValue: p)!,
+                        identifier: row.firstValue(forColumn: "identifier")!.decode(String.self),
+                        count: row.firstValue(forColumn: "count")!.decode(Int.self)
+                    )
+                }
+            }
+        }
     }
     
     public static var idKey: WritableKeyPath<App, DbCoreIdentifier?> = \App.id
@@ -94,7 +107,6 @@ final public class App: DbCoreModel, Entity {
     public var version: String
     public var build: String
     public var platform: Platform
-    //public var platform: String
     public var created: Date?
     public var modified: Date?
     public var info: String?

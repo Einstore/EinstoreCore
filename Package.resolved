@@ -6,7 +6,7 @@
         "repositoryURL": "https://github.com/LiveUI/ApiCore.git",
         "state": {
           "branch": "master",
-          "revision": "63af95e8713a2f28ee4e00ad72834a4f9f2c14d1",
+          "revision": "ac49568d9075a5b94f9a96192d149e160d5c9fc3",
           "version": null
         }
       },
@@ -123,7 +123,7 @@
         "repositoryURL": "https://github.com/LiveUI/MailCore.git",
         "state": {
           "branch": "master",
-          "revision": "024106445bfc7a9461ea356af21a6ecba0026fb3",
+          "revision": "608f954a5aa8243e0cbd59fa4063445b9e595f1e",
           "version": null
         }
       },
@@ -143,6 +143,15 @@
           "branch": null,
           "revision": "2fc1d4de22a54848b35ad17b3e7f7816f19ebf90",
           "version": "3.0.0-rc.2"
+        }
+      },
+      {
+        "package": "SendGrid",
+        "repositoryURL": "https://github.com/vapor-community/sendgrid-provider.git",
+        "state": {
+          "branch": null,
+          "revision": "400914c4c54b34240cf7c99ce0464b1771f969c2",
+          "version": "3.0.1"
         }
       },
       {
@@ -249,7 +258,7 @@
         "repositoryURL": "https://github.com/LiveUI/VaporTestTools.git",
         "state": {
           "branch": "master",
-          "revision": "723ab62c1f8fccb0f246e02ebc854edd4eab0a60",
+          "revision": "0791548a30e6a805bf9291b0ad6707c4085cc3ee",
           "version": null
         }
       }

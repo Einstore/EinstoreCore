@@ -105,21 +105,26 @@ class AppsController: Controller {
         }
         
         router.get("apps", "overview") { (req) -> Future<[App.Overview]> in
-//            return req.requestPooledConnection(to: .db).flatMap(to: [App.Overview].self) { connection in
-//                return try App.Overview.raw("SELECT platform, identifier, COUNT(id) as count FROM apps GROUP BY platform, identifier", on: connection)
-//            }
-            // TODO: Replace the below with GROUP BY query once the PSQL row decoder becomes public
             return try req.me.teams().flatMap(to: [App.Overview].self) { teams in
-                return try App.query(on: req).filter(\App.teamId ~~ teams.ids).appFilters(on: req).all().map(to: [App.Overview].self) { apps in
-                    return overview(from: apps)
+                return req.withConnection(to: .psql) { connection in
+                    return try App.Overview.query(teams: teams, on: connection)
                 }
             }
+//                .requestPooledConnection(to: .db).flatMap(to: [App.Overview].self) { connection in
+//                return try App.Overview.query(on: connection)
+//            }
+//            // TODO: Replace the below with GROUP BY query above once https://github.com/vapor/postgresql/issues/46 is fixed!!!!!!!
+//            return try req.me.teams().flatMap(to: [App.Overview].self) { teams in
+//                return try App.query(on: req).filter(\App.teamId ~~ teams.ids).appFilters(on: req).all().map(to: [App.Overview].self) { apps in
+//                    return overview(from: apps)
+//                }
+//            }
         }
         
         router.get("teams", DbCoreIdentifier.parameter, "apps", "overview") { (req) -> Future<[App.Overview]> in
             let teamId = try req.parameter(DbCoreIdentifier.self)
             return try req.me.teams().flatMap(to: [App.Overview].self) { teams in
-                // TODO: Replace the below with GROUP BY query once the PSQL row decoder becomes public
+                // TODO: Replace the below with GROUP BY query above once https://github.com/vapor/postgresql/issues/46 is fixed!!!!!!!
                 return try App.query(on: req).filter(\App.teamId ~~ teams.ids).filter(\App.teamId == teamId).appFilters(on: req).all().map(to: [App.Overview].self) { apps in
                     return overview(from: apps)
                 }

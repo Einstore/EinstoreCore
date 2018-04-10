@@ -91,7 +91,9 @@ public class Boost {
         
         try SettingsCore.configure(&config, &env, &services)
         
-        Mailer(config: boostConfig.mail, registerOn: &services)
+        // TODO: Move Mailer to the ApiCore!!!!!!!!!!!!!!!!
+        try Mailer(config: boostConfig.mail, registerOn: &services)
+        
         try ApiCore.configure(databaseConfig: database, &config, &env, &services)
         
         ApiCore.installFutures.append({ req in
