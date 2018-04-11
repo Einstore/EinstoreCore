@@ -26,7 +26,8 @@ public class Boost {
         BoostController.self,
         TagsController.self,
         AppsController.self,
-        UploadKeyController.self
+        UploadKeyController.self,
+        ConfigurationController.self
     ]
     
     public static func boot(router: Router) throws {
@@ -71,7 +72,7 @@ public class Boost {
     }
     
     
-    public static func configure(boostConfig: inout BoostConfig, _ config: inout Config, _ env: inout Vapor.Environment, _ services: inout Services) throws {
+    public static func configure(boostConfig: inout BoostConfig, _ config: inout Vapor.Config, _ env: inout Vapor.Environment, _ services: inout Services) throws {
         guard let database = boostConfig.database else {
             fatalError("Missing database configuration in BoostConfig")
         }
@@ -88,6 +89,7 @@ public class Boost {
         DbCore.migrationConfig.add(model: Tag.self, database: .db)
         DbCore.migrationConfig.add(model: AppTag.self, database: .db)
         DbCore.migrationConfig.add(model: UploadKey.self, database: .db)
+        DbCore.migrationConfig.add(model: Configuration.self, database: .db)
         
         try SettingsCore.configure(&config, &env, &services)
         

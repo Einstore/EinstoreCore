@@ -84,11 +84,6 @@
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
-            key = "BOOST_URL"
-            value = "http://localhost:8080"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
             key = "DB_USER"
             value = "boost"
             isEnabled = "YES">

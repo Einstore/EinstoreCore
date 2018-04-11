@@ -17,9 +17,8 @@ public class BoostController: Controller {
         router.get("info") { req -> Future<Response> in
             let info: [String: String] = [
                 "name": Environment.get("BOOST_NAME") ?? "Boost",
-                "url": Environment.get("BOOST_URL") ?? "http://localhost:8080"
+                "url": req.serverURL()?.path ?? "http://localhost:8080"
             ]
-            
             let response = try info.asJson().asResponse(.ok, to: req)
             return response
         }
