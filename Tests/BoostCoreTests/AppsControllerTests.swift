@@ -15,6 +15,8 @@ import BoostCoreTestTools
 import ErrorsCore
 @testable import ApiCore
 @testable import BoostCore
+import PostgreSQL
+import FluentPostgreSQL
 
 
 class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
@@ -56,6 +58,32 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
     
     func testLinuxTests() {
         doTestLinuxTestsAreOk()
+    }
+    
+    func testGH46() throws {
+        struct Overview {
+            var platform: String
+            var identifier: String
+            var count: Int
+        }
+        
+        let connection = try PostgreSQLConnection.makeTest()
+        _ = try connection.simpleQuery("DROP TABLE IF EXISTS apps").wait()
+        _ = try connection.simpleQuery("CREATE TABLE apps (id INT, platform TEXT, identifier TEXT)").wait()
+        _ = try connection.simpleQuery("INSERT INTO apps VALUES (1, 'a', 'b')").wait()
+        _ = try connection.simpleQuery("INSERT INTO apps VALUES (2, 'c', 'd')").wait()
+        _ = try connection.simpleQuery("INSERT INTO apps VALUES (3, 'a', 'd')").wait()
+        _ = try connection.simpleQuery("INSERT INTO apps VALUES (4, 'a', 'b')").wait()
+        let overviews = try connection.query("SELECT platform, identifier, COUNT(id) as count FROM apps GROUP BY platform, identifier").map(to: [Overview].self) { data in
+            return try data.map { row in
+                return try Overview(
+                    platform: row.firstValue(forColumn: "platform")!.decode(String.self),
+                    identifier: row.firstValue(forColumn: "identifier")!.decode(String.self),
+                    count: row.firstValue(forColumn: "count")!.decode(Int.self)
+                )
+            }
+            }.wait()
+        XCTAssertEqual(overviews.count, 3)
     }
     
     // MARK: Setup
@@ -262,5 +290,20 @@ extension AppsControllerTests {
     
 }
 
+
+extension PostgreSQLConnection {
+    
+    /// Creates a test event loop and psql client.
+    static func makeTest() throws -> PostgreSQLConnection {
+        let hostname: String = "localhost"
+        let group = MultiThreadedEventLoopGroup(numThreads: 1)
+        let client = try PostgreSQLConnection.connect(hostname: hostname, on: group) { error in
+            XCTFail("\(error)")
+            }.wait()
+        _ = try client.authenticate(username: "boost", database: "boost-test", password: "aaaaaa").wait()
+        return client
+    }
+    
+}
 
 

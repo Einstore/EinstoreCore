@@ -37,9 +37,7 @@ public struct AppPlist: Codable {
             let url: String
             
             public init(app: App, request req: Request) throws {
-                guard let serverUrl = req.serverURL() else {
-                    throw AppPlistError.missingServerUrl
-                }
+                let serverUrl = req.serverURL()
                 self.url = serverUrl.appendingPathComponent("app.boost").absoluteString
             }
             

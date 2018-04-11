@@ -10406,10 +10406,10 @@
 
 /* Begin PBXFileReference section */
 		"ApiCore::ApiCore::Product" /* ApiCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ApiCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		"ApiCore::ApiCoreTestTools::Product" /* ApiCoreTestTools.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ApiCoreTestTools.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		"ApiCore::ApiCoreTestTools::Product" /* ApiCoreTestTools.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ApiCoreTestTools.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"BoostCore::BoostApp::Product" /* BoostApp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = BoostApp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"BoostCore::BoostCore::Product" /* BoostCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = BoostCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		"BoostCore::BoostCoreTestTools::Product" /* BoostCoreTestTools.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = BoostCoreTestTools.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		"BoostCore::BoostCoreTestTools::Product" /* BoostCoreTestTools.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = BoostCoreTestTools.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"BoostCore::BoostCoreTests::Product" /* BoostCoreTests.xctest */ = {isa = PBXFileReference; lastKnownFileType = file; path = BoostCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		"BoostCore::BoostRun::Product" /* BoostRun */ = {isa = PBXFileReference; lastKnownFileType = text; path = BoostRun; sourceTree = BUILT_PRODUCTS_DIR; };
 		"Console::Command::Product" /* Command.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Command.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -10434,12 +10434,12 @@
 		"Fluent::Fluent::Product" /* Fluent.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Fluent.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"Fluent::FluentSQL::Product" /* FluentSQL.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FluentSQL.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"FluentPostgreSQL::FluentPostgreSQL::Product" /* FluentPostgreSQL.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FluentPostgreSQL.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		"FluentTestTools::FluentTestTools::Product" /* FluentTestTools.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = FluentTestTools.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		"FluentTestTools::FluentTestTools::Product" /* FluentTestTools.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FluentTestTools.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"JWT::JWT::Product" /* JWT.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = JWT.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"Leaf::Leaf::Product" /* Leaf.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Leaf.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"LoggerAPI::LoggerAPI::Product" /* LoggerAPI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = LoggerAPI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"MailCore::MailCore::Product" /* MailCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = MailCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		"MailCore::MailCoreTestTools::Product" /* MailCoreTestTools.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = MailCoreTestTools.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		"MailCore::MailCoreTestTools::Product" /* MailCoreTestTools.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = MailCoreTestTools.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"Mailgun::Mailgun::Product" /* Mailgun.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Mailgun.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		OBJ_100 /* Request+Files.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Request+Files.swift"; sourceTree = "<group>"; };
 		OBJ_1000 /* module.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = module.modulemap; path = /Projects/Web/LiveUI/BoostCore/BoostCore.xcodeproj/GeneratedModuleMap/CNIOZlib/module.modulemap; sourceTree = "<group>"; };
@@ -11287,7 +11287,7 @@
 		"TemplateKit::TemplateKit::Product" /* TemplateKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = TemplateKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"Validation::Validation::Product" /* Validation.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Validation.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"Vapor::Vapor::Product" /* Vapor.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Vapor.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		"VaporTestTools::VaporTestTools::Product" /* VaporTestTools.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = VaporTestTools.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		"VaporTestTools::VaporTestTools::Product" /* VaporTestTools.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = VaporTestTools.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"swift-nio-ssl::CNIOOpenSSL::Product" /* CNIOOpenSSL.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = CNIOOpenSSL.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"swift-nio-ssl::NIOOpenSSL::Product" /* NIOOpenSSL.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = NIOOpenSSL.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"swift-nio::CNIOAtomics::Product" /* CNIOAtomics.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = CNIOAtomics.framework; sourceTree = BUILT_PRODUCTS_DIR; };
