@@ -135,9 +135,9 @@ extension Ipa {
         let iconUrl = archive.appendingPathComponent("icon.png")
         try iconData.write(to: iconUrl)
         
-        // TODO: Normalize binary image
-        let normalize = binUrl.appendingPathComponent("normalize.py")
-        try runAndPrint("python", normalize.path, iconUrl.path)
+//        // TODO: Normalize binary image
+//        let normalize = binUrl.appendingPathComponent("normalize.py")
+//        try runAndPrint("python", normalize.path, iconUrl.path)
     }
     
     private func parseIcon(_ plist: [String: AnyObject]) throws {
