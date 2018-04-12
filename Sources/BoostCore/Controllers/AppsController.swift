@@ -105,20 +105,18 @@ class AppsController: Controller {
         }
         
         router.get("apps", "overview") { (req) -> Future<[App.Overview]> in
-            return try req.me.teams().flatMap(to: [App.Overview].self) { teams in
-                return req.withConnection(to: .psql) { connection in
-                    return try App.Overview.query(teams: teams, on: connection)
-                }
-            }
-//                .requestPooledConnection(to: .db).flatMap(to: [App.Overview].self) { connection in
-//                return try App.Overview.query(on: connection)
-//            }
-//            // TODO: Replace the below with GROUP BY query above once https://github.com/vapor/postgresql/issues/46 is fixed!!!!!!!
 //            return try req.me.teams().flatMap(to: [App.Overview].self) { teams in
-//                return try App.query(on: req).filter(\App.teamId ~~ teams.ids).appFilters(on: req).all().map(to: [App.Overview].self) { apps in
-//                    return overview(from: apps)
+//                return req.withConnection(to: .psql) { connection in
+//                    return try App.Overview.query(teams: teams, on: connection)
 //                }
 //            }
+
+            // TODO: Replace the below with GROUP BY query above once https://github.com/vapor/postgresql/issues/46 is fixed!!!!!!!
+            return try req.me.teams().flatMap(to: [App.Overview].self) { teams in
+                return try App.query(on: req).filter(\App.teamId ~~ teams.ids).appFilters(on: req).all().map(to: [App.Overview].self) { apps in
+                    return overview(from: apps)
+                }
+            }
         }
         
         router.get("teams", DbCoreIdentifier.parameter, "apps", "overview") { (req) -> Future<[App.Overview]> in
