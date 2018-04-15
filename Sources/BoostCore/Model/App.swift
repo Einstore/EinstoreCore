@@ -98,6 +98,14 @@ final public class App: DbCoreModel {
         }
     }
     
+    public struct Info: Content {
+        
+        public var teamId: DbCoreIdentifier
+        public var apps: Int
+        public var builds: Int
+        
+    }
+    
     public static var idKey: WritableKeyPath<App, DbCoreIdentifier?> = \App.id
     
     public var id: DbCoreIdentifier?

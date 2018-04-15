@@ -129,6 +129,22 @@ class AppsController: Controller {
             }
         }
         
+        router.get("teams", DbCoreIdentifier.parameter, "apps", "info") { (req) -> Future<App.Info> in
+            let teamId = try req.parameter(DbCoreIdentifier.self)
+            return try req.me.teams().flatMap(to: App.Info.self) { teams in
+                // TODO: Replace the below with GROUP BY query above once https://github.com/vapor/postgresql/issues/46 is fixed!!!!!!!
+                return try App.query(on: req).filter(\App.teamId ~~ teams.ids).filter(\App.teamId == teamId).appFilters(on: req).all().map(to: App.Info.self) { apps in
+                    var builds: Int = 0
+                    let data = overview(from: apps)
+                    data.forEach({ item in
+                        builds += item.count
+                    })
+                    let info = App.Info(teamId: teamId, apps: data.count, builds: builds)
+                    return info
+                }
+            }
+        }
+        
         router.get("teams", DbCoreIdentifier.parameter, "apps") { (req) -> Future<[App.Overview]> in
             let teamId = try req.parameter(DbCoreIdentifier.self)
             return try req.me.teams().flatMap(to: [App.Overview].self) { teams in
