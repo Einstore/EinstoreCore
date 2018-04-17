@@ -80,22 +80,34 @@ final public class App: DbCoreModel {
     
     public struct Overview: Content {
         
+        public var latestName: String
+        public var latestVersion: String
+        public var latestBuild: String
         public var platform: Platform
         public var identifier: String
         public var count: Int
         
-        static func query(teams: Teams, with parameters: [PostgreSQLDataConvertible] = [], on connector: PostgreSQLConnection) throws -> Future<[Overview]> {
-            return try connector.query("SELECT platform, identifier, COUNT(id) as count FROM apps WHERE team_id = $1 GROUP BY platform, identifier", [teams.ids]).map(to: [Overview].self) { data in
-                return try data.map { row in
-                    let p: String = try row.firstValue(forColumn: "platform")!.decode(String.self)
-                    return try Overview(
-                        platform: App.Platform.init(rawValue: p)!,
-                        identifier: row.firstValue(forColumn: "identifier")!.decode(String.self),
-                        count: row.firstValue(forColumn: "count")!.decode(Int.self)
-                    )
-                }
-            }
+        enum CodingKeys: String, CodingKey {
+            case latestName = "latest_name"
+            case latestVersion = "latest_version"
+            case latestBuild = "latest_build"
+            case platform
+            case identifier
+            case count
         }
+        
+//        static func query(teams: Teams, with parameters: [PostgreSQLDataConvertible] = [], on connector: PostgreSQLConnection) throws -> Future<[Overview]> {
+//            return try connector.query("SELECT platform, identifier, COUNT(id) as count FROM apps WHERE team_id = $1 GROUP BY platform, identifier", [teams.ids]).map(to: [Overview].self) { data in
+//                return try data.map { row in
+//                    let p: String = try row.firstValue(forColumn: "platform")!.decode(String.self)
+//                    return try Overview(
+//                        platform: App.Platform.init(rawValue: p)!,
+//                        identifier: row.firstValue(forColumn: "identifier")!.decode(String.self),
+//                        count: row.firstValue(forColumn: "count")!.decode(Int.self)
+//                    )
+//                }
+//            }
+//        }
     }
     
     public struct Info: Content {
