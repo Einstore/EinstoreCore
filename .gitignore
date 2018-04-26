@@ -16,3 +16,4 @@ DerivedData/
 /BoostCore.xcodeproj/GeneratedModuleMap
 /BoostCore.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
 /BoostCore.xcodeproj/xcshareddata/xcschemes/xcschememanagement.plist
+*.xcodeproj
