@@ -22,7 +22,6 @@ final public class Tag: DbCoreModel {
     public var id: DbCoreIdentifier?
     public var name: String
     public var identifier: String
-//    public var apps: [App]
     
     enum CodingKeys: String, CodingKey {
         case id
