@@ -32,7 +32,7 @@ final public class DownloadKey: DbCoreModel {
         init(downloadKey: DownloadKey, request req: Request) {
             self.token = downloadKey.token
             
-            guard let url = URL(string: Boost.config.serverBaseUrl)?.appendingPathComponent("apps") else {
+            guard let serverUrlString = ApiCore.configuration.server.url, let url = URL(string: serverUrlString)?.appendingPathComponent("apps") else {
                 fatalError("Server URL is not properly configured")
             }
             self.plist = url.appendingPathComponent("plist?token=\(downloadKey.token)").absoluteString

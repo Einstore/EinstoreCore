@@ -73,10 +73,6 @@ public class Boost {
     
     
     public static func configure(boostConfig: inout BoostConfig, _ config: inout Vapor.Config, _ env: inout Vapor.Environment, _ services: inout Services) throws {
-        guard let database = boostConfig.database else {
-            fatalError("Missing database configuration in BoostConfig")
-        }
-        
         self.config = boostConfig
         
         ApiAuthMiddleware.allowedGetUri.append("/apps/plist")
@@ -93,10 +89,7 @@ public class Boost {
         
         try SettingsCore.configure(&config, &env, &services)
         
-        // TODO: Move Mailer to the ApiCore!!!!!!!!!!!!!!!!
-        try Mailer(config: boostConfig.mail, registerOn: &services)
-        
-        try ApiCore.configure(databaseConfig: database, &config, &env, &services)
+        try ApiCore.configure(&config, &env, &services)
         
         ApiCore.installFutures.append({ req in
             return try Install.make(on: req)

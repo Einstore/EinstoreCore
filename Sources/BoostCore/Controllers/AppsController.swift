@@ -13,8 +13,11 @@ import FluentPostgreSQL
 import DbCore
 import ErrorsCore
 import SwiftShell
+import SQL
+import DatabaseKit
 
 
+/// Object holding main filters
 fileprivate struct RequestFilters: Codable {
     let platform: App.Platform?
     let identifier: String?
@@ -23,6 +26,7 @@ fileprivate struct RequestFilters: Codable {
 
 extension QueryBuilder where Model == App {
     
+    /// Set filters
     func appFilters(on req: Request) throws -> Self {
         let query = try req.query.decode(RequestFilters.self)
         var s = try paginate(on: req)
@@ -51,6 +55,7 @@ extension QueryBuilder where Model == App {
         return s
     }
     
+    /// Make sure we get only apps belonging to the user
     func safeApp(appId: DbCoreIdentifier, teamIds: [DbCoreIdentifier]) throws -> Self {
         return try group(.and) { and in
             try and.filter(\App.id == appId)
@@ -63,7 +68,8 @@ extension QueryBuilder where Model == App {
 
 class AppsController: Controller {
     
-    enum AppsError: FrontendError {
+    /// Error
+    enum Error: FrontendError {
         case invalidPlatform
         
         var code: String {
@@ -80,90 +86,56 @@ class AppsController: Controller {
         
     }
     
-    // TODO: Remove when GROUP BY becomes available!!!!!!!!!!!!!!!!
-    static func overview(from apps: Apps) -> [App.Overview] {
-        var dic: [String: App.Overview] = [:]
-        apps.forEach({ (app) in
-            let key = "\(app.platform)-\(app.identifier)"
-            if dic[key] == nil {
-                dic[key] = App.Overview(latestName: app.name, latestVersion: app.version, latestBuild: app.build, platform: app.platform, identifier: app.identifier, count: 1)
-            } else {
-                dic[key]?.latestName = app.name
-                dic[key]?.latestVersion = app.version
-                dic[key]?.latestBuild = app.build
-                dic[key]?.count += 1
-            }
-        })
-        return dic.map({ (key, value) -> App.Overview in
-            return value
-        })
+    /// Overview app query
+    static func overviewQuery(teams: Teams, on req: Request) throws -> QueryBuilder<App, App.Overview> {
+        let q = try App.query(on: req).decode(App.Overview.self).resetColumns().select("identifier", "platform")
+            .computed((function: "COUNT", columns: ["id"], key: "count")).filter(\App.teamId ~~ teams.ids).appFilters(on: req).group(by: \App.identifier).group(by: \App.platform).printSqlString()
+        return q
     }
     
+    /// Loading routes
     static func boot(router: Router) throws {
-        // Overview
+        // Get list of apps based on input parameters
         router.get("apps") { (req) -> Future<Apps> in
             return try req.me.teams().flatMap(to: Apps.self) { teams in
                 return try App.query(on: req).filter(\App.teamId ~~ teams.ids).sort(\App.created, QuerySortDirection.descending).appFilters(on: req).all()
             }
         }
         
+        // Overview for apps in all teams
         router.get("apps", "overview") { (req) -> Future<[App.Overview]> in
-//            return try req.me.teams().flatMap(to: [App.Overview].self) { teams in
-//                return req.withConnection(to: .psql) { connection in
-//                    return try App.Overview.query(teams: teams, on: connection)
-//                }
-//            }
-            
-            // TODO: Replace the below with GROUP BY query above once https://github.com/vapor/postgresql/issues/46 is fixed!!!!!!!
             return try req.me.teams().flatMap(to: [App.Overview].self) { teams in
-                return try App.query(on: req).filter(\App.teamId ~~ teams.ids).sort(\App.created, QuerySortDirection.ascending).appFilters(on: req).all().map(to: [App.Overview].self) { apps in
-                    return overview(from: apps)
-                }
+                // TODO: Fix Fluent and remove resetColumns (Fluent shouldn't be setting .all as default value)
+                return try overviewQuery(teams: teams, on: req).all()
             }
         }
         
+        // Overview for apps in selected team
         router.get("teams", DbCoreIdentifier.parameter, "apps", "overview") { (req) -> Future<[App.Overview]> in
-            let teamId = try req.parameter(DbCoreIdentifier.self)
+            let teamId = try req.parameters.next(DbCoreIdentifier.self)
             return try req.me.teams().flatMap(to: [App.Overview].self) { teams in
-                // TODO: Replace the below with GROUP BY query above once https://github.com/vapor/postgresql/issues/46 is fixed!!!!!!!
-                return try App.query(on: req).filter(\App.teamId ~~ teams.ids).filter(\App.teamId == teamId).sort(\App.created, QuerySortDirection.ascending).appFilters(on: req).all().map(to: [App.Overview].self) { apps in
-                    return overview(from: apps)
-                }
+                return try overviewQuery(teams: teams, on: req).filter(\App.teamId == teamId).all()
             }
         }
         
+        // Team apps info
         router.get("teams", DbCoreIdentifier.parameter, "apps", "info") { (req) -> Future<App.Info> in
-            let teamId = try req.parameter(DbCoreIdentifier.self)
+            let teamId = try req.parameters.next(DbCoreIdentifier.self)
             return try req.me.teams().flatMap(to: App.Info.self) { teams in
-                // TODO: Replace the below with GROUP BY query above once https://github.com/vapor/postgresql/issues/46 is fixed!!!!!!!
-                return try App.query(on: req).filter(\App.teamId ~~ teams.ids).filter(\App.teamId == teamId).appFilters(on: req).all().map(to: App.Info.self) { apps in
+                return try overviewQuery(teams: teams, on: req).filter(\App.teamId == teamId).all().map(to: App.Info.self) { apps in
                     var builds: Int = 0
-                    let data = overview(from: apps)
-                    data.forEach({ item in
+                    apps.forEach({ item in
                         builds += item.count
                     })
-                    let info = App.Info(teamId: teamId, apps: data.count, builds: builds)
+                    let info = App.Info(teamId: teamId, apps: apps.count, builds: builds)
                     return info
                 }
             }
         }
         
-        router.get("teams", DbCoreIdentifier.parameter, "apps") { (req) -> Future<[App.Overview]> in
-            let teamId = try req.parameter(DbCoreIdentifier.self)
-            return try req.me.teams().flatMap(to: [App.Overview].self) { teams in
-                guard teams.contains(teamId) else {
-                    throw ErrorsCore.HTTPError.notFound
-                }
-                // TODO: Add group by!!!!
-                return try App.query(on: req).group(.and) { and in
-                    try and.filter(\App.teamId ~~ teams.ids)
-                    try and.filter(\App.teamId == teamId)
-                }.appFilters(on: req).decode(App.Overview.self).all()
-            }
-        }
-        
+        // App detail
         router.get("apps", DbCoreIdentifier.parameter) { (req) -> Future<App> in
-            let appId = try req.parameter(DbCoreIdentifier.self)
+            let appId = try req.parameters.next(DbCoreIdentifier.self)
             return try req.me.teams().flatMap(to: App.self) { teams in
                 return try App.query(on: req).safeApp(appId: appId, teamIds: teams.ids).first().map(to: App.self) { app in
                     guard let app = app else {
@@ -174,8 +146,9 @@ class AppsController: Controller {
             }
         }
         
+        // App download auth
         router.get("apps", DbCoreIdentifier.parameter, "auth") { (req) -> Future<Response> in
-            let appId = try req.parameter(DbCoreIdentifier.self)
+            let appId = try req.parameters.next(DbCoreIdentifier.self)
             return try req.me.teams().flatMap(to: Response.self) { teams in
                 return try App.query(on: req).safeApp(appId: appId, teamIds: teams.ids).first().flatMap(to: Response.self) { app in
                     guard let app = app, let appId = app.id else {
@@ -194,6 +167,7 @@ class AppsController: Controller {
             }
         }
         
+        // App plist
         router.get("apps", "plist") { (req) -> Future<Response> in
             let token = try req.query.decode(DownloadKey.Token.self)
             return try DownloadKey.query(on: req).filter(\DownloadKey.token == token.token).filter(\DownloadKey.added >= Date().addMinute(n: -15)).first().flatMap(to: Response.self) { key in
@@ -207,7 +181,7 @@ class AppsController: Controller {
                         throw ErrorsCore.HTTPError.notFound
                     }
                     guard app.platform == .ios else {
-                        throw AppsError.invalidPlatform
+                        throw Error.invalidPlatform
                     }
                     let response = try req.response.basic(status: .ok)
                     response.http.headers = HTTPHeaders([("Content-Type", "application/xml; charset=utf-8")])
@@ -217,6 +191,7 @@ class AppsController: Controller {
             }
         }
         
+        // App file
         router.get("apps", "file") { (req) -> Future<Response> in
             let token = try req.query.decode(DownloadKey.Token.self)
             return try DownloadKey.query(on: req).filter(\DownloadKey.token == token.token).filter(\DownloadKey.added >= Date().addMinute(n: -15)).first().flatMap(to: Response.self) { key in
@@ -230,9 +205,8 @@ class AppsController: Controller {
                         throw ErrorsCore.HTTPError.notFound
                     }
                     guard app.platform == .ios else {
-                        throw AppsError.invalidPlatform
+                        throw Error.invalidPlatform
                     }
-//                    let response = try req.streamFile(at: app.appPath!.path)
                     let response = try req.response.basic(status: .ok)
                     response.http.headers = HTTPHeaders([("Content-Type", "\(app.platform.mime)"), ("Content-Disposition", "attachment; filename=\"\(app.name.safeText).\(app.platform.fileExtension)\"")])
                     let appData = try Data(contentsOf: app.appPath!, options: [])
@@ -242,8 +216,9 @@ class AppsController: Controller {
             }
         }
         
+        // Tags for app
         router.get("apps", DbCoreIdentifier.parameter, "tags") { (req) -> Future<Tags> in
-            let appId = try req.parameter(DbCoreIdentifier.self)
+            let appId = try req.parameters.next(DbCoreIdentifier.self)
             return try req.me.teams().flatMap(to: Tags.self) { teams in
                 return try App.query(on: req).safeApp(appId: appId, teamIds: teams.ids).first().flatMap(to: Tags.self) { app in
                     guard let app = app else {
@@ -254,8 +229,9 @@ class AppsController: Controller {
             }
         }
         
+        // Delete app
         router.delete("apps", DbCoreIdentifier.parameter) { (req) -> Future<Response> in
-            let appId = try req.parameter(DbCoreIdentifier.self)
+            let appId = try req.parameters.next(DbCoreIdentifier.self)
             return try req.me.teams().flatMap(to: Response.self) { teams in
                 return try App.query(on: req).safeApp(appId: appId, teamIds: teams.ids).first().flatMap(to: Response.self) { app in
                     guard let app = app else {
@@ -293,6 +269,7 @@ class AppsController: Controller {
             }
         }
         
+        // Upload app from CI with Upload API key
         router.post("apps") { (req) -> Future<Response> in
             guard let token = try? req.query.decode(UploadKey.Token.self) else {
                 throw ErrorsCore.HTTPError.missingAuthorizationData
@@ -306,8 +283,9 @@ class AppsController: Controller {
             }
         }
         
+        // Upload app from authenticated session (browser, app, etc ...)
         router.post("teams", UUID.parameter, "apps") { (req) -> Future<Response> in
-            let teamId = try req.parameter(DbCoreIdentifier.self)
+            let teamId = try req.parameters.next(DbCoreIdentifier.self)
             return try req.me.verifiedTeam(id: teamId).flatMap(to: Response.self) { (team) -> Future<Response> in
                 return upload(teamId: teamId, on: req)
             }
@@ -319,6 +297,7 @@ class AppsController: Controller {
 
 extension AppsController {
     
+    /// Shared upload method
     static func upload(teamId: DbCoreIdentifier, on req: Request) -> Future<Response> {
         return App.query(on: req).first().flatMap(to: Response.self) { (app) -> Future<Response> in
             // TODO: Change to copy file when https://github.com/vapor/core/pull/83 is done
@@ -371,6 +350,7 @@ extension AppsController {
         }
     }
     
+    /// Handle tags during upload
     static func handleTags(on req: Request, app: App) throws -> Future<Void> {
         if req.http.url.query != nil, let query = try? req.query.decode([String: String].self) {
             if let tags = query["tags"]?.split(separator: "|") {

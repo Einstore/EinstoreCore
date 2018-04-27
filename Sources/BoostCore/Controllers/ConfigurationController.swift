@@ -17,14 +17,14 @@ class ConfigurationController: Controller {
     
     static func boot(router: Router) throws {
         router.get("teams", DbCoreIdentifier.parameter, "config") { (req) -> Future<Configuration> in
-            let teamId = try req.parameter(DbCoreIdentifier.self)
+            let teamId = try req.parameters.next(DbCoreIdentifier.self)
             return try req.me.verifiedTeam(id: teamId).flatMap(to: Configuration.self) { team in
                 return try guaranteedConfig(for: teamId, on: req)
             }
         }
         
         router.post("teams", DbCoreIdentifier.parameter, "config") { (req) -> Future<Configuration> in
-            let teamId = try req.parameter(DbCoreIdentifier.self)
+            let teamId = try req.parameters.next(DbCoreIdentifier.self)
             return try req.content.decode(Configuration.self).flatMap(to: Configuration.self) { data in
                 return try req.me.verifiedTeam(id: teamId).flatMap(to: Configuration.self) { team in
                     return try guaranteedConfig(for: teamId, on: req).flatMap(to: Configuration.self) { configuration in
