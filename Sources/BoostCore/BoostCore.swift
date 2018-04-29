@@ -80,12 +80,12 @@ public class Boost {
         ApiAuthMiddleware.allowedGetUri.append("/info")
         ApiAuthMiddleware.allowedPostUri.append("/apps")
         
-        DbCore.migrationConfig.add(model: App.self, database: .db)
-        DbCore.migrationConfig.add(model: DownloadKey.self, database: .db)
-        DbCore.migrationConfig.add(model: Tag.self, database: .db)
-        DbCore.migrationConfig.add(model: AppTag.self, database: .db)
-        DbCore.migrationConfig.add(model: UploadKey.self, database: .db)
-        DbCore.migrationConfig.add(model: Configuration.self, database: .db)
+        DbCore.add(model: App.self, database: .db)
+        DbCore.add(model: DownloadKey.self, database: .db)
+        DbCore.add(model: Tag.self, database: .db)
+        DbCore.add(model: AppTag.self, database: .db)
+        DbCore.add(model: UploadKey.self, database: .db)
+        DbCore.add(model: Configuration.self, database: .db)
         
         try SettingsCore.configure(&config, &env, &services)
         

@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import ApiCore
+@testable import ApiCore
 import BoostCore
 import Vapor
 import VaporTestTools
@@ -21,7 +21,11 @@ extension TestableProperty where TestableType: Application {
             var boostConfig = BoostConfig()
             boostConfig.storageFileConfig.mainFolderPath = "/tmp/BoostTests/persistent"
             boostConfig.tempFileConfig.mainFolderPath = "/tmp/BoostTests/temporary"
-            boostConfig.database = DbCore.databaseConfig
+            
+            _ = ApiCore.configuration
+            ApiCore._configuration?.database.user = "test"
+            ApiCore._configuration?.database.database = "boost-test"
+            
             try! Boost.configure(boostConfig: &boostConfig, &config, &env, &services)
         }) { (router) in
             try? Boost.boot(router: router)

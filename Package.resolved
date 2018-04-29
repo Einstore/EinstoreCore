@@ -6,7 +6,7 @@
         "repositoryURL": "https://github.com/LiveUI/ApiCore.git",
         "state": {
           "branch": "master",
-          "revision": "dc8d2fc525a9a5e34742aec33086c2a1e7173755",
+          "revision": "693a1a299c6024f3278a0e938d515ecb9000df19",
           "version": null
         }
       },
@@ -87,7 +87,7 @@
         "repositoryURL": "https://github.com/LiveUI/DbCore.git",
         "state": {
           "branch": "master",
-          "revision": "d728a90b1ad4caacc59e884f634dd5bb3d16b9ee",
+          "revision": "bc5915fd38582eb29474bb0686ece295fb9474aa",
           "version": null
         }
       },
@@ -222,7 +222,7 @@
         "repositoryURL": "https://github.com/LiveUI/SettingsCore.git",
         "state": {
           "branch": "master",
-          "revision": "802b3b7f11b5f85f1c98558c792efb333b5b3769",
+          "revision": "0838e2b3202a92c1f48ea5eaecfe749b12493d50",
           "version": null
         }
       },
