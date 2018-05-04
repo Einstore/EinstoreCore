@@ -26,7 +26,7 @@ class Ipa: BaseExtractor, Extractor {
     
     // MARK: Processing
     
-    func process(teamId: DbCoreIdentifier) throws -> Promise<App> {
+    func process(teamId: DbCoreIdentifier, on req: Request) throws -> Promise<App> {
         let promise = request.eventLoop.newPromise(App.self)
         
         DispatchQueue.global().async {
@@ -34,7 +34,8 @@ class Ipa: BaseExtractor, Extractor {
                 try runAndPrint("unzip", "-o", self.file.path, "-d", self.archive.path)
                 try self.parse()
                 
-                let a = try self.app(platform: .ios, teamId: teamId)
+                // TODO: Make the following unblocking!!!
+                let a = try self.app(platform: .ios, teamId: teamId, on: req).wait()
                 promise.succeed(result: a)
             } catch {
                 promise.fail(error: error)

@@ -57,8 +57,6 @@ final public class UploadKey: DbCoreModel {
         
     }
     
-    public static var idKey: WritableKeyPath<UploadKey, DbCoreIdentifier?> = \UploadKey.id
-    
     public var id: DbCoreIdentifier?
     public var teamId: DbCoreIdentifier
     public var name: String

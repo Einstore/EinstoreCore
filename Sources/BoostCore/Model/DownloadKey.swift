@@ -50,8 +50,6 @@ final public class DownloadKey: DbCoreModel {
         }
     }
     
-    public static var idKey: WritableKeyPath<DownloadKey, DbCoreIdentifier?> = \DownloadKey.id
-    
     public var id: DbCoreIdentifier?
     public var appId: DbCoreIdentifier
     public var token: String

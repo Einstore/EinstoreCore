@@ -80,6 +80,7 @@ public class Boost {
         ApiAuthMiddleware.allowedGetUri.append("/info")
         ApiAuthMiddleware.allowedPostUri.append("/apps")
         
+        DbCore.add(model: Cluster.self, database: .db)
         DbCore.add(model: App.self, database: .db)
         DbCore.add(model: DownloadKey.self, database: .db)
         DbCore.add(model: Tag.self, database: .db)

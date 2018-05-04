@@ -37,8 +37,6 @@ final public class Configuration: DbCoreModel {
         public let android: String?
     }
     
-    public static var idKey: WritableKeyPath<Configuration, DbCoreIdentifier?> = \Configuration.id
-    
     public var id: DbCoreIdentifier?
     public var teamId: DbCoreIdentifier?
     public var theme: Theme

@@ -87,9 +87,8 @@ class AppsController: Controller {
     }
     
     /// Overview app query
-    static func overviewQuery(teams: Teams, on req: Request) throws -> QueryBuilder<App, App.Overview> {
-        let q = try App.query(on: req).decode(App.Overview.self).resetColumns().select("identifier", "platform")
-            .computed((function: "COUNT", columns: ["id"], key: "count")).filter(\App.teamId ~~ teams.ids).appFilters(on: req).group(by: \App.identifier).group(by: \App.platform).printSqlString()
+    static func overviewQuery(teams: Teams, on req: Request) throws -> QueryBuilder<Cluster, Cluster.Public> {
+        let q = try Cluster.query(on: req).filter(\Cluster.teamId ~~ teams.ids).decode(Cluster.Public.self).paginate(on: req).printSqlString()
         return q
     }
     
@@ -103,18 +102,17 @@ class AppsController: Controller {
         }
         
         // Overview for apps in all teams
-        router.get("apps", "overview") { (req) -> Future<[App.Overview]> in
-            return try req.me.teams().flatMap(to: [App.Overview].self) { teams in
-                // TODO: Fix Fluent and remove resetColumns (Fluent shouldn't be setting .all as default value)
+        router.get("apps", "overview") { (req) -> Future<[Cluster.Public]> in
+            return try req.me.teams().flatMap(to: [Cluster.Public].self) { teams in
                 return try overviewQuery(teams: teams, on: req).all()
             }
         }
         
         // Overview for apps in selected team
-        router.get("teams", DbCoreIdentifier.parameter, "apps", "overview") { (req) -> Future<[App.Overview]> in
+        router.get("teams", DbCoreIdentifier.parameter, "apps", "overview") { (req) -> Future<[Cluster.Public]> in
             let teamId = try req.parameters.next(DbCoreIdentifier.self)
-            return try req.me.teams().flatMap(to: [App.Overview].self) { teams in
-                return try overviewQuery(teams: teams, on: req).filter(\App.teamId == teamId).all()
+            return try req.me.teams().flatMap(to: [Cluster.Public].self) { teams in
+                return try overviewQuery(teams: teams, on: req).filter(\Cluster.teamId == teamId).all()
             }
         }
         
@@ -122,10 +120,10 @@ class AppsController: Controller {
         router.get("teams", DbCoreIdentifier.parameter, "apps", "info") { (req) -> Future<App.Info> in
             let teamId = try req.parameters.next(DbCoreIdentifier.self)
             return try req.me.teams().flatMap(to: App.Info.self) { teams in
-                return try overviewQuery(teams: teams, on: req).filter(\App.teamId == teamId).all().map(to: App.Info.self) { apps in
+                return try overviewQuery(teams: teams, on: req).filter(\Cluster.teamId == teamId).all().map(to: App.Info.self) { apps in
                     var builds: Int = 0
                     apps.forEach({ item in
-                        builds += item.count
+                        builds += item.appCount
                     })
                     let info = App.Info(teamId: teamId, apps: apps.count, builds: builds)
                     return info
@@ -331,7 +329,7 @@ extension AppsController {
                     
                     let extractor: Extractor = try BaseExtractor.decoder(file: tempFilePath.path, platform: platform, on: req)
                     do {
-                        let promise: Promise<App> = try extractor.process(teamId: teamId)
+                        let promise: Promise<App> = try extractor.process(teamId: teamId, on: req)
                         return promise.futureResult.flatMap(to: Response.self) { (app) -> Future<Response> in
                             return app.save(on: req).flatMap(to: Response.self) { (app) -> Future<Response> in
                                 return try extractor.save(app, request: req, Boost.storageFileHandler).flatMap(to: Response.self) { (_) -> Future<Response> in

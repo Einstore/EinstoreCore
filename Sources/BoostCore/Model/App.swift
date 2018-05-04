@@ -78,38 +78,6 @@ final public class App: DbCoreModel {
         
     }
     
-    public struct Overview: Content {
-        
-//        public var latestName: String
-//        public var latestVersion: String
-//        public var latestBuild: String
-        public var platform: Platform
-        public var identifier: String
-        public var count: Int
-        
-        enum CodingKeys: String, CodingKey {
-//            case latestName = "latest_name"
-//            case latestVersion = "latest_version"
-//            case latestBuild = "latest_build"
-            case platform
-            case identifier
-            case count
-        }
-        
-//        static func query(teams: Teams, with parameters: [PostgreSQLDataConvertible] = [], on connector: PostgreSQLConnection) throws -> Future<[Overview]> {
-//            return try connector.query("SELECT platform, identifier, COUNT(id) as count FROM apps WHERE team_id = $1 GROUP BY platform, identifier", [teams.ids]).map(to: [Overview].self) { data in
-//                return try data.map { row in
-//                    let p: String = try row.firstValue(forColumn: "platform")!.decode(String.self)
-//                    return try Overview(
-//                        platform: App.Platform.init(rawValue: p)!,
-//                        identifier: row.firstValue(forColumn: "identifier")!.decode(String.self),
-//                        count: row.firstValue(forColumn: "count")!.decode(Int.self)
-//                    )
-//                }
-//            }
-//        }
-    }
-    
     public struct Info: Content {
         
         public var teamId: DbCoreIdentifier
@@ -122,6 +90,7 @@ final public class App: DbCoreModel {
     
     public var id: DbCoreIdentifier?
     public var teamId: DbCoreIdentifier?
+    public var clusterId: DbCoreIdentifier
     public var name: String
     public var identifier: String
     public var version: String
@@ -135,6 +104,7 @@ final public class App: DbCoreModel {
     enum CodingKeys: String, CodingKey {
         case id
         case teamId = "team_id"
+        case clusterId = "cluster_id"
         case name
         case identifier
         case version
@@ -147,9 +117,10 @@ final public class App: DbCoreModel {
     }
 
 
-    public init(id: DbCoreIdentifier? = nil, teamId: DbCoreIdentifier?, name: String, identifier: String, version: String, build: String, platform: Platform, info: String? = nil, hasIcon: Bool = false) {
+    public init(id: DbCoreIdentifier? = nil, teamId: DbCoreIdentifier? = nil, clusterId: DbCoreIdentifier, name: String, identifier: String, version: String, build: String, platform: Platform, info: String? = nil, hasIcon: Bool = false) {
         self.id = id
         self.teamId = teamId
+        self.clusterId = clusterId
         self.name = name
         self.identifier = identifier
         self.version = version
@@ -175,6 +146,10 @@ extension App {
         return children(\.appId)
     }
     
+    var cluster: Parent<App, Cluster> {
+        return parent(\App.clusterId)
+    }
+    
 }
 
 // MARK: - Migrations
@@ -185,6 +160,7 @@ extension App: Migration {
         return Database.create(self, on: connection) { (schema) in
             schema.addField(type: DbCoreColumnType.id(), name: CodingKeys.id.stringValue, isIdentifier: true)
             schema.addField(type: DbCoreColumnType.id(), name: CodingKeys.teamId.stringValue)
+            schema.addField(type: DbCoreColumnType.id(), name: CodingKeys.clusterId.stringValue)
             schema.addField(type: DbCoreColumnType.varChar(140), name: CodingKeys.name.stringValue)
             schema.addField(type: DbCoreColumnType.varChar(140), name: CodingKeys.identifier.stringValue)
             schema.addField(type: DbCoreColumnType.varChar(20), name: CodingKeys.version.stringValue)

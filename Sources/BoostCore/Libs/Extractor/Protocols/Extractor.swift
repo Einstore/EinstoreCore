@@ -10,6 +10,7 @@ import Vapor
 import ErrorsCore
 import ApiCore
 import DbCore
+import Fluent
 
 
 enum ExtractorError: FrontendError {
@@ -55,7 +56,7 @@ protocol Extractor {
     var versionLong: String? { get }
     
     init(file: URL, request: Request) throws
-    func process(teamId: DbCoreIdentifier) throws -> Promise<App>
+    func process(teamId: DbCoreIdentifier, on: Request) throws -> Promise<App>
     
 }
 
@@ -69,13 +70,30 @@ extension Extractor {
         return url
     }
     
-    func app(platform: App.Platform, teamId: DbCoreIdentifier) throws -> App {
+    func app(platform: App.Platform, teamId: DbCoreIdentifier, on req: Request) throws -> Future<App> {
         guard let appName = appName, let appIdentifier = appIdentifier else {
             throw ExtractorError.invalidAppContent
         }
-        // TODO: Add info which will be all the decompiled data together!!
-        let app = App(teamId: teamId, name: appName, identifier: appIdentifier, version: versionLong ?? "0.0", build: versionShort ?? "0", platform: platform, hasIcon: (iconData != nil))
-        return app
+        
+        return try Cluster.query(on: req).filter(\Cluster.identifier == appIdentifier).filter(\Cluster.platform == platform).first().flatMap(to: App.self) { cluster in
+            let app = App(teamId: teamId, clusterId: UUID(), name: appName, identifier: appIdentifier, version: self.versionLong ?? "0.0", build: self.versionShort ?? "0", platform: platform, hasIcon: (self.iconData != nil))
+            guard let cluster = cluster, let clusterId = cluster.id else {
+                let cluster = Cluster(latestApp: app)
+                return cluster.save(on: req).map(to: App.self) { cluster in
+                    app.clusterId = cluster.id!
+                    return app
+                }
+            }
+            app.clusterId = clusterId
+            cluster.latestAppName = app.name
+            cluster.latestAppVersion = app.version
+            cluster.latestAppBuild = app.build
+            cluster.latestAppAdded = app.created
+            cluster.appCount += 1
+            return cluster.save(on: req).map(to: App.self) { cluster in
+                return app
+            }
+        }
     }
     
     func save(_ app: App, request req: Request, _ fileHandler: FileHandler) throws -> Future<Void> {

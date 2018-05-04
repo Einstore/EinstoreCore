@@ -17,8 +17,6 @@ public typealias Tags = [Tag]
 
 final public class Tag: DbCoreModel {
     
-    public static var idKey: WritableKeyPath<Tag, DbCoreIdentifier?> = \Tag.id
-    
     public var id: DbCoreIdentifier?
     public var name: String
     public var identifier: String

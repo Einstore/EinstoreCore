@@ -147,7 +147,7 @@ class Apk: BaseExtractor, Extractor {
         }
     }
     
-    func process(teamId: DbCoreIdentifier) throws -> Promise<App> {
+    func process(teamId: DbCoreIdentifier, on req: Request) throws -> Promise<App> {
         let promise = request.eventLoop.newPromise(App.self)
         
         DispatchQueue.global().async {
@@ -163,7 +163,8 @@ class Apk: BaseExtractor, Extractor {
                 try self.getOtherApplicationInfo()
                 try self.getApplicationIcon()
                 
-                let a = try self.app(platform: .android, teamId: teamId)
+                // TODO: Make the following unblocking!!!
+                let a = try self.app(platform: .android, teamId: teamId, on: req).wait()
                 promise.succeed(result: a)
             } catch {
                 promise.fail(error: error)
