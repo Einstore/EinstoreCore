@@ -71,13 +71,19 @@ class AppsController: Controller {
     /// Error
     enum Error: FrontendError {
         case invalidPlatform
+        case clusterInconsistency
         
         var code: String {
             return "app_error"
         }
         
         var description: String {
-            return "Unsupported platform"
+            switch self {
+            case .invalidPlatform:
+                return "Unsupported platform"
+            case .clusterInconsistency:
+                return "Missing or corrupted app cluster data"
+            }
         }
         
         var status: HTTPStatus {
@@ -88,7 +94,7 @@ class AppsController: Controller {
     
     /// Overview app query
     static func overviewQuery(teams: Teams, on req: Request) throws -> QueryBuilder<Cluster, Cluster.Public> {
-        let q = try Cluster.query(on: req).filter(\Cluster.teamId ~~ teams.ids).decode(Cluster.Public.self).paginate(on: req).printSqlString()
+        let q = try Cluster.query(on: req).filter(\Cluster.teamId ~~ teams.ids).decode(Cluster.Public.self).paginate(on: req)
         return q
     }
     
@@ -235,33 +241,57 @@ class AppsController: Controller {
                     guard let app = app else {
                         throw ErrorsCore.HTTPError.notFound
                     }
-                    return try app.tags.query(on: req).all().flatMap(to: Response.self) { tags in
-                        var futures: [Future<Void>] = []
-                        
-                        // Delete all tags
-                        try tags.forEach({ tag in
-                            let tagFuture = try tag.apps.query(on: req).count().flatMap(to: Void.self) { count in
-                                if count <= 1 {
-                                    return tag.delete(on: req).flatten()
-                                }
-                                else {
-                                    return app.tags.detach(tag, on: req).flatten()
-                                }
-                            }
-                            futures.append(tagFuture)
-                        })
-                        
-                        // Delete app
-                        futures.append(app.delete(on: req).flatten())
-                        
-                        // Delete all files
-                        guard let path = app.targetFolderPath else {
-                            return try req.eventLoop.newSucceededFuture(result: req.response.internalServerError(message: "Unable to delete files"))
+                    return try Cluster.query(on: req).filter(\Cluster.identifier == app.identifier).filter(\Cluster.platform == app.platform).first().flatMap(to: Response.self) { cluster in
+                        guard let cluster = cluster else {
+                            throw Error.clusterInconsistency
                         }
-                        let deleteFuture = try Boost.storageFileHandler.delete(url: path, on: req)
-                        futures.append(deleteFuture)
-                        
-                        return try futures.flatten(on: req).asResponse(to: req)
+                        return try app.tags.query(on: req).all().flatMap(to: Response.self) { tags in
+                            var futures: [Future<Void>] = []
+                            // TODO: Refactor and split following into smaller methods!!
+                            
+                            // Handle cluster data
+                            if cluster.appCount <= 1 {
+                                futures.append(cluster.delete(on: req).flatten())
+                            } else {
+                                cluster.appCount -= 1
+                                let save = try App.query(on: req).sort(\App.created, .descending).first().flatMap(to: Void.self) { app in
+                                    guard let app = app else {
+                                        throw Error.clusterInconsistency
+                                    }
+                                    cluster.latestAppName = app.name
+                                    cluster.latestAppVersion = app.version
+                                    cluster.latestAppBuild = app.build
+                                    cluster.latestAppAdded = app.created
+                                    return cluster.save(on: req).flatten()
+                                }
+                                futures.append(save)
+                            }
+                            
+                            // Delete all tags
+                            try tags.forEach({ tag in
+                                let tagFuture = try tag.apps.query(on: req).count().flatMap(to: Void.self) { count in
+                                    if count <= 1 {
+                                        return tag.delete(on: req).flatten()
+                                    }
+                                    else {
+                                        return app.tags.detach(tag, on: req).flatten()
+                                    }
+                                }
+                                futures.append(tagFuture)
+                            })
+                            
+                            // Delete app
+                            futures.append(app.delete(on: req).flatten())
+                            
+                            // Delete all files
+                            guard let path = app.targetFolderPath else {
+                                return try req.eventLoop.newSucceededFuture(result: req.response.internalServerError(message: "Unable to delete files"))
+                            }
+                            let deleteFuture = try Boost.storageFileHandler.delete(url: path, on: req)
+                            futures.append(deleteFuture)
+                            
+                            return try futures.flatten(on: req).asResponse(to: req)
+                        }
                     }
                 }
             }
