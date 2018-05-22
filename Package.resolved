@@ -6,7 +6,7 @@
         "repositoryURL": "https://github.com/LiveUI/ApiCore.git",
         "state": {
           "branch": "master",
-          "revision": "6d4c24a98ee258238cc8ae47c7b7c065965014ad",
+          "revision": "9c8ad8f8add82683feb402e0099a71498fa37566",
           "version": null
         }
       },
@@ -305,6 +305,15 @@
           "branch": null,
           "revision": "b038d13ef40ce6d11aa3599181e45f099814a053",
           "version": "2.2.0"
+        }
+      },
+      {
+        "package": "SwiftResources",
+        "repositoryURL": "https://github.com/LiveUI/SwiftResources.git",
+        "state": {
+          "branch": "master",
+          "revision": "26a478e6e2358fe505f55748c7bf847c8c67cdc8",
+          "version": null
         }
       },
       {
