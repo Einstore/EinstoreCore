@@ -10,21 +10,47 @@ import Vapor
 import ApiCore
 import DbCore
 import SwiftShell
+import ErrorsCore
 
 
+/// APK Extractor
 class Apk: BaseExtractor, Extractor {
     
-    enum ApkExtractorError: Error {
+    /// Error
+    enum Error: FrontendError {
+        
+        /// Missing manifest file
         case missingManifestFile
+        
+        /// Error code
+        var identifier: String {
+            return "extractor.apk.missing_mainifest_file"
+        }
+        
+        /// Reason to fail
+        var reason: String {
+            return "Missing manifest file"
+        }
+        
+        /// Error HTTP status code
+        var status: HTTPStatus {
+            return .preconditionFailed
+        }
+        
     }
     
+    /// Manifest store
     private(set) var manifest: ApkManifest?
     
+    /// App permissions store
     private(set) var appPermissions: [String] = []
+    
+    /// App features store
     private(set) var appFeatures: [String] = []
     
     // MARK: URL's
     
+    /// Manifest file URL
     var manifestFileUrl: URL {
         get {
             var manifestFileUrl: URL = extractedApkFolder
@@ -33,6 +59,7 @@ class Apk: BaseExtractor, Extractor {
         }
     }
     
+    /// Folder with extracted APK data
     var extractedApkFolder: URL {
         get {
             var url: URL = archive
@@ -41,7 +68,8 @@ class Apk: BaseExtractor, Extractor {
         }
     }
     
-    var apktoolUrl: URL {
+    /// Path to the APK extractor
+    var extractorUrl: URL {
         get {
             var url: URL = binUrl
             url.appendPathComponent("apktool_2.3.1.jar")
@@ -49,6 +77,8 @@ class Apk: BaseExtractor, Extractor {
         }
     }
     
+    // TODO: Replace with XMLCoder which is already used in S3!!!
+    /// XML to JSOJ Converter
     var xml2jsonUrl: URL {
         get {
             var url: URL = binUrl
@@ -59,6 +89,7 @@ class Apk: BaseExtractor, Extractor {
     
     // MARK: Parsing
     
+    /// Parse application name
     private func getApplicationName() throws {
         var pathUrl: URL = extractedApkFolder
         pathUrl.appendPathComponent("res")
@@ -85,12 +116,14 @@ class Apk: BaseExtractor, Extractor {
         }
     }
     
+    /// Parse additional application info
     private func getOtherApplicationInfo() throws {
         appIdentifier = manifest?.manifest.application.identifier ?? manifest?.manifest.package
         versionLong = manifest?.manifest.platformBuildVersionName
         versionShort = manifest?.manifest.platformBuildVersionCode
     }
     
+    /// Parse application icon info & icon itself
     private func getApplicationIcon() throws {
         appIconId = manifest?.manifest.application.icon
         if appIconId == nil {
@@ -126,11 +159,13 @@ class Apk: BaseExtractor, Extractor {
     }
     
     private var appIconId: String?
+    
     private var appNameId: String?
     
+    /// Parse manifest file
     func parseManifest() throws {
         guard FileManager.default.fileExists(atPath: manifestFileUrl.path) else {
-            throw ApkExtractorError.missingManifestFile
+            throw Error.missingManifestFile
         }
         
         let xmlUrl = archive.appendingPathComponent("Decoded/AndroidManifest.xml")
@@ -147,13 +182,14 @@ class Apk: BaseExtractor, Extractor {
         }
     }
     
+    /// Process app
     func process(teamId: DbCoreIdentifier, on req: Request) throws -> Promise<App> {
         let promise = request.eventLoop.newPromise(App.self)
         
         DispatchQueue.global().async {
             do {
                 // Extract archive
-                try runAndPrint("java", "-jar", self.apktoolUrl.path, "d", "-sf", self.file.path, "-o", self.extractedApkFolder.path)
+                try runAndPrint("java", "-jar", self.extractorUrl.path, "d", "-sf", self.file.path, "-o", self.extractedApkFolder.path)
                 
                 // Parse manifest file
                 try self.parseManifest()

@@ -70,14 +70,25 @@ class AppsController: Controller {
     
     /// Error
     enum Error: FrontendError {
+        
+        /// Invalid platform
         case invalidPlatform
+        
+        /// App cluster inconsistent
         case clusterInconsistency
         
-        var code: String {
-            return "app_error"
+        /// Error code
+        var identifier: String {
+            switch self {
+            case .invalidPlatform:
+                return "boost.app.invalid_platform"
+            case .clusterInconsistency:
+                return "boost.app.cluster_inconsistency"
+            }
         }
         
-        var description: String {
+        /// Error reason
+        var reason: String {
             switch self {
             case .invalidPlatform:
                 return "Unsupported platform"
@@ -86,6 +97,7 @@ class AppsController: Controller {
             }
         }
         
+        /// Error HTTP status code
         var status: HTTPStatus {
             return .conflict
         }

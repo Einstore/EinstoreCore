@@ -74,8 +74,8 @@ extension Configuration: Migration {
     
     public static func prepare(on connection: DbCoreConnection) -> Future<Void> {
         return Database.create(self, on: connection) { (schema) in
-            schema.addField(type: DbCoreColumnType.id(), name: CodingKeys.id.stringValue, isIdentifier: true)
-            schema.addField(type: DbCoreColumnType.id(), name: CodingKeys.teamId.stringValue)
+            try schema.field(for: \Configuration.id)
+            try schema.field(for: \Configuration.teamId)
             schema.addField(type: PostgreSQLColumn(type: .jsonb), name: CodingKeys.theme.stringValue)
             schema.addField(type: PostgreSQLColumn(type: .jsonb), name: CodingKeys.apps.stringValue, isOptional: true)
         }

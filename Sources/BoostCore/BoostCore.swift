@@ -31,7 +31,7 @@ public class Boost {
     ]
     
     public static func boot(router: Router) throws {
-        try ApiCore.boot(router: router)
+        try ApiCoreBase.boot(router: router)
         try SettingsCore.boot(router: router)
         
         for c in controllers {
@@ -90,9 +90,9 @@ public class Boost {
         
         try SettingsCore.configure(&config, &env, &services)
         
-        try ApiCore.configure(&config, &env, &services)
+        try ApiCoreBase.configure(&config, &env, &services)
         
-        ApiCore.installFutures.append({ req in
+        ApiCoreBase.installFutures.append({ req in
             return try Install.make(on: req)
         })
     }

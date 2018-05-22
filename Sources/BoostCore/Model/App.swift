@@ -96,8 +96,8 @@ final public class App: DbCoreModel {
     public var version: String
     public var build: String
     public var platform: Platform
-    public var created: Date?
-    public var modified: Date?
+    public var created: Date
+    public var modified: Date
     public var info: String?
     public var hasIcon: Bool
     
@@ -158,18 +158,18 @@ extension App: Migration {
     
     public static func prepare(on connection: DbCoreConnection) -> Future<Void> {
         return Database.create(self, on: connection) { (schema) in
-            schema.addField(type: DbCoreColumnType.id(), name: CodingKeys.id.stringValue, isIdentifier: true)
-            schema.addField(type: DbCoreColumnType.id(), name: CodingKeys.teamId.stringValue)
-            schema.addField(type: DbCoreColumnType.id(), name: CodingKeys.clusterId.stringValue)
+            try schema.field(for: \App.id)
+            try schema.field(for: \App.teamId)
+            try schema.field(for: \App.clusterId)
             schema.addField(type: DbCoreColumnType.varChar(140), name: CodingKeys.name.stringValue)
             schema.addField(type: DbCoreColumnType.varChar(140), name: CodingKeys.identifier.stringValue)
             schema.addField(type: DbCoreColumnType.varChar(20), name: CodingKeys.version.stringValue)
             schema.addField(type: DbCoreColumnType.varChar(20), name: CodingKeys.build.stringValue)
             schema.addField(type: DbCoreColumnType.varChar(10), name: CodingKeys.platform.stringValue)
-            schema.addField(type: DbCoreColumnType.datetime(), name: CodingKeys.created.stringValue)
-            schema.addField(type: DbCoreColumnType.datetime(), name: CodingKeys.modified.stringValue)
+            try schema.field(for: \App.created)
+            try schema.field(for: \App.modified)
             schema.addField(type: DbCoreColumnType.text(), name: CodingKeys.info.stringValue, isOptional: true)
-            schema.addField(type: DbCoreColumnType.bool(), name: CodingKeys.hasIcon.stringValue)
+            try schema.field(for: \App.hasIcon)
         }
     }
     

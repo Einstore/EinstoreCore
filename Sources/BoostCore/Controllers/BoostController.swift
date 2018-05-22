@@ -13,23 +13,31 @@ import ApiCore
 
 public class BoostController: Controller {
     
-    enum Problem: FrontendError {
+    /// BoostController error
+    enum Error: FrontendError {
+        
+        /// Installation is required
         case installMissing
         
-        var code: String {
-            return "boost_error"
+        /// Error code
+        var identifier: String {
+            return "boost.install_needed"
         }
         
-        var description: String {
+        /// Reason for failure
+        var reason: String {
             return "Admin team is missing! Have you run `/install` first?"
         }
         
+        /// Errors HTTP status code
         var status: HTTPStatus {
             return .internalServerError
         }
     }
-
+    
+    /// Boot controller
     public static func boot(router: Router) throws {
+        // Get server info
         router.get("info") { req -> Future<Response> in
             let info: [String: String] = [
                 "name": Environment.get("BOOST_NAME") ?? "Boost",
@@ -39,10 +47,11 @@ public class BoostController: Controller {
             return response
         }
         
+        // Install demo data
         router.get("demo") { (req)->Future<Response> in
             return Team.query(on: req).first().flatMap(to: Response.self) { team in
                 guard let team = team else {
-                    throw Problem.installMissing
+                    throw Error.installMissing
                 }
                 var futures: [Future<Void>] = []
                 // Install apps

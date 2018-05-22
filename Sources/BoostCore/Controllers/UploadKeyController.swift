@@ -44,7 +44,7 @@ class UploadKeyController: Controller {
                 }
             }
         }
-    
+        
         router.post("teams", DbCoreIdentifier.parameter, "keys") { (req) -> Future<Response> in
             let teamId = try req.parameters.next(DbCoreIdentifier.self)
             return try req.me.verifiedTeam(id: teamId).flatMap(to: Response.self) { team in

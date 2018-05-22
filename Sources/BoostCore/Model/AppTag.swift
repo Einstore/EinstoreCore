@@ -24,10 +24,6 @@ public final class AppTag: ModifiablePivot, DbCoreModel {
         return \.tagId
     }
     
-    public static var idKey: WritableKeyPath<AppTag, DbCoreIdentifier?> {
-        return \.id
-    }
-    
     public var id: DbCoreIdentifier?
     public var appId: DbCoreIdentifier
     public var tagId: DbCoreIdentifier
@@ -39,7 +35,6 @@ public final class AppTag: ModifiablePivot, DbCoreModel {
         tagId = try right.requireID()
     }
     
-
 }
 
 // MARK: - Migrations

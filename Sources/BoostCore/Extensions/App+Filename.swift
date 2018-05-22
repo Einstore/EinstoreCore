@@ -20,7 +20,7 @@ extension App {
     }
     
     public var targetFolderPath: URL? {
-        guard let id = self.id, let created = self.created else {
+        guard let id = self.id else {
             return nil
         }
         return URL(fileURLWithPath: Boost.config.storageFileConfig.mainFolderPath)

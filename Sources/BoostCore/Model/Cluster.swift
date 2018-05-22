@@ -54,7 +54,7 @@ final public class Cluster: DbCoreModel {
     public var latestAppName: String
     public var latestAppVersion: String
     public var latestAppBuild: String
-    public var latestAppAdded: Date?
+    public var latestAppAdded: Date
     public var appCount: Int
     public var platform: App.Platform
     public var identifier: String
@@ -101,12 +101,12 @@ extension Cluster: Migration {
     
     public static func prepare(on connection: DbCoreConnection) -> Future<Void> {
         return Database.create(self, on: connection) { (schema) in
-            schema.addField(type: DbCoreColumnType.id(), name: CodingKeys.id.stringValue, isIdentifier: true)
-            schema.addField(type: DbCoreColumnType.id(), name: CodingKeys.teamId.stringValue, isOptional: true)
+            try schema.field(for: \Cluster.id)
+            try schema.field(for: \Cluster.teamId)
             schema.addField(type: DbCoreColumnType.varChar(140), name: CodingKeys.latestAppName.stringValue)
             schema.addField(type: DbCoreColumnType.varChar(20), name: CodingKeys.latestAppVersion.stringValue)
             schema.addField(type: DbCoreColumnType.varChar(20), name: CodingKeys.latestAppBuild.stringValue)
-            schema.addField(type: DbCoreColumnType.datetime(), name: CodingKeys.latestAppAdded.stringValue, isOptional: true)
+            try schema.field(for: \Cluster.latestAppAdded)
             schema.addField(type: DbCoreColumnType.bigInt(), name: CodingKeys.appCount.stringValue)
             schema.addField(type: DbCoreColumnType.varChar(10), name: CodingKeys.platform.stringValue)
             schema.addField(type: DbCoreColumnType.varChar(140), name: CodingKeys.identifier.stringValue)

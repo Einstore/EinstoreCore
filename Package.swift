@@ -12,6 +12,7 @@ let package = Package(
         .package(url: "https://github.com/vapor/fluent.git", from: "3.0.0-rc.2"),
         .package(url: "https://github.com/vapor/fluent-postgresql.git", from: "1.0.0-rc.2"),
         .package(url: "https://github.com/kareman/SwiftShell.git", from: "4.0.2"),
+        .package(url: "https://github.com/LiveUI/S3.git", .branch("master")),
         .package(url: "https://github.com/LiveUI/ErrorsCore.git", .branch("master")),
         .package(url: "https://github.com/LiveUI/DbCore.git", .branch("master")),
         .package(url: "https://github.com/LiveUI/ApiCore.git", .branch("master")),
@@ -41,7 +42,8 @@ let package = Package(
             "DbCore",
             "SwiftShell",
             "MailCore",
-            "SettingsCore"
+            "SettingsCore",
+            "S3"
             ]
         ),
         .target(

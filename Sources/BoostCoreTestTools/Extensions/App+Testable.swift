@@ -18,7 +18,9 @@ extension TestableProperty where TestableType == App {
     
     @discardableResult public static func create(team: Team, name: String, identifier: String? = nil, version: String, build: String, platform: App.Platform, on app: Application) -> App {
         let req = app.testable.fakeRequest()
-        let object = App(teamId: team.id!, name: name, identifier: (identifier ?? name.safeText), version: version, build: build, platform: platform)
+        // TODO: Fix cluster ID!!!!
+        fatalError("Fix cluster ID!")
+        let object = App(teamId: team.id!, clusterId: UUID(), name: name, identifier: (identifier ?? name.safeText), version: version, build: build, platform: platform)
         return try! object.save(on: req).wait()
     }
     

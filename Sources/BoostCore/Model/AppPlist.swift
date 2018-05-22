@@ -10,24 +10,8 @@ import Vapor
 import ErrorsCore
 
 
+/// Applications Info.plist data struct
 public struct AppPlist: Codable {
-    
-    enum AppPlistError: FrontendError {
-        case missingServerUrl
-
-        var code: String {
-            return "app_plist"
-        }
-        
-        var description: String {
-            return "Unknown server url"
-        }
-        
-        var status: HTTPStatus {
-            return .internalServerError
-        }
-        
-    }
     
     public struct Item: Codable {
         

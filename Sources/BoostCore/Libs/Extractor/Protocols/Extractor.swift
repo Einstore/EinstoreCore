@@ -13,15 +13,31 @@ import DbCore
 import Fluent
 
 
+/// Extractor error
 enum ExtractorError: FrontendError {
+    
+    /// Unsupported file
     case unsupportedFile
+    
+    /// Invalid app content
     case invalidAppContent
+    
+    /// Error saving file
     case errorSavingFile
     
-    public var code: String {
-        return "app_error"
+    /// Error code
+    public var identifier: String {
+        switch self {
+        case .unsupportedFile:
+            return "boost.extractor.unsupported_file"
+        case .invalidAppContent:
+            return "boost.extractor.invalid_app_content"
+        case .errorSavingFile:
+            return "boost.extractor.error_saving_file"
+        }
     }
     
+    /// HTTP error status code
     public var status: HTTPStatus {
         switch self {
         default:
@@ -29,7 +45,8 @@ enum ExtractorError: FrontendError {
         }
     }
     
-    public var description: String {
+    /// Reason for failure
+    public var reason: String {
         switch self {
         case .unsupportedFile:
             return "Invalid file type"
@@ -42,20 +59,37 @@ enum ExtractorError: FrontendError {
 }
 
 
+/// Extractor protocol
 protocol Extractor {
     
+    /// Request
     var request: Request { get }
     
+    /// File
     var file: URL { get }
+    
+    /// Archive
     var archive: URL { get }
     
+    /// Extracted icon data
     var iconData: Data? { get }
+    
+    /// Parsed app name
     var appName: String? { get }
+    
+    /// Parsed app identifier (bundle ID)
     var appIdentifier: String? { get }
+    
+    /// Short version (build number usually)
     var versionShort: String? { get }
+    
+    /// Long version (version, usually like 1.2.3)
     var versionLong: String? { get }
     
+    /// Initializer
     init(file: URL, request: Request) throws
+    
+    /// Process the file
     func process(teamId: DbCoreIdentifier, on: Request) throws -> Promise<App>
     
 }
@@ -63,6 +97,8 @@ protocol Extractor {
 
 extension Extractor {
     
+    /// System bin URL
+    /// Contains all commandline utilities
     var binUrl: URL {
         let config = DirectoryConfig.detect()
         var url: URL = URL(fileURLWithPath: config.workDir).appendingPathComponent("Resources")
@@ -70,6 +106,7 @@ extension Extractor {
         return url
     }
     
+    /// Compile an app & it's cluster from parsed data
     func app(platform: App.Platform, teamId: DbCoreIdentifier, on req: Request) throws -> Future<App> {
         guard let appName = appName, let appIdentifier = appIdentifier else {
             throw ExtractorError.invalidAppContent
@@ -96,6 +133,7 @@ extension Extractor {
         }
     }
     
+    /// Save app into the DB
     func save(_ app: App, request req: Request, _ fileHandler: FileHandler) throws -> Future<Void> {
         var saves: [Future<Void>] = []
         guard let path = app.appPath, let folder = app.targetFolderPath else {
@@ -116,6 +154,7 @@ extension Extractor {
     
     // MARK: Cleaning
     
+    /// Clean temp files
     func cleanUp() throws {
         _ = try Boost.tempFileHandler.delete(url: archive, on: request)
     }

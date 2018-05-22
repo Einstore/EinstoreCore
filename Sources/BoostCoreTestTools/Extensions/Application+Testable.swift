@@ -22,9 +22,9 @@ extension TestableProperty where TestableType: Application {
             boostConfig.storageFileConfig.mainFolderPath = "/tmp/BoostTests/persistent"
             boostConfig.tempFileConfig.mainFolderPath = "/tmp/BoostTests/temporary"
             
-            _ = ApiCore.configuration
-            ApiCore._configuration?.database.user = "test"
-            ApiCore._configuration?.database.database = "boost-test"
+            _ = ApiCoreBase.configuration
+            ApiCoreBase._configuration?.database.user = "test"
+            ApiCoreBase._configuration?.database.database = "boost-test"
             
             try! Boost.configure(boostConfig: &boostConfig, &config, &env, &services)
         }) { (router) in
