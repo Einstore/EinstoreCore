@@ -15,6 +15,7 @@ import ErrorsCore
 import SwiftShell
 import SQL
 import DatabaseKit
+import FileCore
 
 
 /// Object holding main filters
@@ -296,12 +297,13 @@ class AppsController: Controller {
                             futures.append(app.delete(on: req).flatten())
                             
                             // Delete all files
-                            guard let path = app.targetFolderPath else {
+                            guard let path = app.targetFolderPath?.path else {
                                 return try req.eventLoop.newSucceededFuture(result: req.response.internalServerError(message: "Unable to delete files"))
                             }
-                            let deleteFuture = try Boost.storageFileHandler.delete(url: path, on: req)
-                            futures.append(deleteFuture)
                             
+                            let fm = try req.makeFileCore()
+                            let deleteFuture = try fm.delete(file: path, on: req)
+                            futures.append(deleteFuture)
                             return try futures.flatten(on: req).asResponse(to: req)
                         }
                     }
@@ -343,7 +345,7 @@ extension AppsController {
             // TODO: Change to copy file when https://github.com/vapor/core/pull/83 is done
             return req.fileData.flatMap(to: Response.self) { (data) -> Future<Response> in
                 // TODO: -------- REFACTOR ---------
-                return try Boost.tempFileHandler.createFolderStructure(url: App.tempAppFolder(on: req), on: req).flatMap(to: Response.self) { _ in
+                return try BoostCoreBase.tempFileHandler.createFolderStructure(url: App.tempAppFolder(on: req), on: req).flatMap(to: Response.self) { _ in
                     let tempFilePath = App.tempAppFile(on: req)
                     try data.write(to: tempFilePath)
                     
@@ -374,7 +376,7 @@ extension AppsController {
                         let promise: Promise<App> = try extractor.process(teamId: teamId, on: req)
                         return promise.futureResult.flatMap(to: Response.self) { (app) -> Future<Response> in
                             return app.save(on: req).flatMap(to: Response.self) { (app) -> Future<Response> in
-                                return try extractor.save(app, request: req, Boost.storageFileHandler).flatMap(to: Response.self) { (_) -> Future<Response> in
+                                return try extractor.save(app, request: req).flatMap(to: Response.self) { (_) -> Future<Response> in
                                     return try handleTags(on: req, app: app).flatMap(to: Response.self) { (_) -> Future<Response> in
                                         return try app.asResponse(.created, to: req)
                                     }

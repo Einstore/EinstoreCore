@@ -11,6 +11,7 @@ import ErrorsCore
 import ApiCore
 import DbCore
 import Fluent
+import FileCore
 
 
 /// Extractor error
@@ -134,20 +135,22 @@ extension Extractor {
     }
     
     /// Save app into the DB
-    func save(_ app: App, request req: Request, _ fileHandler: FileHandler) throws -> Future<Void> {
-        var saves: [Future<Void>] = []
-        guard let path = app.appPath, let folder = app.targetFolderPath else {
+    func save(_ app: App, request req: Request) throws -> Future<Void> {
+        guard let path = app.appPath?.path else {
             throw ExtractorError.errorSavingFile
         }
         
-        return try Boost.storageFileHandler.createFolderStructure(url: folder, on: req).flatMap(to: Void.self) { _ in
-            let tempFile = App.tempAppFile(on: req)
-            saves.append(try fileHandler.move(from: tempFile, to: path, on: self.request))
-            if let iconData = self.iconData, let path = app.iconPath?.path {
-                saves.append(try fileHandler.save(data: iconData, to: path, on: self.request))
-            }
-            return saves.flatten(on: req).map(to: Void.self) { _ in
+        let fm = try req.makeFileCore()
+        let tempFile = App.tempAppFile(on: req).path
+        return try fm.move(file: tempFile.path, to: path, on: req).flatMap(to: Void.self) { _ in
+            if let iconData = self.iconData, let path = app.iconPath?.path, let mime = iconData.imageFileMediaType() {
+                return try fm.save(file: iconData, to: path, mime: mime, on: req).map(to: Void.self) { _ in
+                    try self.cleanUp()
+                    return Void()
+                }
+            } else {
                 try self.cleanUp()
+                return req.eventLoop.newSucceededFuture(result: Void())
             }
         }
     }
@@ -156,7 +159,7 @@ extension Extractor {
     
     /// Clean temp files
     func cleanUp() throws {
-        _ = try Boost.tempFileHandler.delete(url: archive, on: request)
+        _ = try BoostCoreBase.tempFileHandler.delete(url: archive, on: request)
     }
     
 }

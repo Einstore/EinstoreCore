@@ -20,7 +20,7 @@ let package = Package(
         .package(url: "https://github.com/LiveUI/SettingsCore.git", .branch("master")),
         .package(url: "https://github.com/LiveUI/VaporTestTools.git", .branch("master")),
         .package(url: "https://github.com/LiveUI/FluentTestTools.git", .branch("master")),
-        .package(url: "https://github.com/LiveUI/SwiftResources.git", .branch("master"))
+        .package(url: "https://github.com/LiveUI/Configure.git", .branch("master"))
     ],
     targets: [
         .target(
@@ -45,7 +45,7 @@ let package = Package(
             "MailCore",
             "SettingsCore",
             "S3",
-            "SwiftResources"
+            "Configure"
             ]
         ),
         .target(

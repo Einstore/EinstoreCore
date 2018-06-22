@@ -41,7 +41,8 @@ extension AppTestCaseSetup {
         app1.testable.addTag(name: "common tag", identifier: "common-tag", on: app)
         app1.testable.addTag(name: "tag for app 1", identifier: "tag-for-app-1", on: app)
         
-        _ = try! Boost.storageFileHandler.createFolderStructure(url: app1.targetFolderPath!, on: app.testable.fakeRequest()).wait()
+        fatalError("Fix with FileCore")
+//        _ = try! BoostCoreBase.storageFileHandler.createFolderStructure(url: app1.targetFolderPath!, on: app.testable.fakeRequest()).wait()
         
         app2 = App.testable.create(team: team2, name: "App 2", identifier: "app2", version: "3.2.1", build: "654321", platform: .android, on: app)
         app2.testable.addTag(name: "common tag", identifier: "common-tag", on: app)

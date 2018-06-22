@@ -1,6 +1,6 @@
 //
-//  Boost.swift
-//  Boost
+//  BoostCoreBase.swift
+//  BoostCore
 //
 //  Created by Ondrej Rafaj on 12/12/2017.
 //
@@ -16,12 +16,10 @@ import SettingsCore
 import MailCore
 
 
-public class Boost {
+/// Base class for BoostCore
+public class BoostCoreBase {
     
-    public static func boot(_ app: Application) throws {
-        
-    }
-    
+    /// Registered controllers
     static var controllers: [Controller.Type] = [
         BoostController.self,
         TagsController.self,
@@ -30,6 +28,7 @@ public class Boost {
         ConfigurationController.self
     ]
     
+    /// Boot sequence
     public static func boot(router: Router) throws {
         try ApiCoreBase.boot(router: router)
         try SettingsCore.boot(router: router)
@@ -39,9 +38,10 @@ public class Boost {
         }
     }
     
-    static var config: BoostConfig!
-    
+    /// Private temp file handler
     private static var _tempFileHandler: FileHandler?
+    
+    /// Temp file handler
     public static var tempFileHandler: FileHandler {
         get {
             if let handler = _tempFileHandler {
@@ -56,28 +56,9 @@ public class Boost {
         }
     }
     
-    private static var _storageFileHandler: FileHandler?
-    public static var storageFileHandler: FileHandler {
-        get {
-            if let handler = _storageFileHandler {
-                return handler
-            }
-            let handler = LocalFileHandler()
-            _storageFileHandler = handler
-            return handler
-        }
-        set {
-            _storageFileHandler = newValue
-        }
-    }
-    
-    
-    public static func configure(boostConfig: inout BoostConfig, _ config: inout Vapor.Config, _ env: inout Vapor.Environment, _ services: inout Services) throws {
-        self.config = boostConfig
-        
+    public static func configure(_ config: inout Vapor.Config, _ env: inout Vapor.Environment, _ services: inout Services) throws {
         ApiAuthMiddleware.allowedGetUri.append("/apps/plist")
         ApiAuthMiddleware.allowedGetUri.append("/apps/file")
-        ApiAuthMiddleware.allowedGetUri.append("/info")
         ApiAuthMiddleware.allowedPostUri.append("/apps")
         
         DbCore.add(model: Cluster.self, database: .db)
@@ -86,7 +67,7 @@ public class Boost {
         DbCore.add(model: Tag.self, database: .db)
         DbCore.add(model: AppTag.self, database: .db)
         DbCore.add(model: UploadKey.self, database: .db)
-        DbCore.add(model: Configuration.self, database: .db)
+        DbCore.add(model: Config.self, database: .db)
         
         try SettingsCore.configure(&config, &env, &services)
         

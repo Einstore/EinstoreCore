@@ -18,17 +18,13 @@ extension TestableProperty where TestableType: Application {
     
     public static func newBoostTestApp() -> Application {
         let app = newApiCoreTestApp({ (config, env, services) in
-            var boostConfig = BoostConfig()
-            boostConfig.storageFileConfig.mainFolderPath = "/tmp/BoostTests/persistent"
-            boostConfig.tempFileConfig.mainFolderPath = "/tmp/BoostTests/temporary"
-            
             _ = ApiCoreBase.configuration
             ApiCoreBase._configuration?.database.user = "test"
             ApiCoreBase._configuration?.database.database = "boost-test"
             
-            try! Boost.configure(boostConfig: &boostConfig, &config, &env, &services)
+            try! BoostCoreBase.configure(&config, &env, &services)
         }) { (router) in
-            try? Boost.boot(router: router)
+            try? BoostCoreBase.boot(router: router)
         }
         return app
     }

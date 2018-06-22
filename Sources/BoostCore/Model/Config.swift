@@ -13,10 +13,10 @@ import FluentPostgreSQL
 import ApiCore
 
 
-public typealias Configurations = [Configuration]
+public typealias Configs = [Config]
 
 
-final public class Configuration: DbCoreModel {
+final public class Config: DbCoreModel {
     
     public struct Theme: PostgreSQLJSONType, Content {
         public let primaryColor: String
@@ -60,29 +60,29 @@ final public class Configuration: DbCoreModel {
 
 // MARK: - Relationships
 
-extension Configuration {
+extension Config {
     
-    var team: Parent<Configuration, Team>? {
-        return parent(\Configuration.teamId)
+    var team: Parent<Config, Team>? {
+        return parent(\Config.teamId)
     }
     
 }
 
 // MARK: - Migrations
 
-extension Configuration: Migration {
+extension Config: Migration {
     
     public static func prepare(on connection: DbCoreConnection) -> Future<Void> {
         return Database.create(self, on: connection) { (schema) in
-            try schema.field(for: \Configuration.id)
-            try schema.field(for: \Configuration.teamId)
+            try schema.field(for: \Config.id)
+            try schema.field(for: \Config.teamId)
             schema.addField(type: PostgreSQLColumn(type: .jsonb), name: CodingKeys.theme.stringValue)
             schema.addField(type: PostgreSQLColumn(type: .jsonb), name: CodingKeys.apps.stringValue, isOptional: true)
         }
     }
     
     public static func revert(on connection: DbCoreConnection) -> Future<Void> {
-        return Database.delete(Configuration.self, on: connection)
+        return Database.delete(Config.self, on: connection)
     }
     
 }

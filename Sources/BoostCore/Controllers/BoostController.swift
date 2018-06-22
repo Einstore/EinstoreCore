@@ -37,16 +37,6 @@ public class BoostController: Controller {
     
     /// Boot controller
     public static func boot(router: Router) throws {
-        // Get server info
-        router.get("info") { req -> Future<Response> in
-            let info: [String: String] = [
-                "name": Environment.get("BOOST_NAME") ?? "Boost",
-                "url": req.serverURL().absoluteString
-            ]
-            let response = try info.asJson().asResponse(.ok, to: req)
-            return response
-        }
-        
         // Install demo data
         router.get("demo") { (req)->Future<Response> in
             return Team.query(on: req).first().flatMap(to: Response.self) { team in
