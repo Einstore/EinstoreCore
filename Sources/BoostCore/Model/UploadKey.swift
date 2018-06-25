@@ -104,11 +104,11 @@ extension UploadKey: Migration {
     
     public static func prepare(on connection: DbCoreConnection) -> Future<Void> {
         return Database.create(self, on: connection) { (schema) in
-            schema.addField(type: DbCoreColumnType.id(), name: CodingKeys.id.stringValue, isIdentifier: true)
-            schema.addField(type: DbCoreColumnType.id(), name: CodingKeys.teamId.stringValue)
-            schema.addField(type: DbCoreColumnType.varChar(60), name: CodingKeys.name.stringValue)
-            schema.addField(type: DbCoreColumnType.datetime(), name: CodingKeys.expires.stringValue, isOptional: true)
-            schema.addField(type: DbCoreColumnType.varChar(64), name: CodingKeys.token.stringValue)
+            schema.field(for: \.id, isIdentifier: true)
+            schema.field(for: \.teamId, type: .uuid)
+            schema.field(for: \.name, type: .varchar(60))
+            schema.field(for: \.expires)
+            schema.field(for: \.token, type: .varchar(64))
         }
     }
     

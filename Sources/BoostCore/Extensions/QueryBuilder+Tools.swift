@@ -9,9 +9,10 @@ import Foundation
 import Fluent
 import FluentSQL
 import DatabaseKit
+import SQL
 
 
-extension QueryBuilder where Model.Database: CustomSQLSupporting {
+extension QueryBuilder {
 
     public func resetColumns() -> Self {
         return customSQL({ query in

@@ -74,10 +74,10 @@ extension Config: Migration {
     
     public static func prepare(on connection: DbCoreConnection) -> Future<Void> {
         return Database.create(self, on: connection) { (schema) in
-            try schema.field(for: \Config.id)
-            try schema.field(for: \Config.teamId)
-            schema.addField(type: PostgreSQLColumn(type: .jsonb), name: CodingKeys.theme.stringValue)
-            schema.addField(type: PostgreSQLColumn(type: .jsonb), name: CodingKeys.apps.stringValue, isOptional: true)
+            schema.field(for: \Config.id)
+            schema.field(for: \Config.teamId)
+            schema.field(for: \.theme, type: .jsonb)
+            schema.field(for: \.theme, type: .jsonb)
         }
     }
     

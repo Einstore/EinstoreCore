@@ -6,7 +6,7 @@
         "repositoryURL": "https://github.com/LiveUI/ApiCore.git",
         "state": {
           "branch": "master",
-          "revision": "2c59227adcd7de595736ab8da124d7bed4d47752",
+          "revision": "76b12dc875ae7bca43c7f02446d2bd36f597fe4b",
           "version": null
         }
       },
@@ -105,7 +105,7 @@
         "repositoryURL": "https://github.com/LiveUI/DbCore.git",
         "state": {
           "branch": "master",
-          "revision": "adc120e5d6887e36a4a97831e4a807f1791cebb5",
+          "revision": "c3f0e75bf5032aaed1ea7cdc2ca1c2ac3150b1e4",
           "version": null
         }
       },
@@ -204,8 +204,8 @@
         "repositoryURL": "https://github.com/vapor/postgresql.git",
         "state": {
           "branch": null,
-          "revision": "f44de16c544c603e777f58d4df4008fd9f03ff89",
-          "version": "1.0.0-rc.4.1"
+          "revision": "c34533ebf7ae34cff1430a2803c83a02bb98557a",
+          "version": "1.0.0-rc.4.2.1"
         }
       },
       {
@@ -249,7 +249,7 @@
         "repositoryURL": "https://github.com/LiveUI/SettingsCore.git",
         "state": {
           "branch": "master",
-          "revision": "88828a6207fa08af66c5c04aa471594a264c8d13",
+          "revision": "2e8e27ba8477f4b37ba06f206538368c1f25d424",
           "version": null
         }
       },
@@ -258,8 +258,8 @@
         "repositoryURL": "https://github.com/vapor/sql.git",
         "state": {
           "branch": null,
-          "revision": "5127aaf2eb7e5dec134739df17fc7e565024e416",
-          "version": "2.0.0-beta.2"
+          "revision": "f89155dbf3dd48c838f79d28a636bbe32ad38693",
+          "version": "2.0.0-beta.3"
         }
       },
       {

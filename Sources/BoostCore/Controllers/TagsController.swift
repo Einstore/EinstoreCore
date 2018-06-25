@@ -18,18 +18,9 @@ class TagsController: Controller {
     static func boot(router: Router) throws {
         router.get("tags") { (req) -> Future<Tags> in
             return req.withPooledConnection(to: .db) { (db) -> Future<Tags> in
-                return tagsQuery(on: db).all()
+                return Tag.query(on: req).all()
             }
         }
-    }
-    
-}
-
-
-extension TagsController {
-    
-    static func tagsQuery(on db: DbCoreDatabase.Connection, apps: Apps? = nil) -> QueryBuilder<Tag, Tag> {
-        return Tag.query(on: db)
     }
     
 }

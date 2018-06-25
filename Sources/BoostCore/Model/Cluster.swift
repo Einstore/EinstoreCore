@@ -101,15 +101,15 @@ extension Cluster: Migration {
     
     public static func prepare(on connection: DbCoreConnection) -> Future<Void> {
         return Database.create(self, on: connection) { (schema) in
-            try schema.field(for: \Cluster.id)
-            try schema.field(for: \Cluster.teamId)
-            schema.addField(type: DbCoreColumnType.varChar(140), name: CodingKeys.latestAppName.stringValue)
-            schema.addField(type: DbCoreColumnType.varChar(20), name: CodingKeys.latestAppVersion.stringValue)
-            schema.addField(type: DbCoreColumnType.varChar(20), name: CodingKeys.latestAppBuild.stringValue)
-            try schema.field(for: \Cluster.latestAppAdded)
-            schema.addField(type: DbCoreColumnType.bigInt(), name: CodingKeys.appCount.stringValue)
-            schema.addField(type: DbCoreColumnType.varChar(10), name: CodingKeys.platform.stringValue)
-            schema.addField(type: DbCoreColumnType.varChar(140), name: CodingKeys.identifier.stringValue)
+            schema.field(for: \Cluster.id)
+            schema.field(for: \Cluster.teamId)
+            schema.field(for: \.latestAppName, type: .varchar(140))
+            schema.field(for: \.latestAppVersion, type: .varchar(20))
+            schema.field(for: \.latestAppBuild, type: .varchar(20))
+            schema.field(for: \Cluster.latestAppAdded)
+            schema.field(for: \.appCount)
+            schema.field(for: \.platform, type: .varchar(10))
+            schema.field(for: \.identifier, type: .varchar(140))
         }
     }
     

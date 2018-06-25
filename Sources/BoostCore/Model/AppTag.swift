@@ -43,9 +43,9 @@ extension AppTag: Migration {
     
     public static func prepare(on connection: DbCoreConnection) -> Future<Void> {
         return Database.create(self, on: connection) { (schema) in
-            try schema.field(for: \AppTag.id)
-            try schema.field(for: \AppTag.appId)
-            try schema.field(for: \AppTag.tagId)
+            schema.field(for: \AppTag.id)
+            schema.field(for: \AppTag.appId)
+            schema.field(for: \AppTag.tagId)
         }
     }
     

@@ -25,7 +25,7 @@ fileprivate struct RequestFilters: Codable {
 }
 
 
-extension QueryBuilder where Model == App {
+extension QueryBuilder where Result == App {
     
     /// Set filters
     func appFilters(on req: Request) throws -> Self {
@@ -45,12 +45,12 @@ extension QueryBuilder where Model == App {
         
         // Platform
         if let platform = query.platform {
-            s = try s.filter(\App.platform == platform)
+            s = s.filter(\App.platform == platform)
         }
         
         // Identifier
         if let identifier = query.identifier {
-            s = try s.filter(\App.identifier ~~ identifier)
+            s = s.filter(\App.identifier ~~ identifier)
         }
         
         return s
@@ -116,7 +116,7 @@ class AppsController: Controller {
         // Get list of apps based on input parameters
         router.get("apps") { (req) -> Future<Apps> in
             return try req.me.teams().flatMap(to: Apps.self) { teams in
-                return try App.query(on: req).filter(\App.teamId ~~ teams.ids).sort(\App.created, QuerySortDirection.descending).appFilters(on: req).all()
+                return try App.query(on: req).filter(\App.teamId ~~ teams.ids).sort(\App.created, .descending).appFilters(on: req).all()
             }
         }
         

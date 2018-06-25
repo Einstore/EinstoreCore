@@ -51,9 +51,9 @@ extension Tag: Migration {
     
     public static func prepare(on connection: DbCoreConnection) -> Future<Void> {
         return Database.create(self, on: connection) { (schema) in
-            schema.addField(type: DbCoreColumnType.id(), name: CodingKeys.id.stringValue, isIdentifier: true)
-            schema.addField(type: DbCoreColumnType.varChar(255), name: CodingKeys.name.stringValue)
-            schema.addField(type: DbCoreColumnType.varChar(255), name: CodingKeys.identifier.stringValue)
+            schema.field(for: \.id, isIdentifier: true)
+            schema.field(for: \.name, type: .varchar(255))
+            schema.field(for: \.identifier, type: .varchar(255))
         }
     }
     

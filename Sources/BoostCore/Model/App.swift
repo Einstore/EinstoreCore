@@ -18,7 +18,7 @@ public typealias Apps = [App]
 
 final public class App: DbCoreModel {
     
-    public enum Platform: String, Codable, ReflectionDecodable, PostgreSQLType {
+    public enum Platform: String, Codable, CaseIterable, ReflectionDecodable {
         
         // TODO: The following needs to be refactored as it only contains "guessed" values!!!!!!!!!
         public static func keyStringIsTrue(_ item: App.Platform) -> Bool {
@@ -58,22 +58,6 @@ final public class App: DbCoreModel {
             default:
                 return "application/unknown"
             }
-        }
-        
-        // MARK: PostgreSQLType stuff n magic
-        
-        public static var postgreSQLDataType: PostgreSQLDataType = .varchar
-        public static var postgreSQLDataArrayType: PostgreSQLDataType = .varchar
-        
-        public static func convertFromPostgreSQLData(_ data: PostgreSQLData) throws -> App.Platform {
-            guard let data = data.data, let stringValue = String.init(data: data, encoding: .utf8) else {
-                return .unknown
-            }
-            return Platform(rawValue: stringValue) ?? .unknown
-        }
-        
-        public func convertToPostgreSQLData() throws -> PostgreSQLData {
-            return PostgreSQLData(type: .varchar, format: .text, data: rawValue.data(using: .utf8))
         }
         
     }
@@ -158,18 +142,18 @@ extension App: Migration {
     
     public static func prepare(on connection: DbCoreConnection) -> Future<Void> {
         return Database.create(self, on: connection) { (schema) in
-            try schema.field(for: \App.id)
-            try schema.field(for: \App.teamId)
-            try schema.field(for: \App.clusterId)
-            schema.addField(type: DbCoreColumnType.varChar(140), name: CodingKeys.name.stringValue)
-            schema.addField(type: DbCoreColumnType.varChar(140), name: CodingKeys.identifier.stringValue)
-            schema.addField(type: DbCoreColumnType.varChar(20), name: CodingKeys.version.stringValue)
-            schema.addField(type: DbCoreColumnType.varChar(20), name: CodingKeys.build.stringValue)
-            schema.addField(type: DbCoreColumnType.varChar(10), name: CodingKeys.platform.stringValue)
-            try schema.field(for: \App.created)
-            try schema.field(for: \App.modified)
-            schema.addField(type: DbCoreColumnType.text(), name: CodingKeys.info.stringValue, isOptional: true)
-            try schema.field(for: \App.hasIcon)
+            schema.field(for: \App.id)
+            schema.field(for: \App.teamId)
+            schema.field(for: \App.clusterId)
+            schema.field(for: \.name, type: .varchar(140))
+            schema.field(for: \.identifier, type: .varchar(140))
+            schema.field(for: \.version, type: .varchar(20))
+            schema.field(for: \.build, type: .varchar(20))
+            schema.field(for: \.platform, type: .varchar(10))
+            schema.field(for: \App.created)
+            schema.field(for: \App.modified)
+            schema.field(for: \.info, type: .text)
+            schema.field(for: \App.hasIcon, type: .boolean)
         }
     }
     

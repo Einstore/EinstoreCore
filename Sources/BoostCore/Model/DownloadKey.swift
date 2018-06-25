@@ -87,10 +87,10 @@ extension DownloadKey: Migration {
     
     public static func prepare(on connection: DbCoreConnection) -> Future<Void> {
         return Database.create(self, on: connection) { (schema) in
-            schema.addField(type: DbCoreColumnType.id(), name: CodingKeys.id.stringValue, isIdentifier: true)
-            schema.addField(type: DbCoreColumnType.id(), name: CodingKeys.appId.stringValue)
-            schema.addField(type: DbCoreColumnType.varChar(64), name: CodingKeys.token.stringValue)
-            schema.addField(type: DbCoreColumnType.datetime(), name: CodingKeys.added.stringValue)
+            schema.field(for: \.id, isIdentifier: true)
+            schema.field(for: \.appId)
+            schema.field(for: \.token, type: .varchar(64))
+            schema.field(for: \.added)
         }
     }
     
