@@ -81,7 +81,6 @@ final public class App: DbCoreModel {
     public var build: String
     public var platform: Platform
     public var created: Date
-    public var modified: Date
     public var info: String?
     public var hasIcon: Bool
     
@@ -95,7 +94,6 @@ final public class App: DbCoreModel {
         case build
         case platform
         case created
-        case modified
         case info
         case hasIcon = "icon"
     }
@@ -111,7 +109,6 @@ final public class App: DbCoreModel {
         self.build = build
         self.platform = platform
         self.created = Date()
-        self.modified = Date()
         self.info = info
         self.hasIcon = hasIcon
     }
@@ -151,7 +148,6 @@ extension App: Migration {
             schema.field(for: \.build, type: .varchar(20))
             schema.field(for: \.platform, type: .varchar(10))
             schema.field(for: \App.created)
-            schema.field(for: \App.modified)
             schema.field(for: \.info, type: .text)
             schema.field(for: \App.hasIcon, type: .boolean)
         }
