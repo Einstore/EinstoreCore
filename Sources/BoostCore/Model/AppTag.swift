@@ -43,7 +43,7 @@ extension AppTag: Migration {
     
     public static func prepare(on connection: DbCoreConnection) -> Future<Void> {
         return Database.create(self, on: connection) { (schema) in
-            schema.field(for: \AppTag.id)
+            schema.field(for: \AppTag.id, isIdentifier: true)
             schema.field(for: \AppTag.appId)
             schema.field(for: \AppTag.tagId)
         }

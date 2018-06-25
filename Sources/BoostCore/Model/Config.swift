@@ -18,7 +18,32 @@ public typealias Configs = [Config]
 
 final public class Config: DbCoreModel {
     
-    public struct Theme: PostgreSQLJSONType, Content {
+    public struct Theme: Content { //, ReflectionDecodable, PostgreSQLDataConvertible {
+        
+//        public static func reflectDecoded() throws -> (Config.Theme, Config.Theme) {
+//            <#code#>
+//        }
+//
+//        public static func reflectDecodedIsLeft(_ item: Config.Theme) throws -> Bool {
+//            <#code#>
+//        }
+//
+//        public static func convertFromPostgreSQLData(_ data: PostgreSQLData) throws -> Config.Theme {
+//            <#code#>
+//        }
+//
+//        public func convertToPostgreSQLData() throws -> PostgreSQLData {
+//            <#code#>
+//        }
+        
+//        public static func reflectDecoded() throws -> (Config.Theme, Config.Theme) {
+//
+//        }
+//
+//        public static func reflectDecodedIsLeft(_ item: Config.Theme) throws -> Bool {
+//            return false
+//        }
+        
         public let primaryColor: String
         public let primaryBackgroundColor: String
         public let primaryButtonColor: String
@@ -32,7 +57,7 @@ final public class Config: DbCoreModel {
         }
     }
     
-    public struct Apps: PostgreSQLJSONType, Content {
+    public struct Apps: Content {
         public let ios: String?
         public let android: String?
     }
@@ -72,14 +97,14 @@ extension Config {
 
 extension Config: Migration {
     
-    public static func prepare(on connection: DbCoreConnection) -> Future<Void> {
-        return Database.create(self, on: connection) { (schema) in
-            schema.field(for: \Config.id)
-            schema.field(for: \Config.teamId)
-            schema.field(for: \.theme, type: .jsonb)
-            schema.field(for: \.theme, type: .jsonb)
-        }
-    }
+//    public static func prepare(on connection: DbCoreConnection) -> Future<Void> {
+//        return Database.create(self, on: connection) { (schema) in
+//            schema.field(for: \Config.id)
+//            schema.field(for: \Config.teamId)
+//            schema.field(for: \.theme, type: .jsonb)
+//            schema.field(for: \.theme, type: .jsonb)
+//        }
+//    }
     
     public static func revert(on connection: DbCoreConnection) -> Future<Void> {
         return Database.delete(Config.self, on: connection)

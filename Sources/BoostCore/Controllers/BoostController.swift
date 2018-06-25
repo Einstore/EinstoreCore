@@ -51,24 +51,44 @@ public class BoostController: Controller {
                     for name in appNames {
                         let identifier = "io.liveui.\(name.lowercased())"
                         var build = Int(arc4random_uniform(5000) + 1)
-                        for i1 in 0...10 {
-                            for i2 in 0...10 {
+                        var cluster: Cluster? = nil
+                        for i1 in 0...5 {
+                            for i2 in 0...5 {
                                 let version = "1.\(i1).\(i2)"
                                 let sdk = "\(name)SDK_\(version)"
                                 let sdk2 = "AnotherSDK_1.\(i2)"
-                                let clusterId = UUID()
-                                fatalError("Fix cluster ID!")
-                                let app = App(teamId: team.id!, clusterId: clusterId, name: name, identifier: identifier, version: version, build: String(build), platform: platform, info: nil, hasIcon: false)
+                                let app = App(teamId: team.id!, clusterId: (cluster?.id ?? UUID()), name: name, identifier: identifier, version: version, build: String(build), platform: platform, info: nil, hasIcon: false)
                                 let save = app.save(on: req).flatMap(to: Void.self) { app in
-                                    let tags: [Future<Void>] = [
-                                        Tag(name: sdk, identifier: sdk.lowercased()).save(on: req).flatMap(to: Void.self) { tag in
-                                            return app.tags.attach(tag, on: req).flatten()
-                                        },
-                                        Tag(name: sdk2, identifier: sdk2.lowercased()).save(on: req).flatMap(to: Void.self) { tag in
-                                            return app.tags.attach(tag, on: req).flatten()
-                                        }
-                                    ]
-                                    return tags.flatten(on: req)
+                                    func saveTags() -> Future<Void> {
+                                        let tags: [Future<Void>] = [
+                                            Tag(name: sdk, identifier: sdk.lowercased()).save(on: req).flatMap(to: Void.self) { tag in
+                                                return app.tags.attach(tag, on: req).flatten()
+                                            },
+                                            Tag(name: sdk2, identifier: sdk2.lowercased()).save(on: req).flatMap(to: Void.self) { tag in
+                                                return app.tags.attach(tag, on: req).flatten()
+                                            }
+                                        ]
+                                        return tags.flatten(on: req)
+                                    }
+                                    guard let c = cluster else {
+                                        let c = Cluster(latestApp: app, appCount: 1)
+                                        cluster = c
+                                        return c.save(on: req).flatMap({ c -> Future<Void> in
+                                            guard let clusterId = c.id else {
+                                                fatalError("Cluster didn't save")
+                                            }
+                                            cluster = c
+                                            app.clusterId = clusterId
+                                            return app.save(on: req).flatMap({ app -> Future<Void> in
+                                                return saveTags()
+                                            })
+                                        })
+                                    }
+                                    c.appCount += 1
+                                    return c.save(on: req).flatMap() { c in
+                                        cluster = c
+                                        return saveTags()
+                                    }
                                 }
                                 futures.append(save)
                                 build += 1

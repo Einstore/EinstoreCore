@@ -142,7 +142,7 @@ extension App: Migration {
     
     public static func prepare(on connection: DbCoreConnection) -> Future<Void> {
         return Database.create(self, on: connection) { (schema) in
-            schema.field(for: \App.id)
+            schema.field(for: \App.id, isIdentifier: true)
             schema.field(for: \App.teamId)
             schema.field(for: \App.clusterId)
             schema.field(for: \.name, type: .varchar(140))

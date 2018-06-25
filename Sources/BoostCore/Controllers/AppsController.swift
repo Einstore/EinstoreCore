@@ -25,21 +25,21 @@ fileprivate struct RequestFilters: Codable {
 }
 
 
-extension QueryBuilder where Result == App {
+extension QueryBuilder where Result == App, Database == DbCoreDatabase {
     
     /// Set filters
-    func appFilters(on req: Request) throws -> Self {
+    func appFilters(on req: Request) throws -> QueryBuilder<DbCoreDatabase, Result> {
         let query = try req.query.decode(RequestFilters.self)
-        var s = try paginate(on: req)
+        var s: QueryBuilder<DbCoreDatabase, Result> = try paginate(on: req)
         
         // Basic search
         if let search = req.query.search {
-            s = try s.group(.or) { or in
-                try or.filter(\App.name ~~ search)
-                try or.filter(\App.identifier ~~ search)
-                try or.filter(\App.info ~~ search)
-                try or.filter(\App.version ~~ search)
-                try or.filter(\App.build ~~ search)
+            s = s.group(.or) { or in
+                or.filter(\App.name ~~ search)
+                or.filter(\App.identifier ~~ search)
+                or.filter(\App.info ~~ search)
+                or.filter(\App.version ~~ search)
+                or.filter(\App.build ~~ search)
             }
         }
         
@@ -58,9 +58,9 @@ extension QueryBuilder where Result == App {
     
     /// Make sure we get only apps belonging to the user
     func safeApp(appId: DbCoreIdentifier, teamIds: [DbCoreIdentifier]) throws -> Self {
-        return try group(.and) { and in
-            try and.filter(\App.id == appId)
-            try and.filter(\App.teamId ~~ teamIds)
+        return group(.and) { and in
+            and.filter(\App.id == appId)
+            and.filter(\App.teamId ~~ teamIds)
         }
     }
     
@@ -106,7 +106,7 @@ class AppsController: Controller {
     }
     
     /// Overview app query
-    static func overviewQuery(teams: Teams, on req: Request) throws -> QueryBuilder<Cluster, Cluster.Public> {
+    static func overviewQuery(teams: Teams, on req: Request) throws -> QueryBuilder<DbCoreDatabase, Cluster.Public> {
         let q = try Cluster.query(on: req).filter(\Cluster.teamId ~~ teams.ids).decode(Cluster.Public.self).paginate(on: req)
         return q
     }
@@ -175,7 +175,7 @@ class AppsController: Controller {
                     let originalToken: String = key.token
                     key.token = try key.token.passwordHash(req)
                     return key.save(on: req).flatMap(to: Response.self) { key in
-                        return try DownloadKey.query(on: req).filter(\DownloadKey.added < Date().addMinute(n: -15)).delete().flatMap(to: Response.self) { _ in
+                        return DownloadKey.query(on: req).filter(\DownloadKey.added < Date().addMinute(n: -15)).delete().flatMap(to: Response.self) { _ in
                             key.token = originalToken
                             return try DownloadKey.Public(downloadKey: key, request: req).asResponse(.ok, to: req)
                         }
@@ -187,13 +187,13 @@ class AppsController: Controller {
         // App plist
         router.get("apps", "plist") { (req) -> Future<Response> in
             let token = try req.query.decode(DownloadKey.Token.self)
-            return try DownloadKey.query(on: req).filter(\DownloadKey.token == token.token).filter(\DownloadKey.added >= Date().addMinute(n: -15)).first().flatMap(to: Response.self) { key in
+            return DownloadKey.query(on: req).filter(\DownloadKey.token == token.token).filter(\DownloadKey.added >= Date().addMinute(n: -15)).first().flatMap(to: Response.self) { key in
                 guard let key = key else {
-                    return try DownloadKey.query(on: req).filter(\DownloadKey.added < Date().addMinute(n: -15)).delete().map(to: Response.self) { _ in
+                    return DownloadKey.query(on: req).filter(\DownloadKey.added < Date().addMinute(n: -15)).delete().map(to: Response.self) { _ in
                         throw ErrorsCore.HTTPError.notAuthorized
                     }
                 }
-                return try App.query(on: req).filter(\App.id == key.appId).first().map(to: Response.self) { app in
+                return App.query(on: req).filter(\App.id == key.appId).first().map(to: Response.self) { app in
                     guard let app = app else {
                         throw ErrorsCore.HTTPError.notFound
                     }
@@ -211,13 +211,13 @@ class AppsController: Controller {
         // App file
         router.get("apps", "file") { (req) -> Future<Response> in
             let token = try req.query.decode(DownloadKey.Token.self)
-            return try DownloadKey.query(on: req).filter(\DownloadKey.token == token.token).filter(\DownloadKey.added >= Date().addMinute(n: -15)).first().flatMap(to: Response.self) { key in
+            return DownloadKey.query(on: req).filter(\DownloadKey.token == token.token).filter(\DownloadKey.added >= Date().addMinute(n: -15)).first().flatMap(to: Response.self) { key in
                 guard let key = key else {
-                    return try DownloadKey.query(on: req).filter(\DownloadKey.added < Date().addMinute(n: -15)).delete().map(to: Response.self) { _ in
+                    return DownloadKey.query(on: req).filter(\DownloadKey.added < Date().addMinute(n: -15)).delete().map(to: Response.self) { _ in
                         throw ErrorsCore.HTTPError.notAuthorized
                     }
                 }
-                return try App.query(on: req).filter(\App.id == key.appId).first().map(to: Response.self) { app in
+                return App.query(on: req).filter(\App.id == key.appId).first().map(to: Response.self) { app in
                     guard let app = app else {
                         throw ErrorsCore.HTTPError.notFound
                     }
@@ -254,7 +254,7 @@ class AppsController: Controller {
                     guard let app = app else {
                         throw ErrorsCore.HTTPError.notFound
                     }
-                    return try Cluster.query(on: req).filter(\Cluster.identifier == app.identifier).filter(\Cluster.platform == app.platform).first().flatMap(to: Response.self) { cluster in
+                    return Cluster.query(on: req).filter(\Cluster.identifier == app.identifier).filter(\Cluster.platform == app.platform).first().flatMap(to: Response.self) { cluster in
                         guard let cluster = cluster else {
                             throw Error.clusterInconsistency
                         }
@@ -267,7 +267,7 @@ class AppsController: Controller {
                                 futures.append(cluster.delete(on: req).flatten())
                             } else {
                                 cluster.appCount -= 1
-                                let save = try App.query(on: req).sort(\App.created, .descending).first().flatMap(to: Void.self) { app in
+                                let save = App.query(on: req).sort(\App.created, .descending).first().flatMap(to: Void.self) { app in
                                     guard let app = app else {
                                         throw Error.clusterInconsistency
                                     }
@@ -316,7 +316,7 @@ class AppsController: Controller {
             guard let token = try? req.query.decode(UploadKey.Token.self) else {
                 throw ErrorsCore.HTTPError.missingAuthorizationData
             }
-            return try UploadKey.query(on: req).filter(\.token == token.token).first().flatMap(to: Response.self) { (uploadToken) -> Future<Response> in
+            return UploadKey.query(on: req).filter(\.token == token.token).first().flatMap(to: Response.self) { (uploadToken) -> Future<Response> in
                 guard let uploadToken = uploadToken else {
                     throw AuthError.authenticationFailed
                 }
@@ -341,52 +341,50 @@ extension AppsController {
     
     /// Shared upload method
     static func upload(teamId: DbCoreIdentifier, on req: Request) -> Future<Response> {
-        return App.query(on: req).first().flatMap(to: Response.self) { (app) -> Future<Response> in
-            // TODO: Change to copy file when https://github.com/vapor/core/pull/83 is done
-            return req.fileData.flatMap(to: Response.self) { (data) -> Future<Response> in
-                // TODO: -------- REFACTOR ---------
-                return try BoostCoreBase.tempFileHandler.createFolderStructure(url: App.tempAppFolder(on: req), on: req).flatMap(to: Response.self) { _ in
-                    let tempFilePath = App.tempAppFile(on: req)
-                    try data.write(to: tempFilePath)
+        // TODO: Change to copy file when https://github.com/vapor/core/pull/83 is done
+        return req.fileData.flatMap(to: Response.self) { (data) -> Future<Response> in
+            // TODO: -------- REFACTOR ---------
+            return try BoostCoreBase.tempFileHandler.createFolderStructure(url: App.tempAppFolder(on: req), on: req).flatMap(to: Response.self) { _ in
+                let tempFilePath = App.tempAppFile(on: req)
+                try data.write(to: tempFilePath)
+                
+                let output: RunOutput = SwiftShell.run("unzip", "-l", tempFilePath.path)
+                
+                let platform: App.Platform
+                if output.succeeded {
+                    print(output.stdout)
                     
-                    let output: RunOutput = SwiftShell.run("unzip", "-l", tempFilePath.path)
-                    
-                    let platform: App.Platform
-                    if output.succeeded {
-                        print(output.stdout)
-                        
-                        if output.stdout.contains("Payload/") {
-                            platform = .ios
-                        }
-                        else if output.stdout.contains("AndroidManifest.xml") {
-                            platform = .android
-                        }
-                        else {
-                            throw ExtractorError.invalidAppContent
-                        }
+                    if output.stdout.contains("Payload/") {
+                        platform = .ios
+                    }
+                    else if output.stdout.contains("AndroidManifest.xml") {
+                        platform = .android
                     }
                     else {
-                        print(output.stderror)
                         throw ExtractorError.invalidAppContent
                     }
-                    // */ -------- REFACTOR END (or just carry on and make me better!) ---------
-                    
-                    let extractor: Extractor = try BaseExtractor.decoder(file: tempFilePath.path, platform: platform, on: req)
-                    do {
-                        let promise: Promise<App> = try extractor.process(teamId: teamId, on: req)
-                        return promise.futureResult.flatMap(to: Response.self) { (app) -> Future<Response> in
-                            return app.save(on: req).flatMap(to: Response.self) { (app) -> Future<Response> in
-                                return try extractor.save(app, request: req).flatMap(to: Response.self) { (_) -> Future<Response> in
-                                    return try handleTags(on: req, app: app).flatMap(to: Response.self) { (_) -> Future<Response> in
-                                        return try app.asResponse(.created, to: req)
-                                    }
+                }
+                else {
+                    print(output.stderror)
+                    throw ExtractorError.invalidAppContent
+                }
+                // */ -------- REFACTOR END (or just carry on and make me better!) ---------
+                
+                let extractor: Extractor = try BaseExtractor.decoder(file: tempFilePath.path, platform: platform, on: req)
+                do {
+                    let promise: Promise<App> = try extractor.process(teamId: teamId, on: req)
+                    return promise.futureResult.flatMap(to: Response.self) { app -> Future<Response> in
+                        return app.save(on: req).flatMap(to: Response.self) { app -> Future<Response> in
+                            return try extractor.save(app, request: req).flatMap(to: Response.self) { (_) -> Future<Response> in
+                                return try handleTags(on: req, app: app).flatMap(to: Response.self) { (_) -> Future<Response> in
+                                    return try app.asResponse(.created, to: req)
                                 }
                             }
                         }
-                    } catch {
-                        try extractor.cleanUp()
-                        throw error
                     }
+                } catch {
+                    try extractor.cleanUp()
+                    throw error
                 }
             }
         }
@@ -397,9 +395,9 @@ extension AppsController {
         if req.http.url.query != nil, let query = try? req.query.decode([String: String].self) {
             if let tags = query["tags"]?.split(separator: "|") {
                 var futures: [Future<Void>] = []
-                try tags.forEach { (tagSubstring) in
+                tags.forEach { (tagSubstring) in
                     let tag = String(tagSubstring)
-                    let future = try Tag.query(on: req).filter(\Tag.identifier == tag).first().flatMap(to: Void.self) { (tagObject) -> Future<Void> in
+                    let future = Tag.query(on: req).filter(\Tag.identifier == tag).first().flatMap(to: Void.self) { (tagObject) -> Future<Void> in
                         guard let tagObject = tagObject else {
                             let t = Tag(id: nil, name: tag, identifier: tag.safeText)
                             return t.save(on: req).flatMap(to: Void.self, { (tag) -> Future<Void> in

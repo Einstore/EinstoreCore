@@ -55,6 +55,7 @@ final public class Cluster: DbCoreModel {
     public var latestAppVersion: String
     public var latestAppBuild: String
     public var latestAppAdded: Date
+    public var latestAppId: DbCoreIdentifier?
     public var appCount: Int
     public var platform: App.Platform
     public var identifier: String
@@ -66,6 +67,7 @@ final public class Cluster: DbCoreModel {
         case latestAppVersion = "latest_app_version"
         case latestAppBuild = "latest_app_build"
         case latestAppAdded = "latest_app_added"
+        case latestAppId = "latest_app_id"
         case appCount = "app_count"
         case platform
         case identifier
@@ -78,6 +80,7 @@ final public class Cluster: DbCoreModel {
         self.latestAppVersion = latestApp.version
         self.latestAppBuild = latestApp.build
         self.latestAppAdded = latestApp.created
+        self.latestAppId = latestApp.id
         self.appCount = appCount
         self.platform = latestApp.platform
         self.identifier = latestApp.identifier
@@ -101,11 +104,12 @@ extension Cluster: Migration {
     
     public static func prepare(on connection: DbCoreConnection) -> Future<Void> {
         return Database.create(self, on: connection) { (schema) in
-            schema.field(for: \Cluster.id)
+            schema.field(for: \Cluster.id, isIdentifier: true)
             schema.field(for: \Cluster.teamId)
             schema.field(for: \.latestAppName, type: .varchar(140))
             schema.field(for: \.latestAppVersion, type: .varchar(20))
             schema.field(for: \.latestAppBuild, type: .varchar(20))
+            schema.field(for: \.latestAppId)
             schema.field(for: \Cluster.latestAppAdded)
             schema.field(for: \.appCount)
             schema.field(for: \.platform, type: .varchar(10))
