@@ -23,6 +23,7 @@ final public class Cluster: DbCoreModel {
         public var latestAppVersion: String
         public var latestAppBuild: String
         public var latestAppAdded: Date?
+        public var latestAppId: DbCoreIdentifier?
         public var appCount: Int
         public var platform: App.Platform
         public var identifier: String
@@ -32,7 +33,8 @@ final public class Cluster: DbCoreModel {
             case latestAppVersion = "latest_app_version"
             case latestAppBuild = "latest_app_build"
             case latestAppAdded = "latest_app_added"
-            case appCount = "app_count"
+            case latestAppId = "latest_app_id"
+            case appCount = "build_count"
             case platform
             case identifier
         }
@@ -42,6 +44,7 @@ final public class Cluster: DbCoreModel {
             self.latestAppVersion = cluster.latestAppVersion
             self.latestAppBuild = cluster.latestAppBuild
             self.latestAppAdded = cluster.latestAppAdded
+            self.latestAppId = cluster.latestAppId
             self.appCount = cluster.appCount
             self.platform = cluster.platform
             self.identifier = cluster.identifier
@@ -68,7 +71,7 @@ final public class Cluster: DbCoreModel {
         case latestAppBuild = "latest_app_build"
         case latestAppAdded = "latest_app_added"
         case latestAppId = "latest_app_id"
-        case appCount = "app_count"
+        case appCount = "build_count"
         case platform
         case identifier
     }

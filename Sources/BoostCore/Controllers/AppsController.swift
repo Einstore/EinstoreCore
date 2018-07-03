@@ -187,7 +187,7 @@ class AppsController: Controller {
         // App plist
         router.get("apps", "plist") { (req) -> Future<Response> in
             let token = try req.query.decode(DownloadKey.Token.self)
-            return DownloadKey.query(on: req).filter(\DownloadKey.token == token.token).filter(\DownloadKey.added >= Date().addMinute(n: -15)).first().flatMap(to: Response.self) { key in
+            return try DownloadKey.query(on: req).filter(\DownloadKey.token == token.token.passwordHash(req)).filter(\DownloadKey.added >= Date().addMinute(n: -15)).first().flatMap(to: Response.self) { key in
                 guard let key = key else {
                     return DownloadKey.query(on: req).filter(\DownloadKey.added < Date().addMinute(n: -15)).delete().map(to: Response.self) { _ in
                         throw ErrorsCore.HTTPError.notAuthorized
