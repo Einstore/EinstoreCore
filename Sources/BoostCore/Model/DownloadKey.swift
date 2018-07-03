@@ -35,8 +35,8 @@ final public class DownloadKey: DbCoreModel {
             guard let serverUrlString = ApiCoreBase.configuration.server.url, let url = URL(string: serverUrlString)?.appendingPathComponent("apps") else {
                 fatalError("Server URL is not properly configured")
             }
-            self.plist = url.appendingPathComponent("plist?token=\(downloadKey.token)").absoluteString
-            self.file = url.appendingPathComponent("file?token=\(downloadKey.token)").absoluteString
+            self.plist = url.appendingPathComponent("plist").absoluteString + "?token=\(downloadKey.token)"
+            self.file = url.appendingPathComponent("file").absoluteString + "?token=\(downloadKey.token)"
             self.ios = "itms-services://?action=download-manifest&url=\(self.plist)"
             self.appId = downloadKey.appId
         }
