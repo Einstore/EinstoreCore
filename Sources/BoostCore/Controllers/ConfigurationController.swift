@@ -30,7 +30,6 @@ class ConfigurationController: Controller {
                     return try guaranteedConfig(for: teamId, on: req).flatMap(to: Config.self) { configuration in
                         configuration.teamId = teamId
                         configuration.theme = data.theme
-                        configuration.apps = data.apps
                         return configuration.save(on: req)
                     }
                 }
@@ -44,7 +43,7 @@ class ConfigurationController: Controller {
 extension ConfigurationController {
     
     private static func guaranteedConfig(for teamId: DbCoreIdentifier, on req: Request) throws -> Future<Config> {
-        return try Config.query(on: req).filter(\Config.teamId == teamId).first().map(to: Config.self) { configuration in
+        return Config.query(on: req).filter(\Config.teamId == teamId).first().map(to: Config.self) { configuration in
             guard let configuration = configuration else {
                 let theme = Config.Theme(
                     primaryColor: "000000",

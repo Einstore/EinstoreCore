@@ -18,31 +18,7 @@ public typealias Configs = [Config]
 
 final public class Config: DbCoreModel {
     
-    public struct Theme: Content { //, ReflectionDecodable, PostgreSQLDataConvertible {
-        
-//        public static func reflectDecoded() throws -> (Config.Theme, Config.Theme) {
-//            <#code#>
-//        }
-//
-//        public static func reflectDecodedIsLeft(_ item: Config.Theme) throws -> Bool {
-//            <#code#>
-//        }
-//
-//        public static func convertFromPostgreSQLData(_ data: PostgreSQLData) throws -> Config.Theme {
-//            <#code#>
-//        }
-//
-//        public func convertToPostgreSQLData() throws -> PostgreSQLData {
-//            <#code#>
-//        }
-        
-//        public static func reflectDecoded() throws -> (Config.Theme, Config.Theme) {
-//
-//        }
-//
-//        public static func reflectDecodedIsLeft(_ item: Config.Theme) throws -> Bool {
-//            return false
-//        }
+    public struct Theme: Content {
         
         public let primaryColor: String
         public let primaryBackgroundColor: String
@@ -55,6 +31,7 @@ final public class Config: DbCoreModel {
             case primaryButtonColor = "primary_button_color"
             case primaryButtonBackgroundColor = "primary_button_background_color"
         }
+        
     }
     
     public struct Apps: Content {
@@ -65,20 +42,17 @@ final public class Config: DbCoreModel {
     public var id: DbCoreIdentifier?
     public var teamId: DbCoreIdentifier?
     public var theme: Theme
-    public var apps: Apps?
     
     enum CodingKeys: String, CodingKey {
         case id
         case teamId = "team_id"
         case theme
-        case apps
     }
     
-    public init(id: DbCoreIdentifier? = nil, teamId: DbCoreIdentifier, theme: Theme, apps: Apps? = nil) {
+    public init(id: DbCoreIdentifier? = nil, teamId: DbCoreIdentifier, theme: Theme) {
         self.id = id
         self.teamId = teamId
         self.theme = theme
-        self.apps = apps
     }
     
 }
@@ -97,14 +71,13 @@ extension Config {
 
 extension Config: Migration {
     
-//    public static func prepare(on connection: DbCoreConnection) -> Future<Void> {
-//        return Database.create(self, on: connection) { (schema) in
-//            schema.field(for: \Config.id)
-//            schema.field(for: \Config.teamId)
-//            schema.field(for: \.theme, type: .jsonb)
-//            schema.field(for: \.theme, type: .jsonb)
-//        }
-//    }
+    public static func prepare(on connection: DbCoreConnection) -> Future<Void> {
+        return Database.create(self, on: connection) { (schema) in
+            schema.field(for: \Config.id)
+            schema.field(for: \Config.teamId)
+            schema.field(for: \.theme)
+        }
+    }
     
     public static func revert(on connection: DbCoreConnection) -> Future<Void> {
         return Database.delete(Config.self, on: connection)
