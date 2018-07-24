@@ -27,7 +27,7 @@ final public class UploadKey: DbCoreModel {
         public var expires: Date?
     }
     
-    public struct Display: Content {
+    public struct Display: DbCoreModel {
         
         public var id: DbCoreIdentifier?
         public var teamId: DbCoreIdentifier

@@ -271,11 +271,7 @@ class AppsController: Controller {
                                     guard let app = app else {
                                         throw Error.clusterInconsistency
                                     }
-                                    cluster.latestAppName = app.name
-                                    cluster.latestAppVersion = app.version
-                                    cluster.latestAppBuild = app.build
-                                    cluster.latestAppAdded = app.created
-                                    return cluster.save(on: req).flatten()
+                                    return cluster.add(app: app, on: req).flatten()
                                 }
                                 futures.append(save)
                             }

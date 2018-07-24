@@ -270,7 +270,7 @@ extension PostgreSQLConnection {
     /// Creates a test event loop and psql client.
     static func makeTest() throws -> PostgreSQLConnection {
         let hostname: String = "localhost"
-        let group = MultiThreadedEventLoopGroup(numThreads: 1)
+        let group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
         let client = try PostgreSQLConnection.connect(hostname: hostname, on: group) { error in
             XCTFail("\(error)")
             }.wait()

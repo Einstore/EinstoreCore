@@ -17,7 +17,11 @@ public typealias Clusters = [Cluster]
 
 final public class Cluster: DbCoreModel {
     
-    public struct Public: Content {
+    public struct Public: Model, Content, Equatable {
+        
+        public static var idKey = \Public.latestAppId
+        
+        public typealias Database = DbCoreDatabase
         
         public var latestAppName: String
         public var latestAppVersion: String
@@ -122,6 +126,20 @@ extension Cluster: Migration {
     
     public static func revert(on connection: DbCoreConnection) -> Future<Void> {
         return Database.delete(Cluster.self, on: connection)
+    }
+    
+}
+
+// MARK: Tools
+
+extension Cluster {
+    
+    func add(app: App, on req: Request) -> Future<Cluster> {
+        latestAppName = app.name
+        latestAppVersion = app.version
+        latestAppBuild = app.build
+        latestAppAdded = app.created
+        return save(on: req)
     }
     
 }

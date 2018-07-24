@@ -71,16 +71,16 @@ extension Config {
 
 extension Config: Migration {
     
-    public static func prepare(on connection: DbCoreConnection) -> Future<Void> {
-        return Database.create(self, on: connection) { (schema) in
-            schema.field(for: \Config.id)
-            schema.field(for: \Config.teamId)
-            schema.field(for: \.theme)
-        }
-    }
-    
-    public static func revert(on connection: DbCoreConnection) -> Future<Void> {
-        return Database.delete(Config.self, on: connection)
-    }
+//    public static func prepare(on connection: DbCoreConnection) -> Future<Void> {
+//        return Database.create(self, on: connection) { (schema) in
+//            schema.field(for: \Config.id)
+//            schema.field(for: \Config.teamId)
+//            schema.field(for: \.theme)
+//        }
+//    }
+//    
+//    public static func revert(on connection: DbCoreConnection) -> Future<Void> {
+//        return Database.delete(Config.self, on: connection)
+//    }
     
 }
