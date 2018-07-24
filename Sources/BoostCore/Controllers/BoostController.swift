@@ -51,7 +51,7 @@ public class BoostController: Controller {
                 for platform in platforms {
                     for name in appNames {
                         let identifier = "io.liveui.\(name.lowercased())"
-                        var build = Int(arc4random_uniform(5000) + 1)
+                        var build = Int(Color.randomInt(max: 5000) + 1)
                         var cluster: Cluster? = nil
                         for i1 in 0...5 {
                             for i2 in 0...5 {
