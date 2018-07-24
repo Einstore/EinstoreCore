@@ -9,6 +9,7 @@ import Foundation
 import Vapor
 import ErrorsCore
 import ApiCore
+import ImageCore
 
 
 public class BoostController: Controller {

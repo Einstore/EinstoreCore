@@ -30,22 +30,26 @@ let package = Package(
                 "BoostCore"
             ]
         ),
-        .target(name: "BoostRun", dependencies: [
-            "BoostApp"
+        .target(
+            name: "BoostRun",
+            dependencies: [
+                "BoostApp"
             ]
         ),
-        .target(name: "BoostCore", dependencies: [
-            "Vapor",
-            "Fluent",
-            "FluentPostgreSQL",
-            "ApiCore",
-            "ErrorsCore",
-            "DbCore",
-            "SwiftShell",
-            "MailCore",
-            "SettingsCore",
-            "S3",
-            "Configure"
+        .target(
+            name: "BoostCore",
+            dependencies: [
+                "Vapor",
+                "Fluent",
+                "FluentPostgreSQL",
+                "ApiCore",
+                "ErrorsCore",
+                "DbCore",
+                "SwiftShell",
+                "MailCore",
+                "SettingsCore",
+                "S3",
+                "Configure"
             ]
         ),
         .target(
@@ -59,12 +63,14 @@ let package = Package(
                 "MailCoreTestTools"
             ]
         ),
-        .testTarget(name: "BoostCoreTests", dependencies: [
-            "BoostCore",
-            "VaporTestTools",
-            "FluentTestTools",
-            "ApiCoreTestTools",
-            "BoostCoreTestTools"
+        .testTarget(
+            name: "BoostCoreTests",
+            dependencies: [
+                "BoostCore",
+                "VaporTestTools",
+                "FluentTestTools",
+                "ApiCoreTestTools",
+                "BoostCoreTestTools"
             ]
         )
     ]
