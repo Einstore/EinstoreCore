@@ -18,17 +18,8 @@ public typealias Apps = [App]
 
 final public class App: DbCoreModel {
     
+    /// Platform
     public enum Platform: String, Codable, CaseIterable, ReflectionDecodable {
-        
-        // TODO: The following needs to be refactored as it only contains "guessed" values!!!!!!!!!
-        public static func keyStringIsTrue(_ item: App.Platform) -> Bool {
-            return true
-        }
-        
-        public static func reflectDecoded() throws -> (App.Platform, App.Platform) {
-            return (.ios, .unknown)
-        }
-        
         case unknown
         case ios = "ios"
         case tvos = "tvos"
@@ -38,6 +29,21 @@ final public class App: DbCoreModel {
         case macos = "macos"
         case windows = "windows"
         
+        /// All available cases
+        public static var allCases: [Platform] {
+            return [
+                .unknown,
+                .ios,
+                .tvos,
+                .url,
+                .simulator,
+                .android,
+                .macos,
+                .windows
+            ]
+        }
+        
+        /// File extension
         public var fileExtension: String {
             switch self {
             case .ios:
@@ -49,6 +55,7 @@ final public class App: DbCoreModel {
             }
         }
         
+        /// File MIME
         public var mime: String {
             switch self {
             case .ios:
