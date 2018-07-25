@@ -1,5 +1,5 @@
 //
-//  Configuration.swift
+//  Config.swift
 //  BoostCore
 //
 //  Created by Ondrej Rafaj on 11/04/2018.

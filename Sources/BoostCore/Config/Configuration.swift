@@ -38,6 +38,7 @@ extension BoostCore.Configuration {
     public func loadEnv() {
         // Root
         load("boostcore.filesystem.root_temp_path", to: &filesystem.rootTempPath)
+        load("boostcore.filesystem.app_destination_path", to: &filesystem.appDestinationPath)
     }
     
 }
