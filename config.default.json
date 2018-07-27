@@ -18,5 +18,18 @@
 			"domain": "sandbox-domain.mailgun.org",
 			"key": "secret-key"
 		}
+	},
+	"storage": {
+		"local": {
+			"root": "/tmp/Boost"
+		},
+		"s3": {
+			"enabled": false,
+			"bucket": "",
+			"access_key": "",
+			"secret_key": "",
+			"region": "eu-west-2",
+			"security_token": null
+		}
 	}
 }
