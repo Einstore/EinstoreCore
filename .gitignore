@@ -12,6 +12,9 @@ DerivedData/
 .DS_Store
 *_Info.plist
 
+# Local configuration
+/config.local.json
+
 # End of https://www.gitignore.io/api/vapor
 /BoostCore.xcodeproj/GeneratedModuleMap
 /BoostCore.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
