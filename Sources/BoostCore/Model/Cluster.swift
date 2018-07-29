@@ -15,6 +15,7 @@ import FluentPostgreSQL
 public typealias Clusters = [Cluster]
 
 
+/// Cluster is a logical entry grouping apps bundle id and platform
 final public class Cluster: DbCoreModel {
     
     public struct Public: Model, Content, Equatable {

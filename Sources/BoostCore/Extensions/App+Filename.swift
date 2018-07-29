@@ -28,7 +28,7 @@ extension App {
             return nil
         }
         
-        return URL(fileURLWithPath: "/Apps")
+        return URL(fileURLWithPath: BoostCoreBase.configuration.storage.appDestinationPath)
             .appendingPathComponent(created.dateFolderPath)
             .appendingPathComponent(id.uuidString)
     }
@@ -45,7 +45,7 @@ extension App {
     
     /// Temporary app folder
     public static func tempAppFolder(on req: Request) -> URL {
-        return URL(fileURLWithPath: "/tmp/Boost").appendingPathComponent(req.sessionId.uuidString)
+        return URL(fileURLWithPath: BoostCoreBase.configuration.storage.rootTempPath).appendingPathComponent(req.sessionId.uuidString)
     }
     
     /// Temporary app filepath

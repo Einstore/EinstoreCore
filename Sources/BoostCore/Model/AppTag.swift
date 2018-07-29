@@ -11,6 +11,7 @@ import DbCore
 import Vapor
 
 
+/// Join table between Apps and Tags
 public final class AppTag: ModifiablePivot, DbCoreModel {
     
     public typealias Left = App

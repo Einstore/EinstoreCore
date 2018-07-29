@@ -56,6 +56,45 @@ public class BoostCoreBase {
         }
     }
     
+    /// Configuration cache
+    static var _configuration: BoostCore.Configuration?
+    
+    /// Main system configuration
+    public static var configuration: BoostCore.Configuration {
+        get {
+            if _configuration == nil {
+//                do {
+//                    guard let path = Environment.get("CONFIG_PATH") else {
+//                        let conf = try BoostCore.Configuration.load(fromFile: "config.default.json")
+//                        conf.loadEnv()
+//                        _configuration = conf
+//                        return conf
+//                    }
+//                    let conf = try BoostCore.Configuration.load(fromFile: path)
+//                    conf.loadEnv()
+//                    _configuration = conf
+//                    return conf
+//                } catch {
+//                    if let error = error as? DecodingError {
+//                        fatalError("Invalid configuration file: \(error.reason)")
+//                    } else {
+                        _configuration = BoostCore.Configuration(
+                            storage: Configuration.Storage(
+                                rootTempPath: "tmp",
+                                appDestinationPath: "test-apps"
+                            )
+                        )
+//                    }
+//                }
+            }
+            guard let configuration = _configuration else {
+                fatalError("Configuration couldn't be loaded!")
+            }
+            return configuration
+        }
+    }
+    
+    /// Main Vapor configuration method
     public static func configure(_ config: inout Vapor.Config, _ env: inout Vapor.Environment, _ services: inout Services) throws {
         ApiAuthMiddleware.allowedGetUri.append("/apps/plist")
         ApiAuthMiddleware.allowedGetUri.append("/apps/file")

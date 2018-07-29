@@ -28,8 +28,10 @@
 			"bucket": "",
 			"access_key": "",
 			"secret_key": "",
-			"region": "eu-west-2",
+			"region": "us-east-1",
 			"security_token": null
-		}
+		},
+		"root_temp_path": "temp",
+		"app_destination_path": "apps"
 	}
-}
+}	

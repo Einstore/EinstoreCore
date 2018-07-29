@@ -14,9 +14,9 @@ import ApiCore
 public class Configuration: Configurable {
     
     /// Boost filesystem settings
-    public class Filesystem: Codable {
+    public class Storage: Codable {
         
-        /// Root temp folder path
+        /// Root temp folder path (default /tmp/Boost)
         public internal(set) var rootTempPath: String
         
         /// Destination path for apps and their assets
@@ -24,10 +24,26 @@ public class Configuration: Configurable {
         /// - For local filesystem an absolute folder path
         public internal(set) var appDestinationPath: String
         
+        /// Initializer
+        init(rootTempPath: String, appDestinationPath: String) {
+            self.rootTempPath = rootTempPath
+            self.appDestinationPath = appDestinationPath
+        }
+        
+        enum CodingKeys: String, CodingKey {
+            case rootTempPath = "root_temp_path"
+            case appDestinationPath = "app_destination_path"
+        }
+        
     }
     
     /// Filesystem
-    public internal(set) var filesystem: Filesystem
+    public internal(set) var storage: Storage
+    
+    /// Initializer
+    init(storage: Storage) {
+        self.storage = storage
+    }
     
 }
 
@@ -37,8 +53,8 @@ extension BoostCore.Configuration {
     /// Update from environmental variables
     public func loadEnv() {
         // Root
-        load("boostcore.filesystem.root_temp_path", to: &filesystem.rootTempPath)
-        load("boostcore.filesystem.app_destination_path", to: &filesystem.appDestinationPath)
+        load("boostcore.storage.root_temp_path", to: &storage.rootTempPath)
+        load("boostcore.storage.app_destination_path", to: &storage.appDestinationPath)
     }
     
 }
