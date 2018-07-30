@@ -114,7 +114,9 @@ extension Extractor {
         }
         
         return Cluster.query(on: req).filter(\Cluster.identifier == appIdentifier).filter(\Cluster.platform == platform).first().flatMap(to: App.self) { cluster in
-            let app = App(teamId: teamId, clusterId: (cluster?.id ?? UUID()), name: appName, identifier: appIdentifier, version: self.versionLong ?? "0.0", build: self.versionShort ?? "0", platform: platform, hasIcon: (self.iconData != nil))
+            let attr = try FileManager.default.attributesOfItem(atPath: self.file.path)
+            let size = Int(attr[FileAttributeKey.size] as! UInt64)
+            let app = App(teamId: teamId, clusterId: (cluster?.id ?? UUID()), name: appName, identifier: appIdentifier, version: self.versionLong ?? "0.0", build: self.versionShort ?? "0", platform: platform, size: size, hasIcon: (self.iconData != nil))
             guard let cluster = cluster, cluster.id != nil else {
                 let cluster = Cluster(latestApp: app)
                 return cluster.save(on: req).map(to: App.self) { cluster in

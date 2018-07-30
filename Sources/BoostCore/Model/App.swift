@@ -88,6 +88,7 @@ final public class App: DbCoreModel {
     public var build: String
     public var platform: Platform
     public var created: Date
+    public var size: Int
     public var info: String?
     public var hasIcon: Bool
     
@@ -101,12 +102,13 @@ final public class App: DbCoreModel {
         case build
         case platform
         case created
+        case size
         case info
         case hasIcon = "icon"
     }
 
 
-    public init(id: DbCoreIdentifier? = nil, teamId: DbCoreIdentifier? = nil, clusterId: DbCoreIdentifier, name: String, identifier: String, version: String, build: String, platform: Platform, info: String? = nil, hasIcon: Bool = false) {
+    public init(id: DbCoreIdentifier? = nil, teamId: DbCoreIdentifier? = nil, clusterId: DbCoreIdentifier, name: String, identifier: String, version: String, build: String, platform: Platform, size: Int, info: String? = nil, hasIcon: Bool = false) {
         self.id = id
         self.teamId = teamId
         self.clusterId = clusterId
@@ -116,6 +118,7 @@ final public class App: DbCoreModel {
         self.build = build
         self.platform = platform
         self.created = Date()
+        self.size = size
         self.info = info
         self.hasIcon = hasIcon
     }
@@ -155,6 +158,7 @@ extension App: Migration {
             schema.field(for: \.build, type: .varchar(20))
             schema.field(for: \.platform, type: .varchar(10))
             schema.field(for: \App.created)
+            schema.field(for: \App.size)
             schema.field(for: \.info, type: .text)
             schema.field(for: \App.hasIcon, type: .boolean)
         }

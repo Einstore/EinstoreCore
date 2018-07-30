@@ -71,20 +71,26 @@ public class BoostCoreBase {
 //                        return conf
 //                    }
 //                    let conf = try BoostCore.Configuration.load(fromFile: path)
+//                    // Override any properties with ENV
 //                    conf.loadEnv()
 //                    _configuration = conf
 //                    return conf
 //                } catch {
 //                    if let error = error as? DecodingError {
+//                        // Should config exist but is invalid, crash
 //                        fatalError("Invalid configuration file: \(error.reason)")
 //                    } else {
+                        // Create default configuration
                         _configuration = BoostCore.Configuration(
                             storage: Configuration.Storage(
                                 rootTempPath: "tmp",
-                                appDestinationPath: "test-apps"
+                                appDestinationPath: "test-apps" // TODO: Make this non-test!!!!!!!
                             )
                         )
+                
 //                    }
+                        // Override any properties with ENV
+                        _configuration?.loadEnv()
 //                }
             }
             guard let configuration = _configuration else {
