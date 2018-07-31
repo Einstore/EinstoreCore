@@ -7,6 +7,7 @@
 
 import Foundation
 import Vapor
+import ApiCore
 
 
 /// Helpers for App
@@ -27,30 +28,36 @@ extension App {
         guard let id = self.id else {
             return nil
         }
-        
-        return URL(fileURLWithPath: BoostCoreBase.configuration.storage.appDestinationPath)
+        // TODO: This would probably deserve a little refactor!
+        let path = URL(fileURLWithPath: BoostCoreBase.configuration.storage.appDestinationPath)
             .appendingPathComponent(created.dateFolderPath)
             .appendingPathComponent(id.uuidString)
+        return path
     }
     
     /// Icon server path
     public var iconPath: URL? {
-        return targetFolderPath?.appendingPathComponent(iconName)
+        let path = targetFolderPath?.appendingPathComponent(iconName)
+        return path
     }
     
     /// App file path
     public var appPath: URL? {
-        return targetFolderPath?.appendingPathComponent(fileName)
+        let path = targetFolderPath?.appendingPathComponent(fileName)
+        return path
     }
     
     /// Temporary app folder
-    public static func tempAppFolder(on req: Request) -> URL {
-        return URL(fileURLWithPath: BoostCoreBase.configuration.storage.rootTempPath).appendingPathComponent(req.sessionId.uuidString)
+    public static func localTempAppFolder(on req: Request) -> URL {
+        let path = URL(fileURLWithPath: BoostCoreBase.configuration.storage.rootTempPath)
+            .appendingPathComponent(req.sessionId.uuidString)
+        return path
     }
     
     /// Temporary app filepath
-    public static func tempAppFile(on req: Request) -> URL {
-        return tempAppFolder(on: req).appendingPathComponent("tmp.boost")
+    public static func localTempAppFile(on req: Request) -> URL {
+        let path = localTempAppFolder(on: req).appendingPathComponent("tmp.boost")
+        return path
     }
     
 }

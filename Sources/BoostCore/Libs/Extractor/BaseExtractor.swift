@@ -7,6 +7,7 @@
 
 import Foundation
 import Vapor
+import ApiCore
 
 
 class BaseExtractor {
@@ -31,7 +32,9 @@ class BaseExtractor {
     required init(file: URL, request req: Request) throws {
         self.request = req
         self.file = file
-        self.archive = App.tempAppFolder(on: req)
+        
+        self.archive = URL(fileURLWithPath: ApiCoreBase.configuration.storage.local.root)
+            .appendingPathComponent(App.localTempAppFolder(on: req).relativePath)
         
         // TODO: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Following needs to be refactored so the structure 100% exists before we do anything else !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         self.createFolderStructure = try BoostCoreBase.tempFileHandler.createFolderStructure(url: self.archive, on: req)

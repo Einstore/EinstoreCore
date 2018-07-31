@@ -226,6 +226,7 @@ class AppsController: Controller {
                     }
                     let response = try req.response.basic(status: .ok)
                     response.http.headers = HTTPHeaders([("Content-Type", "\(app.platform.mime)"), ("Content-Disposition", "attachment; filename=\"\(app.name.safeText).\(app.platform.fileExtension)\"")])
+                    // TODO: Make this full path!!!!
                     let appData = try Data(contentsOf: app.appPath!, options: [])
                     response.http.body = HTTPBody(data: appData)
                     return response
@@ -340,8 +341,11 @@ extension AppsController {
         // TODO: Change to copy file when https://github.com/vapor/core/pull/83 is done
         return req.fileData.flatMap(to: Response.self) { (data) -> Future<Response> in
             // TODO: -------- REFACTOR ---------
-            return try BoostCoreBase.tempFileHandler.createFolderStructure(url: App.tempAppFolder(on: req), on: req).flatMap(to: Response.self) { _ in
-                let tempFilePath = App.tempAppFile(on: req)
+            let url = URL(fileURLWithPath: ApiCoreBase.configuration.storage.local.root)
+                .appendingPathComponent(App.localTempAppFolder(on: req).relativePath)
+            return try BoostCoreBase.tempFileHandler.createFolderStructure(url: url, on: req).flatMap(to: Response.self) { _ in
+                let tempFilePath = URL(fileURLWithPath: ApiCoreBase.configuration.storage.local.root)
+                    .appendingPathComponent(App.localTempAppFile(on: req).relativePath)
                 try data.write(to: tempFilePath)
                 
                 let output: RunOutput = SwiftShell.run("unzip", "-l", tempFilePath.path)

@@ -137,14 +137,16 @@ extension Extractor {
     
     /// Save app into the DB
     func save(_ app: App, request req: Request) throws -> Future<Void> {
-        guard let path = app.appPath?.path else {
+        guard let path = app.appPath?.relativePath else {
             throw ExtractorError.errorSavingFile
         }
         
         let fm = try req.makeFileCore()
-        let tempFile = App.tempAppFile(on: req).path
-        return try fm.move(file: tempFile.path, to: path, on: req).flatMap(to: Void.self) { _ in
-            if let iconData = self.iconData, let path = app.iconPath?.path, let mime = iconData.imageFileMediaType() {
+        // TODO: These paths need refactor, they have the root added to them in a few places. This should be coming from one method!!!!!
+        let tempFile = URL(fileURLWithPath: ApiCoreBase.configuration.storage.local.root)
+            .appendingPathComponent(App.localTempAppFile(on: req).relativePath).path
+        return try fm.move(file: tempFile, to: path, on: req).flatMap(to: Void.self) { _ in
+            if let iconData = self.iconData, let path = app.iconPath?.relativePath, let mime = iconData.imageFileMediaType() {
                 return try fm.save(file: iconData, to: path, mime: mime, on: req).map(to: Void.self) { _ in
                     try self.cleanUp()
                     return Void()
