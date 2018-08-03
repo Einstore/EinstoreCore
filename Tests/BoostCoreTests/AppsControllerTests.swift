@@ -45,6 +45,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
     
     static let allTests: [(String, Any)] = [
         ("testGetAppsOverview", testGetAppsOverview),
+        ("testGetApp", testGetApp),
         ("testDeleteApp", testDeleteApp),
         ("testAppTags", testAppTags),
         ("testCantDeleteOtherPeoplesApp", testCantDeleteOtherPeoplesApp),
@@ -93,6 +94,19 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         let objects = r.response.testable.content(as: Apps.self)!
         
         XCTAssertEqual(objects.count, 99, "There should be right amount of apps")
+        
+        XCTAssertTrue(r.response.testable.has(statusCode: .ok), "Wrong status code")
+        XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing content type")
+    }
+    
+    func testGetApp() {
+        let req = HTTPRequest.testable.get(uri: "/apps/\(app1.id!.uuidString)", authorizedUser: user1, on: app)
+        let r = app.testable.response(to: req)
+        
+        r.response.testable.debug()
+        
+        // By getting the content we make sure we got the right model
+        _ = r.response.testable.content(as: App.Public.self)!
         
         XCTAssertTrue(r.response.testable.has(statusCode: .ok), "Wrong status code")
         XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing content type")
