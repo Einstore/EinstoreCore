@@ -75,7 +75,7 @@ class UploadKeysControllerTests: XCTestCase, UploadKeyTestCaseSetup, LinuxTests 
         XCTAssertEqual(keys.count, 3, "There should be right amount of keys for the user")
         
         XCTAssertTrue(r.response.testable.has(statusCode: .ok), "Wrong status code")
-        XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing content type")
+        XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing or invalid content type")
     }
     
     func testGetUploadKeysForTeam() {
@@ -93,7 +93,7 @@ class UploadKeysControllerTests: XCTestCase, UploadKeyTestCaseSetup, LinuxTests 
         }
         
         XCTAssertTrue(r.response.testable.has(statusCode: .ok), "Wrong status code")
-        XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing content type")
+        XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing or invalid content type")
     }
     
     func testCreateUploadKey() {
@@ -121,7 +121,7 @@ class UploadKeysControllerTests: XCTestCase, UploadKeyTestCaseSetup, LinuxTests 
         XCTAssertEqual(key.expires, expiryDate, "Team Expity doesn't match")
         
         XCTAssertTrue(r.response.testable.has(statusCode: .created), "Wrong status code")
-        XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing content type")
+        XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing or invalid content type")
         
         count = app.testable.count(allFor: UploadKey.self)
         XCTAssertEqual(count, 5, "There should be two team entries in the db at the beginning")
@@ -148,7 +148,7 @@ class UploadKeysControllerTests: XCTestCase, UploadKeyTestCaseSetup, LinuxTests 
         XCTAssertEqual(formatter.string(from: key.expires!), formatter.string(from: post.expires!), "Expiry date hasn't been updated")
         
         XCTAssertTrue(r.response.testable.has(statusCode: .ok), "Wrong status code")
-        XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing content type")
+        XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing or invalid content type")
     }
     
     func testDeleteUploadKey() {
@@ -181,7 +181,7 @@ class UploadKeysControllerTests: XCTestCase, UploadKeyTestCaseSetup, LinuxTests 
         XCTAssertEqual(key.id!, key4.id!, "Key has not been retrieved")
         
         XCTAssertTrue(r.response.testable.has(statusCode: .ok), "Wrong status code")
-        XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing content type")
+        XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing or invalid content type")
     }
     
 }

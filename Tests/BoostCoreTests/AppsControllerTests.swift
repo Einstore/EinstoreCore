@@ -96,7 +96,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         XCTAssertEqual(objects.count, 99, "There should be right amount of apps")
         
         XCTAssertTrue(r.response.testable.has(statusCode: .ok), "Wrong status code")
-        XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing content type")
+        XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing or invalid content type")
     }
     
     func testGetApp() {
@@ -109,7 +109,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         _ = r.response.testable.content(as: App.Public.self)!
         
         XCTAssertTrue(r.response.testable.has(statusCode: .ok), "Wrong status code")
-        XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing content type")
+        XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing or invalid content type")
     }
     
     func testDeleteApp() {
@@ -129,7 +129,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         // TODO: Test all files were deleted!!!!
         
         XCTAssertTrue(r.response.testable.has(statusCode: .noContent), "Wrong status code")
-        XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing content type")
+        XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing or invalid content type")
         
         count = app.testable.count(allFor: App.self)
         XCTAssertEqual(count, 106, "There should be right amount of apps to finish with")
@@ -158,7 +158,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         // TODO: Test files are still there!!!
         
         XCTAssertTrue(r.response.testable.has(statusCode: .notFound), "Wrong status code")
-        XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing content type")
+        XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing or invalid content type")
         
         count = app.testable.count(allFor: App.self)
         XCTAssertEqual(count, 107, "There should be right amount of apps to finish with")
