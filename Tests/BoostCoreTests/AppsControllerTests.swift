@@ -50,6 +50,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         ("testCantDeleteOtherPeoplesApp", testCantDeleteOtherPeoplesApp),
         ("testOldIosApp", testOldIosApp),
         ("testOldIosAppTokenUpload", testOldIosAppTokenUpload),
+        ("testAppIconIsRetrieved", testAppIconIsRetrieved),
         ("testUnobfuscatedApkUploadWithJWTAuth", testUnobfuscatedApkUploadWithJWTAuth),
         ("testObfuscatedApkUploadWithJWTAuth", testObfuscatedApkUploadWithJWTAuth),
         ("testBadTokenUpload", testBadTokenUpload),

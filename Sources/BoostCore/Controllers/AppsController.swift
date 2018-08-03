@@ -116,7 +116,8 @@ class AppsController: Controller {
         // Get list of apps based on input parameters
         router.get("apps") { (req) -> Future<Apps> in
             return try req.me.teams().flatMap(to: Apps.self) { teams in
-                return try App.query(on: req).filter(\App.teamId ~~ teams.ids).sort(\App.created, .descending).appFilters(on: req).all()
+                let q = try App.query(on: req).filter(\App.teamId ~~ teams.ids).sort(\App.created, .descending).appFilters(on: req)
+                return q.decode(App.Public.self).all()
             }
         }
         
@@ -151,10 +152,10 @@ class AppsController: Controller {
         }
         
         // App detail
-        router.get("apps", DbCoreIdentifier.parameter) { (req) -> Future<App> in
+        router.get("apps", DbCoreIdentifier.parameter) { (req) -> Future<App.Public> in
             let appId = try req.parameters.next(DbCoreIdentifier.self)
-            return try req.me.teams().flatMap(to: App.self) { teams in
-                return try App.query(on: req).safeApp(appId: appId, teamIds: teams.ids).first().map(to: App.self) { app in
+            return try req.me.teams().flatMap(to: App.Public.self) { teams in
+                return try App.query(on: req).safeApp(appId: appId, teamIds: teams.ids).decode(App.Public.self).first().map(to: App.Public.self) { app in
                     guard let app = app else {
                         throw ErrorsCore.HTTPError.notFound
                     }

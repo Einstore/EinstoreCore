@@ -13,7 +13,7 @@ import DbCore
 import ApiCore
 
 
-public typealias Apps = [App]
+public typealias Apps = [App.Public]
 
 
 final public class App: DbCoreModel {
@@ -69,7 +69,7 @@ final public class App: DbCoreModel {
         
     }
     
-    public struct Public: Content {
+    public struct Public: DbCoreModel {
         
         public var id: DbCoreIdentifier?
         public var teamId: DbCoreIdentifier?
