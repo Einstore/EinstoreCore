@@ -157,6 +157,29 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         doTestTokenUpload(appFileName: "app.ipa", platform: .ios, name: "iDeviant", identifier: "com.fuerteint.iDeviant", version: "4.0", build: "1.0", iconSize: 4776)
     }
     
+    func testAppIconIsRetrieved() {
+        // Preps
+        let resourcesIconUrl = Application.testable.paths.resourcesUrl.appendingPathComponent("icons").appendingPathComponent("liveui.png")
+        
+        let fakeReq = app.testable.fakeRequest()
+        let fc = try! fakeReq.makeFileCore()
+        let postData = try! Data(contentsOf: resourcesIconUrl)
+        try! fc.save(file: postData, to: app1!.iconPath!.relativePath, mime: MediaType.png, on: fakeReq).wait()
+        
+        // Test
+        let req = HTTPRequest.testable.get(uri: "/apps/\(app1.id!.uuidString)/icon", authorizedUser: user1, on: app)
+        let r = app.testable.response(to: req)
+        
+        r.response.testable.debug()
+        
+        XCTAssertEqual(r.response.http.body.data!.count, postData.count, "Icon needs to be the same")
+        XCTAssertTrue(r.response.testable.has(statusCode: .ok), "Wrong status code")
+        XCTAssertTrue(r.response.testable.has(contentType: "image/png"), "Missing or incorrect content type")
+        
+        // Cleaning
+        try! fc.delete(file: app1!.iconPath!.relativePath, on: fakeReq).wait()
+    }
+    
     func testBadTokenUpload() {
         let appUrl = Application.testable.paths.resourcesUrl.appendingPathComponent("apps").appendingPathComponent("app.ipa")
         let postData = try! Data(contentsOf: appUrl)
