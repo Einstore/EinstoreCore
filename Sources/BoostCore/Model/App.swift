@@ -69,6 +69,50 @@ final public class App: DbCoreModel {
         
     }
     
+    public struct Public: Content {
+        
+        public var id: DbCoreIdentifier?
+        public var teamId: DbCoreIdentifier?
+        public var name: String
+        public var identifier: String
+        public var version: String
+        public var build: String
+        public var platform: Platform
+        public var created: Date
+        public var size: Int
+        public var info: String?
+        public var hasIcon: Bool
+        
+        enum CodingKeys: String, CodingKey {
+            case id
+            case teamId = "team_id"
+            case name
+            case identifier
+            case version
+            case build
+            case platform
+            case created
+            case size
+            case info
+            case hasIcon = "icon"
+        }
+        
+        public init(_ app: App) {
+            self.id = app.id
+            self.teamId = app.teamId
+            self.name = app.name
+            self.identifier = app.identifier
+            self.version = app.version
+            self.build = app.build
+            self.platform = app.platform
+            self.created = app.created
+            self.size = app.size
+            self.info = app.info
+            self.hasIcon = app.hasIcon
+        }
+        
+    }
+    
     public struct Info: Content {
         
         public var teamId: DbCoreIdentifier
@@ -89,6 +133,7 @@ final public class App: DbCoreModel {
     public var platform: Platform
     public var created: Date
     public var size: Int
+    public var sizeTotal: Int
     public var info: String?
     public var hasIcon: Bool
     
@@ -103,12 +148,13 @@ final public class App: DbCoreModel {
         case platform
         case created
         case size
+        case sizeTotal = "size_total"
         case info
         case hasIcon = "icon"
     }
 
 
-    public init(id: DbCoreIdentifier? = nil, teamId: DbCoreIdentifier? = nil, clusterId: DbCoreIdentifier, name: String, identifier: String, version: String, build: String, platform: Platform, size: Int, info: String? = nil, hasIcon: Bool = false) {
+    public init(id: DbCoreIdentifier? = nil, teamId: DbCoreIdentifier? = nil, clusterId: DbCoreIdentifier, name: String, identifier: String, version: String, build: String, platform: Platform, size: Int, sizeTotal: Int, info: String? = nil, hasIcon: Bool = false) {
         self.id = id
         self.teamId = teamId
         self.clusterId = clusterId
@@ -119,6 +165,7 @@ final public class App: DbCoreModel {
         self.platform = platform
         self.created = Date()
         self.size = size
+        self.sizeTotal = sizeTotal
         self.info = info
         self.hasIcon = hasIcon
     }
@@ -159,6 +206,7 @@ extension App: Migration {
             schema.field(for: \.platform, type: .varchar(10))
             schema.field(for: \App.created)
             schema.field(for: \App.size)
+            schema.field(for: \App.sizeTotal)
             schema.field(for: \.info, type: .text)
             schema.field(for: \App.hasIcon, type: .boolean)
         }

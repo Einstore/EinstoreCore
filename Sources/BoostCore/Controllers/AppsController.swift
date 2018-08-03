@@ -163,6 +163,24 @@ class AppsController: Controller {
             }
         }
         
+        // App icon
+        router.get("apps", DbCoreIdentifier.parameter, "icon") { (req) -> Future<Response> in
+            let appId = try req.parameters.next(DbCoreIdentifier.self)
+            return try req.me.teams().flatMap(to: Response.self) { teams in
+                return try App.query(on: req).safeApp(appId: appId, teamIds: teams.ids).first().flatMap(to: Response.self) { app in
+                    guard let app = app, let path = app.iconPath?.relativePath else {
+                        throw ErrorsCore.HTTPError.notFound
+                    }
+                    let fm = try req.makeFileCore()
+                    
+                    let image = try fm.get(file: path, on: req)
+                    return image.flatMap({ data in
+                        return try data.asResponse(.ok, contentType: "image/png", to: req)
+                    })
+                }
+            }
+        }
+        
         // App download auth
         router.get("apps", DbCoreIdentifier.parameter, "auth") { (req) -> Future<Response> in
             let appId = try req.parameters.next(DbCoreIdentifier.self)
@@ -294,7 +312,7 @@ class AppsController: Controller {
                             futures.append(app.delete(on: req).flatten())
                             
                             // Delete all files
-                            guard let path = app.targetFolderPath?.path else {
+                            guard let path = app.targetFolderPath?.relativePath else {
                                 return try req.eventLoop.newSucceededFuture(result: req.response.internalServerError(message: "Unable to delete files"))
                             }
                             

@@ -20,7 +20,7 @@ extension TestableProperty where TestableType == App {
         let req = app.testable.fakeRequest()
         let identifier = (identifier ?? name.safeText)
         let cluster = Cluster.testable.guaranteedCluster(identifier: identifier, platform: platform, on: app)
-        let object = App(teamId: team.id!, clusterId: cluster.id!, name: name, identifier: identifier, version: version, build: build, platform: platform)
+        let object = App(teamId: team.id!, clusterId: cluster.id!, name: name, identifier: identifier, version: version, build: build, platform: platform, size: 5000, sizeTotal: 5678)
         cluster.appCount += 1
         _ = try! cluster.add(app: object, on: req).wait()
         return try! object.save(on: req).wait()

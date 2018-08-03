@@ -98,6 +98,10 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
     }
     
     func testDeleteApp() {
+        let fakeReq = app.testable.fakeRequest()
+        let fc = try! fakeReq.makeFileCore()
+        try! fc.save(file: ":)".data(using: .utf8)!, to: app1!.appPath!.relativePath, mime: MediaType(type: "application", subType: "octet-stream"), on: fakeReq).wait()
+        
         var count = app.testable.count(allFor: App.self)
         XCTAssertEqual(count, 107, "There should be right amount of apps to begin with")
         
@@ -167,8 +171,8 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         
         let object = r.response.testable.content(as: ErrorResponse.self)!
         
-        XCTAssertEqual(object.error, "auth_error", "Wrong code")
-        XCTAssertEqual(object.description, "Authentication has failed", "Wrong desctiption")
+        XCTAssertEqual(object.error, "auth_error.authentication_failed", "Wrong code")
+        XCTAssertEqual(object.description, "⚠️ [AuthError.auth_error.authentication_failed: Authentication has failed]", "Wrong desctiption")
     }
     
     func testUnobfuscatedApkUploadWithJWTAuth() {
@@ -229,17 +233,22 @@ extension AppsControllerTests {
         XCTAssertEqual(object.build, build ?? "0", "Wrong build")
         
         // Temp file should have been deleted
-        var pathUrl = App.tempAppFile(on: r.request)
+        var pathUrl = App.localTempAppFile(on: r.request)
         XCTAssertFalse(FileManager.default.fileExists(atPath: pathUrl.path), "Temporary file should have been deleted")
         
         // App should be saved in the persistent storage
         pathUrl = object.appPath!
-        XCTAssertTrue(FileManager.default.fileExists(atPath: pathUrl.path), "Persistent file should be present")
+        let appFullPath = URL(fileURLWithPath: ApiCoreBase.configuration.storage.local.root)
+            .appendingPathComponent(pathUrl.relativePath)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: appFullPath.path), "Persistent file should be present")
         
         // Test images are all ok
         if let iconSize = iconSize, let iconPath = object.iconPath {
-            XCTAssertTrue(FileManager.default.fileExists(atPath: iconPath.path), "Icon file should be present")
-            XCTAssertEqual(try! Data(contentsOf: iconPath).count, iconSize, "Icon file size doesn't match")
+            let iconFullPath = URL(fileURLWithPath: ApiCoreBase.configuration.storage.local.root)
+                .appendingPathComponent(iconPath.relativePath)
+            
+            XCTAssertTrue(FileManager.default.fileExists(atPath: iconFullPath.path), "Icon file should be present")
+            XCTAssertEqual(try? Data(contentsOf: iconFullPath).count, iconSize, "Icon file size doesn't match")
         }
         else if object.hasIcon {
             XCTFail("Icon is set on the App object but it has not been tested")
@@ -263,21 +272,4 @@ extension AppsControllerTests {
     }
     
 }
-
-
-extension PostgreSQLConnection {
-    
-    /// Creates a test event loop and psql client.
-    static func makeTest() throws -> PostgreSQLConnection {
-        let hostname: String = "localhost"
-        let group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-        let client = try PostgreSQLConnection.connect(hostname: hostname, on: group) { error in
-            XCTFail("\(error)")
-            }.wait()
-        _ = try client.authenticate(username: "boost", database: "boost-test", password: "aaaaaa").wait()
-        return client
-    }
-    
-}
-
 
