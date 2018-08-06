@@ -176,14 +176,13 @@ class Apk: BaseExtractor, Extractor {
             do {
                 manifest = try ApkManifest.decode.fromJSON(file: jsonUrl)
             } catch {
-                print(error)
                 throw error
             }
         }
     }
     
     /// Process app
-    func process(teamId: DbCoreIdentifier, on req: Request) throws -> Promise<App> {
+    func process(teamId: DbCoreIdentifier, on req: Request) throws -> Future<App> {
         let promise = request.eventLoop.newPromise(App.self)
         
         DispatchQueue.global().async {
@@ -207,7 +206,7 @@ class Apk: BaseExtractor, Extractor {
             }
         }
         
-        return promise
+        return promise.futureResult
     }
     
 }

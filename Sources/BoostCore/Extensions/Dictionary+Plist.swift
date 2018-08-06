@@ -6,15 +6,20 @@
 //
 
 import Foundation
+import Vapor
+//#if os(Linux)
+import SwiftShell
+//#endisf
 
 
 extension Dictionary where Key == String {
     
-    static func fill(fromPlist url: URL, format: PropertyListSerialization.PropertyListFormat = .binary) throws -> [String: AnyObject]? {
+    static func fill(fromPlist url: URL) throws -> [String: Any]? {
+        var format: PropertyListSerialization.PropertyListFormat = .binary
         let plistData: Data = try Data(contentsOf: url)
-        var varFormat: PropertyListSerialization.PropertyListFormat = format
-        let plist: [String: AnyObject]? = try PropertyListSerialization.propertyList(from: plistData, options: [], format: &varFormat) as? [String:AnyObject]
+        let plist = try PropertyListSerialization.propertyList(from: plistData, options: [], format: &format) as? [String: Any]
         return plist
     }
     
 }
+

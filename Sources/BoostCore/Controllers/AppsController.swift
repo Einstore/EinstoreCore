@@ -371,8 +371,6 @@ extension AppsController {
                 
                 let platform: App.Platform
                 if output.succeeded {
-                    print(output.stdout)
-                    
                     if output.stdout.contains("Payload/") {
                         platform = .ios
                     }
@@ -384,15 +382,14 @@ extension AppsController {
                     }
                 }
                 else {
-                    print(output.stderror)
                     throw ExtractorError.invalidAppContent
                 }
                 // */ -------- REFACTOR END (or just carry on and make me better!) ---------
                 
                 let extractor: Extractor = try BaseExtractor.decoder(file: tempFilePath.path, platform: platform, on: req)
                 do {
-                    let promise: Promise<App> = try extractor.process(teamId: teamId, on: req)
-                    return promise.futureResult.flatMap(to: Response.self) { app -> Future<Response> in
+                    let appFuture: Future<App> = try extractor.process(teamId: teamId, on: req)
+                    return appFuture.flatMap(to: Response.self) { app -> Future<Response> in
                         return app.save(on: req).flatMap(to: Response.self) { app -> Future<Response> in
                             return try extractor.save(app, request: req).flatMap(to: Response.self) { (_) -> Future<Response> in
                                 return try handleTags(on: req, app: app).flatMap(to: Response.self) { (_) -> Future<Response> in

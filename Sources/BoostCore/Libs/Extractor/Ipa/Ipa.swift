@@ -26,23 +26,12 @@ class Ipa: BaseExtractor, Extractor {
     
     // MARK: Processing
     
-    func process(teamId: DbCoreIdentifier, on req: Request) throws -> Promise<App> {
-        let promise = request.eventLoop.newPromise(App.self)
+    func process(teamId: DbCoreIdentifier, on req: Request) throws -> Future<App> {
+        run("unzip", "-o", file.path, "-d", archive.path)
+        try parse()
         
-        DispatchQueue.global().async {
-            do {
-                try runAndPrint("unzip", "-o", self.file.path, "-d", self.archive.path)
-                try self.parse()
-                
-                // TODO: Make the following unblocking!!!
-                let a = try self.app(platform: .ios, teamId: teamId, on: req).wait()
-                promise.succeed(result: a)
-            } catch {
-                promise.fail(error: error)
-            }
-        }
-        
-        return promise
+        let appFuture = try app(platform: .ios, teamId: teamId, on: req)
+        return appFuture
     }
     
 }
@@ -70,7 +59,7 @@ extension Ipa {
     }
     
     // TODO: Convert the implementation to use a Codable object
-    private func parseInfoPlistFile(_ plist: [String: AnyObject]) throws {
+    private func parseInfoPlistFile(_ plist: [String: Any]) throws {
         // Bundle ID
         guard let bundleId = plist["CFBundleIdentifier"] as? String else {
             throw ExtractorError.invalidAppContent
@@ -109,8 +98,8 @@ extension Ipa {
         }
     }
     
-    private func checkIcons(_ iconInfo: [String: AnyObject], files: [String]) throws {
-        guard let primaryIcon: [String: AnyObject] = iconInfo["CFBundlePrimaryIcon"] as? [String: AnyObject] else {
+    private func checkIcons(_ iconInfo: [String: Any], files: [String]) throws {
+        guard let primaryIcon: [String: Any] = iconInfo["CFBundlePrimaryIcon"] as? [String: Any] else {
             return
         }
         guard let icons: [String] = primaryIcon["CFBundleIconFiles"] as? [String] else {
@@ -141,12 +130,12 @@ extension Ipa {
 //        try runAndPrint("python", normalize.path, iconUrl.path)
     }
     
-    private func parseIcon(_ plist: [String: AnyObject]) throws {
+    private func parseIcon(_ plist: [String: Any]) throws {
         let files: [String] = try FileManager.default.contentsOfDirectory(atPath: payload.path)
-        if let iconInfo: [String: AnyObject] = plist["CFBundleIcons"] as? [String: AnyObject] {
+        if let iconInfo = plist["CFBundleIcons"] as? [String: Any] {
             try checkIcons(iconInfo, files: files)
         }
-        if let iconsInfoTablet: [String: AnyObject] = plist["CFBundleIcons~ipad"] as? [String: AnyObject] {
+        if let iconsInfoTablet = plist["CFBundleIcons~ipad"] as? [String: Any] {
             try checkIcons(iconsInfoTablet, files: files)
         }
     }
@@ -157,7 +146,7 @@ extension Ipa {
         var embeddedFile: URL = payload
         embeddedFile.appendPathComponent("Info.plist")
         
-        guard let plist: [String: AnyObject] = try [String: AnyObject].fill(fromPlist: embeddedFile) else {
+        guard let plist: [String: Any] = try [String: Any].fill(fromPlist: embeddedFile) else {
             throw ExtractorError.invalidAppContent
         }
         

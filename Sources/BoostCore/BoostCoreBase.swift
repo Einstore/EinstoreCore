@@ -63,6 +63,7 @@ public class BoostCoreBase {
     public static var configuration: BoostCore.Configuration {
         get {
             if _configuration == nil {
+                // TODO: Fix following!!!!!!!!!!!!!!!!!!
 //                do {
 //                    guard let path = Environment.get("CONFIG_PATH") else {
 //                        let conf = try BoostCore.Configuration.load(fromFile: "config.default.json")
@@ -84,7 +85,7 @@ public class BoostCoreBase {
                         _configuration = BoostCore.Configuration(
                             storage: Configuration.Storage(
                                 rootTempPath: "tmp",
-                                appDestinationPath: "test-apps" // TODO: Make this non-test!!!!!!!
+                                appDestinationPath: "apps"
                             )
                         )
                 
