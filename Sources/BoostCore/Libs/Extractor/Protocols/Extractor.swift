@@ -116,7 +116,7 @@ extension Extractor {
         return Cluster.query(on: req).filter(\Cluster.identifier == appIdentifier).filter(\Cluster.platform == platform).first().flatMap(to: App.self) { cluster in
             let attr = try FileManager.default.attributesOfItem(atPath: self.file.path)
             // TODO: Fix on linux (file size is not loading)!!!!!!!!!!
-            let size = Int((attr[FileAttributeKey.size] as? Int64) ?? 0)
+            let size = Int(truncating: (attr[FileAttributeKey.size] as? NSNumber) ?? 0)
             let iconDataSize = self.iconData?.count ?? 0
             let sizeTotal = size + iconDataSize
             let app = App(teamId: teamId, clusterId: (cluster?.id ?? UUID()), name: appName, identifier: appIdentifier, version: self.versionLong ?? "0.0", build: self.versionShort ?? "0", platform: platform, size: size, sizeTotal: sizeTotal, hasIcon: (iconDataSize > 0))
