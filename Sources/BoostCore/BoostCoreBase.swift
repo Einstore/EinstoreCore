@@ -103,10 +103,12 @@ public class BoostCoreBase {
     
     /// Main Vapor configuration method
     public static func configure(_ config: inout Vapor.Config, _ env: inout Vapor.Environment, _ services: inout Services) throws {
+        // Enable unsecured API endpoints
         ApiAuthMiddleware.allowedGetUri.append("/apps/plist")
         ApiAuthMiddleware.allowedGetUri.append("/apps/file")
         ApiAuthMiddleware.allowedPostUri.append("/apps")
         
+        // Add BoostCore models to the migrations
         DbCore.add(model: Cluster.self, database: .db)
         DbCore.add(model: App.self, database: .db)
         DbCore.add(model: DownloadKey.self, database: .db)
@@ -115,13 +117,18 @@ public class BoostCoreBase {
         DbCore.add(model: UploadKey.self, database: .db)
         DbCore.add(model: Config.self, database: .db)
         
+        // Setup SettingsCore
         try SettingsCore.configure(&config, &env, &services)
         
+        // Setup ApiCore
         try ApiCoreBase.configure(&config, &env, &services)
-        
         ApiCoreBase.installFutures.append({ req in
             return try Install.make(on: req)
         })
+        
+        // Verify all has been setup properly
+        
+        FlightCheck.tick()
     }
     
 }

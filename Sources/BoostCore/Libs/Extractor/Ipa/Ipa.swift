@@ -126,7 +126,7 @@ extension Ipa {
         try iconData.write(to: iconUrl)
         
 //        // TODO: Normalize binary image
-//        let normalize = binUrl.appendingPathComponent("normalize.py")
+//        let normalize = ThirdpartyUtilities.normalizePNG
 //        try runAndPrint("python", normalize.path, iconUrl.path)
     }
     

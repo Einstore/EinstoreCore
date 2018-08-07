@@ -280,7 +280,7 @@ extension AppsControllerTests {
             .appendingPathComponent(pathUrl.relativePath)
         XCTAssertTrue(FileManager.default.fileExists(atPath: appFullPath.path), "Persistent file should be present")
         
-        // Test images are all ok
+        // Test images are all oke
         if let iconSize = iconSize, let iconPath = object.iconPath {
             let iconFullPath = URL(fileURLWithPath: ApiCoreBase.configuration.storage.local.root)
                 .appendingPathComponent(iconPath.relativePath)

@@ -6,8 +6,8 @@
 //
 
 import Foundation
-@testable import ApiCore
-import BoostCore
+@_exported @testable import ApiCore
+@_exported @testable import BoostCore
 import Vapor
 import VaporTestTools
 import ApiCoreTestTools
@@ -21,6 +21,8 @@ extension TestableProperty where TestableType: Application {
             _ = ApiCoreBase.configuration
             ApiCoreBase._configuration?.database.user = "test"
             ApiCoreBase._configuration?.database.database = "boost-test"
+            ApiCoreBase._configuration?.storage.local.root = "/tmp/Boost-testing/"
+            ApiCoreBase._configuration?.storage.s3.enabled = false
             
             try! BoostCoreBase.configure(&config, &env, &services)
         }) { (router) in

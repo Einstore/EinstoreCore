@@ -33,9 +33,6 @@ extension AppTestCaseSetup {
     }
     
     public func setupApps() {
-        ApiCoreBase.configuration.storage.s3.enabled = false
-        ApiCoreBase.configuration.storage.local.root = "/tmp/Boost-tests"
-        
         app.testable.delete(allFor: App.self)
         
         setupUploadKeys()

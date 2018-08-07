@@ -98,15 +98,6 @@ protocol Extractor {
 
 extension Extractor {
     
-    /// System bin URL
-    /// Contains all commandline utilities
-    var binUrl: URL {
-        let config = DirectoryConfig.detect()
-        var url: URL = URL(fileURLWithPath: config.workDir).appendingPathComponent("Resources")
-        url.appendPathComponent("bin")
-        return url
-    }
-    
     /// Compile an app & it's cluster from parsed data
     func app(platform: App.Platform, teamId: DbCoreIdentifier, on req: Request) throws -> Future<App> {
         guard let appName = appName, let appIdentifier = appIdentifier else {

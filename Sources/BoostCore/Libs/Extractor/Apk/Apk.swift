@@ -68,25 +68,6 @@ class Apk: BaseExtractor, Extractor {
         }
     }
     
-    /// Path to the APK extractor
-    var extractorUrl: URL {
-        get {
-            var url: URL = binUrl
-            url.appendPathComponent("apktool_2.3.1.jar")
-            return url
-        }
-    }
-    
-    // TODO: Replace with XMLCoder which is already used in S3!!!
-    /// XML to JSOJ Converter
-    var xml2jsonUrl: URL {
-        get {
-            var url: URL = binUrl
-            url.appendPathComponent("xml2json.py")
-            return url
-        }
-    }
-    
     // MARK: Parsing
     
     /// Parse application name
@@ -102,7 +83,8 @@ class Apk: BaseExtractor, Extractor {
             jsonUrl.appendPathComponent("strings.json")
             
             // Convert XML to JSON
-            try runAndPrint(xml2jsonUrl.path, "-t", "xml2json", "-o", jsonUrl.path, xmlUrl.path)
+            // TODO: Replace with XMLCoder which is already used in S3!!!
+            try runAndPrint(ThirdpartyUtilities.xml2jsonUrl.path, "-t", "xml2json", "-o", jsonUrl.path, xmlUrl.path)
             
             let strings = try ApkStrings.decode.fromJSON(file: jsonUrl)
             
@@ -171,7 +153,7 @@ class Apk: BaseExtractor, Extractor {
         let xmlUrl = archive.appendingPathComponent("Decoded/AndroidManifest.xml")
         if FileManager.default.fileExists(atPath:xmlUrl.path) {
             let jsonUrl = archive.appendingPathComponent("Decoded/AndroidManifest.json")
-            try runAndPrint(xml2jsonUrl.path, "-t", "xml2json", "-o", jsonUrl.path, xmlUrl.path)
+            try runAndPrint(ThirdpartyUtilities.xml2jsonUrl.path, "-t", "xml2json", "-o", jsonUrl.path, xmlUrl.path)
             
             do {
                 manifest = try ApkManifest.decode.fromJSON(file: jsonUrl)
@@ -188,7 +170,7 @@ class Apk: BaseExtractor, Extractor {
         DispatchQueue.global().async {
             do {
                 // Extract archive
-                try runAndPrint("java", "-jar", self.extractorUrl.path, "d", "-sf", self.file.path, "-o", self.extractedApkFolder.path)
+                try runAndPrint("java", "-jar", ThirdpartyUtilities.apkExtractorUrl, "d", "-sf", self.file.path, "-o", self.extractedApkFolder.path)
                 
                 // Parse manifest file
                 try self.parseManifest()
