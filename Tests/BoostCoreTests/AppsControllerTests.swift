@@ -301,7 +301,7 @@ extension AppsControllerTests {
             XCTAssertTrue(allTags.contains(name: tag), "Tag needs to be present")
             XCTAssertTrue(allTags.contains(identifier: tag.safeText), "Tag needs to be present")
         }
-        
+            
         // Check final app count after the upload
         count = app.testable.count(allFor: App.self)
         XCTAssertEqual(count, 108, "There should be right amount of apps to begin with")
@@ -310,4 +310,3 @@ extension AppsControllerTests {
     }
     
 }
-

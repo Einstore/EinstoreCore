@@ -23,7 +23,7 @@ public class ThirdpartyUtilities {
     /// Path to the APK extractor
     public static var apkExtractorUrl: URL {
         var url: URL = System.default.binUrl
-        url.appendPathComponent("apktool_2.3.1.jar")
+        url.appendPathComponent("apktool.jar")
         return url
     }
     
