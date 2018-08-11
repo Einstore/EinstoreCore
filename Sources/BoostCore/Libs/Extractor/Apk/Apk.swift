@@ -172,7 +172,7 @@ class Apk: BaseExtractor, Extractor {
         DispatchQueue.global().async {
             do {
                 // Extract archive
-                try runAndPrint("java", "-jar", ThirdpartyUtilities.apkExtractorUrl, "d", "-sf", self.file.path, "-o", self.extractedApkFolder.path)
+                try runAndPrint("java", "-jar", ThirdpartyUtilities.apkExtractorUrl.path.replacingOccurrences(of: "file://", with: ""), "d", "-sf", self.file.path, "-o", self.extractedApkFolder.path)
                 
                 // Parse manifest file
                 try self.parseManifest()
