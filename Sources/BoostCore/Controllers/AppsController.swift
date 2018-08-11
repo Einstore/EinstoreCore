@@ -400,6 +400,8 @@ extension AppsController {
                     }
                 } catch {
                     try extractor.cleanUp()
+                    print("Error during AppsController")
+                    dump(error)
                     throw error
                 }
             }

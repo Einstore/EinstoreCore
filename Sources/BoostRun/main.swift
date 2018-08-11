@@ -20,4 +20,5 @@ do {
     try app.run()
 } catch {
     print("Top-level failure: \(error)")
+    dump(error)
 }

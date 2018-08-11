@@ -158,6 +158,8 @@ class Apk: BaseExtractor, Extractor {
             do {
                 manifest = try ApkManifest.decode.fromJSON(file: jsonUrl)
             } catch {
+                print("Apk error 179")
+                dump(error)
                 throw error
             }
         }
@@ -184,6 +186,8 @@ class Apk: BaseExtractor, Extractor {
                 let a = try self.app(platform: .android, teamId: teamId, on: req).wait()
                 promise.succeed(result: a)
             } catch {
+                print("Apk error 207")
+                dump(error)
                 promise.fail(error: error)
             }
         }
