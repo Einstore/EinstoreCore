@@ -6,7 +6,7 @@
         "repositoryURL": "https://github.com/LiveUI/ApiCore.git",
         "state": {
           "branch": "master",
-          "revision": "52e1d390b96603023048dc186835f5ed8840e241",
+          "revision": "7a35d8e9f0a64704c33e79b66ae67e4d65911962",
           "version": null
         }
       },
@@ -114,7 +114,7 @@
         "repositoryURL": "https://github.com/LiveUI/ErrorsCore.git",
         "state": {
           "branch": "master",
-          "revision": "8fe09ed43c658c40e3d57d129cda85f15fcc7fbc",
+          "revision": "acefe92844b6d58fe9d6025e6f84d8a806411705",
           "version": null
         }
       },
@@ -393,8 +393,8 @@
         "repositoryURL": "https://github.com/LiveUI/XMLCoding.git",
         "state": {
           "branch": null,
-          "revision": "f5d46f4fb467ee5e5a49545c38d9f421a2d8c613",
-          "version": "0.2.0"
+          "revision": "4a53225ceff1b6067edd8e5ae1b26c50b1ebff18",
+          "version": "0.2.1"
         }
       }
     ]

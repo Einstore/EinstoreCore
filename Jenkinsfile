@@ -18,7 +18,7 @@ pipeline {
               }
               steps {
                 script {
-                  sh 'swift build --configuration debug'
+                  sh 'swift test'
                 }
               }
             }
@@ -33,7 +33,7 @@ pipeline {
               steps {
                 script {
                   mgw.inDocker('liveui/boost-base:1.1.1') {
-                    sh 'swift build --configuration debug'
+                    sh 'swift test'
                   }
                 }
               }

@@ -210,7 +210,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         let object = r.response.testable.content(as: ErrorResponse.self)!
         
         XCTAssertEqual(object.error, "auth_error.authentication_failed", "Wrong code")
-        XCTAssertEqual(object.description, "⚠️ [AuthError.auth_error.authentication_failed: Authentication has failed]", "Wrong desctiption")
+        XCTAssertEqual(object.description, "Authentication has failed", "Wrong desctiption")
     }
     
     func testUnobfuscatedApkUploadWithJWTAuth() {
