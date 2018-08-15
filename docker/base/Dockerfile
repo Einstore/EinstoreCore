@@ -9,6 +9,3 @@ COPY Tests ./Tests
 COPY Package.swift ./
 COPY Package.resolved ./
 COPY scripts/wait-for-it.sh ./
-
-CMD swift test
-

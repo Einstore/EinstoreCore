@@ -236,7 +236,7 @@ class AppsController: Controller {
                         throw ErrorsCore.HTTPError.notAuthorized
                     }
                 }
-                return App.query(on: req).filter(\App.id == key.appId).first().map(to: Response.self) { app in
+                return App.query(on: req).filter(\App.id == key.appId).first().flatMap(to: Response.self) { app in
                     guard let app = app else {
                         throw ErrorsCore.HTTPError.notFound
                     }
@@ -245,10 +245,17 @@ class AppsController: Controller {
                     }
                     let response = try req.response.basic(status: .ok)
                     response.http.headers = HTTPHeaders([("Content-Type", "\(app.platform.mime)"), ("Content-Disposition", "attachment; filename=\"\(app.name.safeText).\(app.platform.fileExtension)\"")])
-                    // TODO: Make this full path!!!!
-                    let appData = try Data(contentsOf: app.appPath!, options: [])
-                    response.http.body = HTTPBody(data: appData)
-                    return response
+                    
+                    guard let path = app.appPath?.relativePath else {
+                        throw ErrorsCore.HTTPError.notFound
+                    }
+                    
+                    let fm = try req.makeFileCore()
+                    
+                    return try fm.get(file: path, on: req).map(to: Response.self) { appData in
+                        response.http.body = HTTPBody(data: appData)
+                        return response
+                    }
                 }
             }
         }

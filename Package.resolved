@@ -6,7 +6,7 @@
         "repositoryURL": "https://github.com/LiveUI/ApiCore.git",
         "state": {
           "branch": "master",
-          "revision": "7a35d8e9f0a64704c33e79b66ae67e4d65911962",
+          "revision": "2ba1b08c4fd7d9fd14f8023c89ddb78b03adec91",
           "version": null
         }
       },
@@ -24,8 +24,8 @@
         "repositoryURL": "https://github.com/IBM-Swift/BlueSocket.git",
         "state": {
           "branch": null,
-          "revision": "a75d816e175eb6094295e17bb6ad81f99189a398",
-          "version": "1.0.14"
+          "revision": "15ff39f95e0b56058cf050c910c1e26002d01f71",
+          "version": "1.0.15"
         }
       },
       {
@@ -33,8 +33,8 @@
         "repositoryURL": "https://github.com/IBM-Swift/BlueSSLService.git",
         "state": {
           "branch": null,
-          "revision": "8844622f67490f28dff8c34d136f8ed84a2a4664",
-          "version": "1.0.14"
+          "revision": "e29d5112fb5958327f537a6420d292922f3587dc",
+          "version": "1.0.15"
         }
       },
       {
