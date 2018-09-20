@@ -8,7 +8,6 @@
 import Foundation
 import Vapor
 import ApiCore
-import DbCore
 import Fluent
 import FluentPostgreSQL
 

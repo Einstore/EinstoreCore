@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import DbCore
+import ApiCore
 
 
 extension Tag: Equatable {
@@ -20,7 +20,7 @@ extension Tag: Equatable {
 
 extension Array where Element == Tag {
     
-    public var ids: [DbCoreIdentifier] {
+    public var ids: [DbIdentifier] {
         let all: [Tag] = filter { $0.id != nil }
         return all.compactMap { $0.id }
     }
@@ -33,7 +33,7 @@ extension Array where Element == Tag {
         return compactMap { $0.identifier }
     }
     
-    public func contains(id: DbCoreIdentifier) -> Bool {
+    public func contains(id: DbIdentifier) -> Bool {
         return ids.contains(id)
     }
     

@@ -9,7 +9,6 @@ import Foundation
 import Vapor
 import Fluent
 import FluentPostgreSQL
-import DbCore
 import ApiCore
 
 
@@ -29,8 +28,8 @@ final public class UploadKey: DbCoreModel {
     
     public struct Display: DbCoreModel {
         
-        public var id: DbCoreIdentifier?
-        public var teamId: DbCoreIdentifier
+        public var id: DbIdentifier?
+        public var teamId: DbIdentifier
         public var name: String
         public var expires: Date?
         
@@ -41,7 +40,7 @@ final public class UploadKey: DbCoreModel {
             case expires
         }
         
-        public init(id: DbCoreIdentifier? = nil, teamId: DbCoreIdentifier, name: String, expires: Date? = Date()) {
+        public init(id: DbIdentifier? = nil, teamId: DbIdentifier, name: String, expires: Date? = Date()) {
             self.id = id
             self.teamId = teamId
             self.name = name
@@ -57,8 +56,8 @@ final public class UploadKey: DbCoreModel {
         
     }
     
-    public var id: DbCoreIdentifier?
-    public var teamId: DbCoreIdentifier
+    public var id: DbIdentifier?
+    public var teamId: DbIdentifier
     public var name: String
     public var expires: Date?
     public var token: String
@@ -71,7 +70,7 @@ final public class UploadKey: DbCoreModel {
         case token
     }
     
-    public init(id: DbCoreIdentifier? = nil, teamId: DbCoreIdentifier, name: String, expires: Date? = nil, token: String = UUID().uuidString) {
+    public init(id: DbIdentifier? = nil, teamId: DbIdentifier, name: String, expires: Date? = nil, token: String = UUID().uuidString) {
         self.id = id
         self.teamId = teamId
         self.name = name
@@ -79,7 +78,7 @@ final public class UploadKey: DbCoreModel {
         self.token = token
     }
     
-    public init(new: New, teamId: DbCoreIdentifier) {
+    public init(new: New, teamId: DbIdentifier) {
         self.teamId = teamId
         self.name = new.name
         self.expires = new.expires
@@ -102,7 +101,7 @@ extension UploadKey {
 
 extension UploadKey: Migration {
     
-    public static func prepare(on connection: DbCoreConnection) -> Future<Void> {
+    public static func prepare(on connection: ApiCoreConnection) -> Future<Void> {
         return Database.create(self, on: connection) { (schema) in
             schema.field(for: \.id, isIdentifier: true)
             schema.field(for: \.teamId, type: .uuid)
@@ -112,7 +111,7 @@ extension UploadKey: Migration {
         }
     }
     
-    public static func revert(on connection: DbCoreConnection) -> Future<Void> {
+    public static func revert(on connection: ApiCoreConnection) -> Future<Void> {
         return Database.delete(UploadKey.self, on: connection)
     }
     

@@ -10,7 +10,6 @@ import Vapor
 import ApiCore
 import Fluent
 import FluentPostgreSQL
-import DbCore
 import ErrorsCore
 import SwiftShell
 import SQL
@@ -25,12 +24,12 @@ fileprivate struct RequestFilters: Codable {
 }
 
 
-extension QueryBuilder where Result == App, Database == DbCoreDatabase {
+extension QueryBuilder where Result == App, Database == ApiCoreDatabase {
     
     /// Set filters
-    func appFilters(on req: Request) throws -> QueryBuilder<DbCoreDatabase, Result> {
+    func appFilters(on req: Request) throws -> QueryBuilder<ApiCoreDatabase, Result> {
         let query = try req.query.decode(RequestFilters.self)
-        var s: QueryBuilder<DbCoreDatabase, Result> = try paginate(on: req)
+        var s: QueryBuilder<ApiCoreDatabase, Result> = try paginate(on: req)
         
         // Basic search
         if let search = req.query.search {
@@ -57,7 +56,7 @@ extension QueryBuilder where Result == App, Database == DbCoreDatabase {
     }
     
     /// Make sure we get only apps belonging to the user
-    func safeApp(appId: DbCoreIdentifier, teamIds: [DbCoreIdentifier]) throws -> Self {
+    func safeApp(appId: DbIdentifier, teamIds: [DbIdentifier]) throws -> Self {
         return group(.and) { and in
             and.filter(\App.id == appId)
             and.filter(\App.teamId ~~ teamIds)
@@ -106,7 +105,7 @@ class AppsController: Controller {
     }
     
     /// Overview app query
-    static func overviewQuery(teams: Teams, on req: Request) throws -> QueryBuilder<DbCoreDatabase, Cluster.Public> {
+    static func overviewQuery(teams: Teams, on req: Request) throws -> QueryBuilder<ApiCoreDatabase, Cluster.Public> {
         let q = try Cluster.query(on: req).filter(\Cluster.teamId ~~ teams.ids).decode(Cluster.Public.self).paginate(on: req)
         return q
     }
@@ -129,16 +128,16 @@ class AppsController: Controller {
         }
         
         // Overview for apps in selected team
-        router.get("teams", DbCoreIdentifier.parameter, "apps", "overview") { (req) -> Future<[Cluster.Public]> in
-            let teamId = try req.parameters.next(DbCoreIdentifier.self)
+        router.get("teams", DbIdentifier.parameter, "apps", "overview") { (req) -> Future<[Cluster.Public]> in
+            let teamId = try req.parameters.next(DbIdentifier.self)
             return try req.me.teams().flatMap(to: [Cluster.Public].self) { teams in
                 return try overviewQuery(teams: teams, on: req).filter(\Cluster.teamId == teamId).all()
             }
         }
         
         // Team apps info
-        router.get("teams", DbCoreIdentifier.parameter, "apps", "info") { (req) -> Future<App.Info> in
-            let teamId = try req.parameters.next(DbCoreIdentifier.self)
+        router.get("teams", DbIdentifier.parameter, "apps", "info") { (req) -> Future<App.Info> in
+            let teamId = try req.parameters.next(DbIdentifier.self)
             return try req.me.teams().flatMap(to: App.Info.self) { teams in
                 return try overviewQuery(teams: teams, on: req).filter(\Cluster.teamId == teamId).all().map(to: App.Info.self) { apps in
                     var builds: Int = 0
@@ -152,8 +151,8 @@ class AppsController: Controller {
         }
         
         // App detail
-        router.get("apps", DbCoreIdentifier.parameter) { (req) -> Future<App.Public> in
-            let appId = try req.parameters.next(DbCoreIdentifier.self)
+        router.get("apps", DbIdentifier.parameter) { (req) -> Future<App.Public> in
+            let appId = try req.parameters.next(DbIdentifier.self)
             return try req.me.teams().flatMap(to: App.Public.self) { teams in
                 return try App.query(on: req).safeApp(appId: appId, teamIds: teams.ids).decode(App.Public.self).first().map(to: App.Public.self) { app in
                     guard let app = app else {
@@ -165,8 +164,8 @@ class AppsController: Controller {
         }
         
         // App icon
-        router.get("apps", DbCoreIdentifier.parameter, "icon") { (req) -> Future<Response> in
-            let appId = try req.parameters.next(DbCoreIdentifier.self)
+        router.get("apps", DbIdentifier.parameter, "icon") { (req) -> Future<Response> in
+            let appId = try req.parameters.next(DbIdentifier.self)
             return try req.me.teams().flatMap(to: Response.self) { teams in
                 return try App.query(on: req).safeApp(appId: appId, teamIds: teams.ids).first().flatMap(to: Response.self) { app in
                     guard let app = app, let path = app.iconPath?.relativePath else {
@@ -183,8 +182,8 @@ class AppsController: Controller {
         }
         
         // App download auth
-        router.get("apps", DbCoreIdentifier.parameter, "auth") { (req) -> Future<Response> in
-            let appId = try req.parameters.next(DbCoreIdentifier.self)
+        router.get("apps", DbIdentifier.parameter, "auth") { (req) -> Future<Response> in
+            let appId = try req.parameters.next(DbIdentifier.self)
             return try req.me.teams().flatMap(to: Response.self) { teams in
                 return try App.query(on: req).safeApp(appId: appId, teamIds: teams.ids).first().flatMap(to: Response.self) { app in
                     guard let app = app, let appId = app.id else {
@@ -261,8 +260,8 @@ class AppsController: Controller {
         }
         
         // Tags for app
-        router.get("apps", DbCoreIdentifier.parameter, "tags") { (req) -> Future<Tags> in
-            let appId = try req.parameters.next(DbCoreIdentifier.self)
+        router.get("apps", DbIdentifier.parameter, "tags") { (req) -> Future<Tags> in
+            let appId = try req.parameters.next(DbIdentifier.self)
             return try req.me.teams().flatMap(to: Tags.self) { teams in
                 return try App.query(on: req).safeApp(appId: appId, teamIds: teams.ids).first().flatMap(to: Tags.self) { app in
                     guard let app = app else {
@@ -274,8 +273,8 @@ class AppsController: Controller {
         }
         
         // Delete app
-        router.delete("apps", DbCoreIdentifier.parameter) { (req) -> Future<Response> in
-            let appId = try req.parameters.next(DbCoreIdentifier.self)
+        router.delete("apps", DbIdentifier.parameter) { (req) -> Future<Response> in
+            let appId = try req.parameters.next(DbIdentifier.self)
             return try req.me.teams().flatMap(to: Response.self) { teams in
                 return try App.query(on: req).safeApp(appId: appId, teamIds: teams.ids).first().flatMap(to: Response.self) { app in
                     guard let app = app else {
@@ -350,7 +349,7 @@ class AppsController: Controller {
         
         // Upload app from authenticated session (browser, app, etc ...)
         router.post("teams", UUID.parameter, "apps") { (req) -> Future<Response> in
-            let teamId = try req.parameters.next(DbCoreIdentifier.self)
+            let teamId = try req.parameters.next(DbIdentifier.self)
             return try req.me.verifiedTeam(id: teamId).flatMap(to: Response.self) { (team) -> Future<Response> in
                 return upload(teamId: teamId, on: req)
             }
@@ -363,7 +362,7 @@ class AppsController: Controller {
 extension AppsController {
     
     /// Shared upload method
-    static func upload(teamId: DbCoreIdentifier, on req: Request) -> Future<Response> {
+    static func upload(teamId: DbIdentifier, on req: Request) -> Future<Response> {
         // TODO: Change to copy file when https://github.com/vapor/core/pull/83 is done
         return req.fileData.flatMap(to: Response.self) { (data) -> Future<Response> in
             // TODO: -------- REFACTOR ---------

@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import DbCore
 import ApiCore
 import Vapor
 import Fluent

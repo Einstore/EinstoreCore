@@ -9,7 +9,6 @@ import Foundation
 import Vapor
 import ErrorsCore
 import ApiCore
-import DbCore
 import Fluent
 import FileCore
 
@@ -91,7 +90,7 @@ protocol Extractor {
     init(file: URL, request: Request) throws
     
     /// Process the file
-    func process(teamId: DbCoreIdentifier, on: Request) throws -> Future<App>
+    func process(teamId: DbIdentifier, on: Request) throws -> Future<App>
     
 }
 
@@ -99,7 +98,7 @@ protocol Extractor {
 extension Extractor {
     
     /// Compile an app & it's cluster from parsed data
-    func app(platform: App.Platform, teamId: DbCoreIdentifier, on req: Request) throws -> Future<App> {
+    func app(platform: App.Platform, teamId: DbIdentifier, on req: Request) throws -> Future<App> {
         guard let appName = appName, let appIdentifier = appIdentifier else {
             throw ExtractorError.invalidAppContent
         }

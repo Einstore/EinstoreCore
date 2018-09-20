@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import DbCore
 import Vapor
 import Fluent
 import FluentPostgreSQL
@@ -39,8 +38,8 @@ final public class Config: DbCoreModel {
         public let android: String?
     }
     
-    public var id: DbCoreIdentifier?
-    public var teamId: DbCoreIdentifier?
+    public var id: DbIdentifier?
+    public var teamId: DbIdentifier?
     public var theme: Theme
     
     enum CodingKeys: String, CodingKey {
@@ -49,7 +48,7 @@ final public class Config: DbCoreModel {
         case theme
     }
     
-    public init(id: DbCoreIdentifier? = nil, teamId: DbCoreIdentifier, theme: Theme) {
+    public init(id: DbIdentifier? = nil, teamId: DbIdentifier, theme: Theme) {
         self.id = id
         self.teamId = teamId
         self.theme = theme
@@ -71,7 +70,7 @@ extension Config {
 
 extension Config: Migration {
     
-//    public static func prepare(on connection: DbCoreConnection) -> Future<Void> {
+//    public static func prepare(on connection: ApiCoreConnection) -> Future<Void> {
 //        return Database.create(self, on: connection) { (schema) in
 //            schema.field(for: \Config.id)
 //            schema.field(for: \Config.teamId)
@@ -79,7 +78,7 @@ extension Config: Migration {
 //        }
 //    }
 //    
-//    public static func revert(on connection: DbCoreConnection) -> Future<Void> {
+//    public static func revert(on connection: ApiCoreConnection) -> Future<Void> {
 //        return Database.delete(Config.self, on: connection)
 //    }
     

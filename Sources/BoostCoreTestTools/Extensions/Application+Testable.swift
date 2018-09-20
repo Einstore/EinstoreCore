@@ -11,7 +11,6 @@ import Foundation
 import Vapor
 import VaporTestTools
 import ApiCoreTestTools
-import DbCore
 
 
 extension TestableProperty where TestableType: Application {

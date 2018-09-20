@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import DbCore
+import ApiCore
 import Vapor
 import Fluent
 import FluentPostgreSQL
@@ -17,7 +17,7 @@ public typealias Tags = [Tag]
 
 final public class Tag: DbCoreModel {
     
-    public var id: DbCoreIdentifier?
+    public var id: DbIdentifier?
     public var name: String
     public var identifier: String
     
@@ -27,7 +27,7 @@ final public class Tag: DbCoreModel {
         case identifier
     }
     
-    public init(id: DbCoreIdentifier? = nil, name: String, identifier: String) {
+    public init(id: DbIdentifier? = nil, name: String, identifier: String) {
         self.id = id
         self.name = name
         self.identifier = identifier
@@ -49,7 +49,7 @@ extension Tag {
 
 extension Tag: Migration {
     
-    public static func prepare(on connection: DbCoreConnection) -> Future<Void> {
+    public static func prepare(on connection: ApiCoreConnection) -> Future<Void> {
         return Database.create(self, on: connection) { (schema) in
             schema.field(for: \.id, isIdentifier: true)
             schema.field(for: \.name, type: .varchar(255))
@@ -57,7 +57,7 @@ extension Tag: Migration {
         }
     }
     
-    public static func revert(on connection: DbCoreConnection) -> Future<Void> {
+    public static func revert(on connection: ApiCoreConnection) -> Future<Void> {
         return Database.delete(Tag.self, on: connection)
     }
     

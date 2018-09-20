@@ -7,7 +7,7 @@
 
 import Foundation
 import Fluent
-import DbCore
+import ApiCore
 import Vapor
 
 
@@ -17,17 +17,17 @@ public final class AppTag: ModifiablePivot, DbCoreModel {
     public typealias Left = App
     public typealias Right = Tag
     
-    public static var leftIDKey: WritableKeyPath<AppTag, DbCoreIdentifier> {
+    public static var leftIDKey: WritableKeyPath<AppTag, DbIdentifier> {
         return \.appId
     }
     
-    public static var rightIDKey: WritableKeyPath<AppTag, DbCoreIdentifier> {
+    public static var rightIDKey: WritableKeyPath<AppTag, DbIdentifier> {
         return \.tagId
     }
     
-    public var id: DbCoreIdentifier?
-    public var appId: DbCoreIdentifier
-    public var tagId: DbCoreIdentifier
+    public var id: DbIdentifier?
+    public var appId: DbIdentifier
+    public var tagId: DbIdentifier
     
     // MARK: Initialization
     
@@ -42,7 +42,7 @@ public final class AppTag: ModifiablePivot, DbCoreModel {
 
 extension AppTag: Migration {
     
-    public static func prepare(on connection: DbCoreConnection) -> Future<Void> {
+    public static func prepare(on connection: ApiCoreConnection) -> Future<Void> {
         return Database.create(self, on: connection) { (schema) in
             schema.field(for: \AppTag.id, isIdentifier: true)
             schema.field(for: \AppTag.appId)
@@ -50,7 +50,7 @@ extension AppTag: Migration {
         }
     }
     
-    public static func revert(on connection: DbCoreConnection) -> Future<Void> {
+    public static func revert(on connection: ApiCoreConnection) -> Future<Void> {
         return Database.delete(AppTag.self, on: connection)
     }
 }

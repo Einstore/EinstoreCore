@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import DbCore
+import ApiCore
 import Vapor
 import Fluent
 import FluentPostgreSQL
@@ -22,13 +22,13 @@ final public class Cluster: DbCoreModel {
         
         public static var idKey = \Public.latestAppId
         
-        public typealias Database = DbCoreDatabase
+        public typealias Database = ApiCoreDatabase
         
         public var latestAppName: String
         public var latestAppVersion: String
         public var latestAppBuild: String
         public var latestAppAdded: Date?
-        public var latestAppId: DbCoreIdentifier?
+        public var latestAppId: DbIdentifier?
         public var appCount: Int
         public var platform: App.Platform
         public var identifier: String
@@ -57,13 +57,13 @@ final public class Cluster: DbCoreModel {
         
     }
     
-    public var id: DbCoreIdentifier?
-    public var teamId: DbCoreIdentifier?
+    public var id: DbIdentifier?
+    public var teamId: DbIdentifier?
     public var latestAppName: String
     public var latestAppVersion: String
     public var latestAppBuild: String
     public var latestAppAdded: Date
-    public var latestAppId: DbCoreIdentifier?
+    public var latestAppId: DbIdentifier?
     public var appCount: Int
     public var platform: App.Platform
     public var identifier: String
@@ -81,7 +81,7 @@ final public class Cluster: DbCoreModel {
         case identifier
     }
     
-    public init(id: DbCoreIdentifier? = nil, latestApp: App, appCount: Int = 1) {
+    public init(id: DbIdentifier? = nil, latestApp: App, appCount: Int = 1) {
         self.id = id
         self.teamId = latestApp.teamId
         self.latestAppName = latestApp.name
@@ -110,7 +110,7 @@ extension Cluster {
 
 extension Cluster: Migration {
     
-    public static func prepare(on connection: DbCoreConnection) -> Future<Void> {
+    public static func prepare(on connection: ApiCoreConnection) -> Future<Void> {
         return Database.create(self, on: connection) { (schema) in
             schema.field(for: \Cluster.id, isIdentifier: true)
             schema.field(for: \Cluster.teamId)
@@ -125,7 +125,7 @@ extension Cluster: Migration {
         }
     }
     
-    public static func revert(on connection: DbCoreConnection) -> Future<Void> {
+    public static func revert(on connection: ApiCoreConnection) -> Future<Void> {
         return Database.delete(Cluster.self, on: connection)
     }
     

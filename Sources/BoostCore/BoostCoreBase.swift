@@ -11,7 +11,6 @@ import ApiCore
 import ErrorsCore
 import Fluent
 import FluentPostgreSQL
-import DbCore
 import SettingsCore
 import MailCore
 
@@ -109,13 +108,13 @@ public class BoostCoreBase {
         ApiAuthMiddleware.allowedPostUri.append("/apps")
         
         // Add BoostCore models to the migrations
-        DbCore.add(model: Cluster.self, database: .db)
-        DbCore.add(model: App.self, database: .db)
-        DbCore.add(model: DownloadKey.self, database: .db)
-        DbCore.add(model: Tag.self, database: .db)
-        DbCore.add(model: AppTag.self, database: .db)
-        DbCore.add(model: UploadKey.self, database: .db)
-        DbCore.add(model: Config.self, database: .db)
+        ApiCoreBase.add(model: Cluster.self, database: .db)
+        ApiCoreBase.add(model: App.self, database: .db)
+        ApiCoreBase.add(model: DownloadKey.self, database: .db)
+        ApiCoreBase.add(model: Tag.self, database: .db)
+        ApiCoreBase.add(model: AppTag.self, database: .db)
+        ApiCoreBase.add(model: UploadKey.self, database: .db)
+        ApiCoreBase.add(model: Config.self, database: .db)
         
         // Setup SettingsCore
         try SettingsCore.configure(&config, &env, &services)

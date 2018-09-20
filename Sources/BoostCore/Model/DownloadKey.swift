@@ -9,7 +9,6 @@ import Foundation
 import Vapor
 import Fluent
 import FluentPostgreSQL
-import DbCore
 import ApiCore
 
 
@@ -23,7 +22,7 @@ final public class DownloadKey: DbCoreModel {
     }
     
     public struct Public: Content {
-        let appId: DbCoreIdentifier
+        let appId: DbIdentifier
         var token: String
         let plist: String
         let file: String
@@ -50,8 +49,8 @@ final public class DownloadKey: DbCoreModel {
         }
     }
     
-    public var id: DbCoreIdentifier?
-    public var appId: DbCoreIdentifier
+    public var id: DbIdentifier?
+    public var appId: DbIdentifier
     public var token: String
     public var added: Date
     
@@ -62,7 +61,7 @@ final public class DownloadKey: DbCoreModel {
         case added
     }
     
-    public init(id: DbCoreIdentifier? = nil, appId: DbCoreIdentifier) {
+    public init(id: DbIdentifier? = nil, appId: DbIdentifier) {
         self.id = id
         self.appId = appId
         self.token = UUID().uuidString
@@ -85,7 +84,7 @@ extension DownloadKey {
 
 extension DownloadKey: Migration {
     
-    public static func prepare(on connection: DbCoreConnection) -> Future<Void> {
+    public static func prepare(on connection: ApiCoreConnection) -> Future<Void> {
         return Database.create(self, on: connection) { (schema) in
             schema.field(for: \.id, isIdentifier: true)
             schema.field(for: \.appId)
@@ -94,7 +93,7 @@ extension DownloadKey: Migration {
         }
     }
     
-    public static func revert(on connection: DbCoreConnection) -> Future<Void> {
+    public static func revert(on connection: ApiCoreConnection) -> Future<Void> {
         return Database.delete(DownloadKey.self, on: connection)
     }
     

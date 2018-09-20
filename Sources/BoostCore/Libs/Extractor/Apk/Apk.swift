@@ -8,7 +8,6 @@
 import Foundation
 import Vapor
 import ApiCore
-import DbCore
 import SwiftShell
 import ErrorsCore
 
@@ -166,7 +165,7 @@ class Apk: BaseExtractor, Extractor {
     }
     
     /// Process app
-    func process(teamId: DbCoreIdentifier, on req: Request) throws -> Future<App> {
+    func process(teamId: DbIdentifier, on req: Request) throws -> Future<App> {
         let promise = request.eventLoop.newPromise(App.self)
         
         DispatchQueue.global().async {

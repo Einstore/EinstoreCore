@@ -9,7 +9,6 @@ import Foundation
 import Vapor
 import Fluent
 import FluentPostgreSQL
-import DbCore
 import ApiCore
 
 
@@ -71,8 +70,8 @@ final public class App: DbCoreModel {
     
     public struct Public: DbCoreModel {
         
-        public var id: DbCoreIdentifier?
-        public var teamId: DbCoreIdentifier?
+        public var id: DbIdentifier?
+        public var teamId: DbIdentifier?
         public var name: String
         public var identifier: String
         public var version: String
@@ -115,17 +114,17 @@ final public class App: DbCoreModel {
     
     public struct Info: Content {
         
-        public var teamId: DbCoreIdentifier
+        public var teamId: DbIdentifier
         public var apps: Int
         public var builds: Int
         
     }
     
-    public static var idKey: WritableKeyPath<App, DbCoreIdentifier?> = \App.id
+    public static var idKey: WritableKeyPath<App, DbIdentifier?> = \App.id
     
-    public var id: DbCoreIdentifier?
-    public var teamId: DbCoreIdentifier?
-    public var clusterId: DbCoreIdentifier
+    public var id: DbIdentifier?
+    public var teamId: DbIdentifier?
+    public var clusterId: DbIdentifier
     public var name: String
     public var identifier: String
     public var version: String
@@ -154,7 +153,7 @@ final public class App: DbCoreModel {
     }
 
 
-    public init(id: DbCoreIdentifier? = nil, teamId: DbCoreIdentifier? = nil, clusterId: DbCoreIdentifier, name: String, identifier: String, version: String, build: String, platform: Platform, size: Int, sizeTotal: Int, info: String? = nil, hasIcon: Bool = false) {
+    public init(id: DbIdentifier? = nil, teamId: DbIdentifier? = nil, clusterId: DbIdentifier, name: String, identifier: String, version: String, build: String, platform: Platform, size: Int, sizeTotal: Int, info: String? = nil, hasIcon: Bool = false) {
         self.id = id
         self.teamId = teamId
         self.clusterId = clusterId
@@ -194,7 +193,7 @@ extension App {
 
 extension App: Migration {
     
-    public static func prepare(on connection: DbCoreConnection) -> Future<Void> {
+    public static func prepare(on connection: ApiCoreConnection) -> Future<Void> {
         return Database.create(self, on: connection) { (schema) in
             schema.field(for: \App.id, isIdentifier: true)
             schema.field(for: \App.teamId)
@@ -212,7 +211,7 @@ extension App: Migration {
         }
     }
     
-    public static func revert(on connection: DbCoreConnection) -> Future<Void> {
+    public static func revert(on connection: ApiCoreConnection) -> Future<Void> {
         return Database.delete(App.self, on: connection)
     }
     

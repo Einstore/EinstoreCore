@@ -9,7 +9,6 @@ import Foundation
 import Vapor
 import SwiftShell
 import ApiCore
-import DbCore
 
 
 class Ipa: BaseExtractor, Extractor {
@@ -26,7 +25,7 @@ class Ipa: BaseExtractor, Extractor {
     
     // MARK: Processing
     
-    func process(teamId: DbCoreIdentifier, on req: Request) throws -> Future<App> {
+    func process(teamId: DbIdentifier, on req: Request) throws -> Future<App> {
         run("unzip", "-o", file.path, "-d", archive.path)
         try parse()
         
