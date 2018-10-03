@@ -39,10 +39,10 @@ class TagsController: Controller {
             }
         }
         
-        router.get("tags") { (req) -> Future<Tags> in
-            return req.withPooledConnection(to: .db) { (db) -> Future<Tags> in
-                return Tag.query(on: req).all()
-            }
+        router.delete("apps", DbIdentifier.parameter, "tags", DbIdentifier.parameter) { (req) -> Future<Response> in
+            let appId = try req.parameters.next(DbIdentifier.self)
+            let tagId = try req.parameters.next(DbIdentifier.self)
+            return try TagsManager.delete(tagId: tagId, appId: appId, on: req).asResponse(to: req)
         }
     }
     

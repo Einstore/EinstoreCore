@@ -17,21 +17,26 @@ public class TagsManager {
     
     /// Save an array of tags on an app
     public static func save(tags: [String], for app: App, on req: Request) throws -> Future<Void> {
-        var futures: [Future<Void>] = []
-        tags.forEach { (tagSubstring) in
-            let tag = String(tagSubstring)
-            let future = Tag.query(on: req).filter(\Tag.identifier == tag).first().flatMap(to: Void.self) { (tagObject) -> Future<Void> in
-                guard let tagObject = tagObject else {
-                    let t = Tag(id: nil, identifier: tag.safeText)
-                    return t.save(on: req).flatMap(to: Void.self, { (tag) -> Future<Void> in
-                        return app.tags.attach(tag, on: req).flatten()
-                    })
+        return try app.tags.query(on: req).all().flatMap(to: Void.self) { appTags in
+            var futures: [Future<Void>] = []
+            tags.forEach { tagSubstring in
+                let tag = String(tagSubstring).safeText
+                guard !appTags.contains(identifier: tag) else {
+                    return
+                }   
+                let future = Tag.query(on: req).filter(\Tag.identifier == tag).first().flatMap(to: Void.self) { tagObject -> Future<Void> in
+                    guard let tagObject = tagObject else {
+                        let t = Tag(id: nil, identifier: tag)
+                        return t.save(on: req).flatMap(to: Void.self, { (tag) -> Future<Void> in
+                            return app.tags.attach(tag, on: req).flatten()
+                        })
+                    }
+                    return app.tags.attach(tagObject, on: req).flatten()
                 }
-                return app.tags.attach(tagObject, on: req).flatten()
+                futures.append(future)
             }
-            futures.append(future)
+            return futures.flatten(on: req)
         }
-        return futures.flatten(on: req)
     }
     
     /// Unsecured tags for an app
@@ -47,6 +52,34 @@ public class TagsManager {
                     throw ErrorsCore.HTTPError.notFound
                 }
                 return try tags(app: app, on: req)
+            }
+        }
+    }
+    
+    public static func delete(tag: Tag, on req: Request) throws -> Future<Void> {
+        return try tag.apps.query(on: req).count().flatMap(to: Void.self) { count in
+            let delete = AppTag.query(on: req).filter(\AppTag.tagId == tag.id!).delete()
+            guard count == 1 else {
+                return delete
+            }
+            return delete.flatMap(to: Void.self) { _ in
+                return tag.delete(on: req)
+            }
+        }
+    }
+    
+    public static func delete(tagId: DbIdentifier, appId: DbIdentifier, on req: Request) throws -> Future<Void> {
+        return Tag.query(on: req).filter(\Tag.id == tagId).first().flatMap(to: Void.self) { tag in
+            guard let tag = tag else {
+                throw ErrorsCore.HTTPError.notFound
+            }
+            return try req.me.teams().flatMap(to: Void.self) { teams in
+                return try App.query(on: req).safeApp(appId: appId, teamIds: teams.ids).first().flatMap(to: Void.self) { app in
+                    guard let _ = app else {
+                        throw ErrorsCore.HTTPError.notFound
+                    }
+                    return try delete(tag: tag, on: req)
+                }
             }
         }
     }
