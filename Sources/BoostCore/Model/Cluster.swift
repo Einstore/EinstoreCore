@@ -29,6 +29,7 @@ final public class Cluster: DbCoreModel {
         public var latestAppBuild: String
         public var latestAppAdded: Date?
         public var latestAppId: DbIdentifier?
+        public var latestAppHasIcon: Bool
         public var appCount: Int
         public var platform: App.Platform
         public var identifier: String
@@ -39,6 +40,7 @@ final public class Cluster: DbCoreModel {
             case latestAppBuild = "latest_app_build"
             case latestAppAdded = "latest_app_added"
             case latestAppId = "latest_app_id"
+            case latestAppHasIcon = "latest_app_icon"
             case appCount = "build_count"
             case platform
             case identifier
@@ -50,6 +52,7 @@ final public class Cluster: DbCoreModel {
             self.latestAppBuild = cluster.latestAppBuild
             self.latestAppAdded = cluster.latestAppAdded
             self.latestAppId = cluster.latestAppId
+            self.latestAppHasIcon = cluster.latestAppHasIcon
             self.appCount = cluster.appCount
             self.platform = cluster.platform
             self.identifier = cluster.identifier
@@ -64,6 +67,7 @@ final public class Cluster: DbCoreModel {
     public var latestAppBuild: String
     public var latestAppAdded: Date
     public var latestAppId: DbIdentifier?
+    public var latestAppHasIcon: Bool
     public var appCount: Int
     public var platform: App.Platform
     public var identifier: String
@@ -76,6 +80,7 @@ final public class Cluster: DbCoreModel {
         case latestAppBuild = "latest_app_build"
         case latestAppAdded = "latest_app_added"
         case latestAppId = "latest_app_id"
+        case latestAppHasIcon = "latest_app_icon"
         case appCount = "build_count"
         case platform
         case identifier
@@ -89,6 +94,7 @@ final public class Cluster: DbCoreModel {
         self.latestAppBuild = latestApp.build
         self.latestAppAdded = latestApp.created
         self.latestAppId = latestApp.id
+        self.latestAppHasIcon = latestApp.hasIcon
         self.appCount = appCount
         self.platform = latestApp.platform
         self.identifier = latestApp.identifier
@@ -112,13 +118,14 @@ extension Cluster: Migration {
     
     public static func prepare(on connection: ApiCoreConnection) -> Future<Void> {
         return Database.create(self, on: connection) { (schema) in
-            schema.field(for: \Cluster.id, isIdentifier: true)
-            schema.field(for: \Cluster.teamId)
+            schema.field(for: \.id, isIdentifier: true)
+            schema.field(for: \.teamId)
             schema.field(for: \.latestAppName, type: .varchar(140))
             schema.field(for: \.latestAppVersion, type: .varchar(20))
             schema.field(for: \.latestAppBuild, type: .varchar(20))
             schema.field(for: \.latestAppId)
-            schema.field(for: \Cluster.latestAppAdded)
+            schema.field(for: \.latestAppAdded)
+            schema.field(for: \.latestAppHasIcon)
             schema.field(for: \.appCount)
             schema.field(for: \.platform, type: .varchar(10))
             schema.field(for: \.identifier, type: .varchar(140))
