@@ -20,3 +20,5 @@ DerivedData/
 /BoostCore.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
 /BoostCore.xcodeproj/xcshareddata/xcschemes/xcschememanagement.plist
 *.xcodeproj
+/Resources/Templates/*
+!empty

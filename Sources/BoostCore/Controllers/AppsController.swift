@@ -259,19 +259,6 @@ class AppsController: Controller {
             }
         }
         
-        // Tags for app
-        router.get("apps", DbIdentifier.parameter, "tags") { (req) -> Future<Tags> in
-            let appId = try req.parameters.next(DbIdentifier.self)
-            return try req.me.teams().flatMap(to: Tags.self) { teams in
-                return try App.query(on: req).safeApp(appId: appId, teamIds: teams.ids).first().flatMap(to: Tags.self) { app in
-                    guard let app = app else {
-                        throw ErrorsCore.HTTPError.notFound
-                    }
-                    return try app.tags.query(on: req).all()
-                }
-            }
-        }
-        
         // Delete app
         router.delete("apps", DbIdentifier.parameter) { (req) -> Future<Response> in
             let appId = try req.parameters.next(DbIdentifier.self)
@@ -284,25 +271,26 @@ class AppsController: Controller {
                         guard let cluster = cluster else {
                             throw Error.clusterInconsistency
                         }
-                        return try app.tags.query(on: req).all().flatMap(to: Response.self) { tags in
-                            var futures: [Future<Void>] = []
-                            // TODO: Refactor and split following into smaller methods!!
-                            
-                            // Handle cluster data
-                            if cluster.appCount <= 1 {
-                                futures.append(cluster.delete(on: req).flatten())
-                            } else {
-                                cluster.appCount -= 1
-                                let save = App.query(on: req).sort(\App.created, .descending).first().flatMap(to: Void.self) { app in
-                                    guard let app = app else {
-                                        throw Error.clusterInconsistency
-                                    }
-                                    return cluster.add(app: app, on: req).flatten()
+                        
+                        var futures: [Future<Void>] = []
+                        // TODO: Refactor and split following into smaller methods!!
+                        
+                        // Handle cluster data
+                        if cluster.appCount <= 1 {
+                            futures.append(cluster.delete(on: req).flatten())
+                        } else {
+                            cluster.appCount -= 1
+                            let save = App.query(on: req).sort(\App.created, .descending).first().flatMap(to: Void.self) { app in
+                                guard let app = app else {
+                                    throw Error.clusterInconsistency
                                 }
-                                futures.append(save)
+                                return cluster.add(app: app, on: req).flatten()
                             }
-                            
-                            // Delete all tags
+                            futures.append(save)
+                        }
+                        
+                        // Delete all tags
+                        return try app.tags.query(on: req).all().flatMap(to: Response.self) { tags in
                             try tags.forEach({ tag in
                                 let tagFuture = try tag.apps.query(on: req).count().flatMap(to: Void.self) { count in
                                     if count <= 1 {
@@ -417,22 +405,8 @@ extension AppsController {
     /// Handle tags during upload
     static func handleTags(on req: Request, app: App) throws -> Future<Void> {
         if req.http.url.query != nil, let query = try? req.query.decode([String: String].self) {
-            if let tags = query["tags"]?.split(separator: "|") {
-                var futures: [Future<Void>] = []
-                tags.forEach { (tagSubstring) in
-                    let tag = String(tagSubstring)
-                    let future = Tag.query(on: req).filter(\Tag.identifier == tag).first().flatMap(to: Void.self) { (tagObject) -> Future<Void> in
-                        guard let tagObject = tagObject else {
-                            let t = Tag(id: nil, name: tag, identifier: tag.safeText)
-                            return t.save(on: req).flatMap(to: Void.self, { (tag) -> Future<Void> in
-                                return app.tags.attach(tag, on: req).flatten()
-                            })
-                        }
-                        return app.tags.attach(tagObject, on: req).flatten()
-                    }
-                    futures.append(future)
-                }
-                return futures.flatten(on: req)
+            if let tags = query["tags"]?.split(separator: "|").map({ String($0) }) {
+                return try TagsManager.save(tags: tags, for: app, on: req)
             }
         }
         return req.eventLoop.newSucceededVoidFuture()
