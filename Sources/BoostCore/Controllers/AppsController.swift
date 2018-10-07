@@ -382,13 +382,10 @@ extension AppsController {
                 
                 let extractor: Extractor = try BaseExtractor.decoder(file: tempFilePath.path, platform: platform, on: req)
                 do {
-                    let appFuture: Future<App> = try extractor.process(teamId: teamId, on: req)
-                    return appFuture.flatMap(to: Response.self) { app -> Future<Response> in
-                        return app.save(on: req).flatMap(to: Response.self) { app -> Future<Response> in
-                            return try extractor.save(app, request: req).flatMap(to: Response.self) { (_) -> Future<Response> in
-                                return try handleTags(on: req, app: app).flatMap(to: Response.self) { (_) -> Future<Response> in
-                                    return try app.asResponse(.created, to: req)
-                                }
+                    return try extractor.process(teamId: teamId, on: req).flatMap(to: Response.self) { app -> Future<Response> in
+                        return try extractor.save(app, request: req).flatMap(to: Response.self) { (_) -> Future<Response> in
+                            return try handleTags(on: req, app: app).flatMap(to: Response.self) { (_) -> Future<Response> in
+                                return try app.asResponse(.created, to: req)
                             }
                         }
                     }

@@ -110,20 +110,24 @@ extension Extractor {
             let iconDataSize = self.iconData?.count ?? 0
             let sizeTotal = size + iconDataSize
             let app = App(teamId: teamId, clusterId: (cluster?.id ?? UUID()), name: appName, identifier: appIdentifier, version: self.versionLong ?? "0.0", build: self.versionShort ?? "0", platform: platform, size: size, sizeTotal: sizeTotal, hasIcon: (iconDataSize > 0))
-            guard let cluster = cluster, cluster.id != nil else {
-                let cluster = Cluster(latestApp: app)
-                return cluster.save(on: req).map(to: App.self) { cluster in
-                    app.clusterId = cluster.id!
-                    return app
+            return app.save(on: req).flatMap(to: App.self) { app in
+                guard let cluster = cluster, cluster.id != nil else {
+                    let cluster = Cluster(latestApp: app)
+                    return cluster.save(on: req).flatMap(to: App.self) { cluster in
+                        app.clusterId = cluster.id!
+                        return app.save(on: req)
+                    }
                 }
-            }
-            cluster.latestAppName = app.name
-            cluster.latestAppVersion = app.version
-            cluster.latestAppBuild = app.build
-            cluster.latestAppAdded = app.created
-            cluster.appCount += 1
-            return cluster.save(on: req).map(to: App.self) { cluster in
-                return app
+                return app.save(on: req).flatMap(to: App.self) { app in
+                    cluster.latestAppName = app.name
+                    cluster.latestAppVersion = app.version
+                    cluster.latestAppBuild = app.build
+                    cluster.latestAppAdded = app.created
+                    cluster.appCount += 1
+                    return cluster.save(on: req).map(to: App.self) { cluster in
+                        return app
+                    }
+                }
             }
         }
     }
