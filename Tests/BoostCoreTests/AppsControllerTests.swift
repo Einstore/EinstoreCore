@@ -44,7 +44,8 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
     // MARK: Linux
     
     static let allTests: [(String, Any)] = [
-        ("testGetAppsOverview", testGetAppsOverview),
+        ("testGetApps", testGetApps),
+//        ("testGetAppsOverview", testGetAppsOverview),
         ("testGetApp", testGetApp),
         ("testDeleteApp", testDeleteApp),
         ("testAppTags", testAppTags),
@@ -82,7 +83,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
     
     // MARK: Tests
     
-    func testGetAppsOverview() {
+    func testGetApps() {
         let count = app.testable.count(allFor: App.self)
         XCTAssertEqual(count, 107, "There should be right amount of apps to begin with")
         
@@ -98,6 +99,27 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         XCTAssertTrue(r.response.testable.has(statusCode: .ok), "Wrong status code")
         XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing or invalid content type")
     }
+    
+//    func testGetAppsOverview() {
+//        let count = app.testable.count(allFor: App.self)
+//        XCTAssertEqual(count, 107, "There should be right amount of apps to begin with")
+//
+//        let req = HTTPRequest.testable.get(uri: "/apps/overview", authorizedUser: user1, on: app)
+//        let r = app.testable.response(to: req)
+//
+//        r.response.testable.debug()
+//
+//        let objects = r.response.testable.content(as: [Cluster.Public].self)!
+//
+//        XCTAssertEqual(objects.count, 99, "There should be right amount of apps")
+//
+//        objects.forEach { app in
+//            XCTAssertNotNil(app.latestAppId, "No last app id should be nil")
+//        }
+//
+//        XCTAssertTrue(r.response.testable.has(statusCode: .ok), "Wrong status code")
+//        XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing or invalid content type")
+//    }
     
     func testGetApp() {
         let req = HTTPRequest.testable.get(uri: "/apps/\(app1.id!.uuidString)", authorizedUser: user1, on: app)
@@ -223,12 +245,48 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         doTestJWTUpload(appFileName: "app-obfuscated.apk", platform: .android, name: "BoostTest", identifier: "io.liveui.boosttest", iconSize: 9250)
     }
     
+    func testAuthReturnsValidToken() {
+        // TODO: Finish!!!!!!!!!!!!
+    }
+    
+    func testPlistForApp() {
+        let realApp = createRealApp()
+        
+        let auth = app.testable.response(to: HTTPRequest.testable.get(uri: "/apps/\(realApp.id!.uuidString)/auth", authorizedUser: user1, on: app))
+        auth.response.testable.debug()
+        
+        let authData = auth.response.testable.content(as: DownloadKey.Public.self)!
+        
+        print(authData)
+        
+        // TODO: Finish!!!!!!!!!!!!
+    }
+    
+    func testDownloadApp() {
+        let realApp = createRealApp()
+        
+        let auth = app.testable.response(to: HTTPRequest.testable.get(uri: "/apps/\(realApp.id!.uuidString)/auth", authorizedUser: user1, on: app))
+        auth.response.testable.debug()
+        
+        let authData = auth.response.testable.content(as: DownloadKey.Public.self)!
+        
+        print(authData)
+        
+        // TODO: Finish!!!!!!!!!!!!
+    }
+    
 }
 
 
 extension AppsControllerTests {
     
-    private func doTestTokenUpload(appFileName fileName: String, platform: App.Platform, name: String, identifier: String, version: String? = nil, build: String? = nil, tags: [String] = ["tagging_like_crazy", "All Year Round"], iconSize: Int? = nil) {
+    private func createRealApp() -> App {
+        let r = doTestTokenUpload(appFileName: "app.ipa", platform: .ios, name: "iDeviant", identifier: "com.fuerteint.iDeviant", version: "4.0", build: "1.0", iconSize: 4776)
+        let app = r.response.testable.content(as: App.self)!
+        return app
+    }
+    
+    @discardableResult private func doTestTokenUpload(appFileName fileName: String, platform: App.Platform, name: String, identifier: String, version: String? = nil, build: String? = nil, tags: [String] = ["tagging_like_crazy", "All Year Round"], iconSize: Int? = nil) -> TestResponse {
         let appUrl = Application.testable.paths.resourcesUrl.appendingPathComponent("apps").appendingPathComponent(fileName)
         let postData = try! Data(contentsOf: appUrl)
         let encodedTags: String = tags.joined(separator: "|").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
@@ -237,10 +295,10 @@ extension AppsControllerTests {
             ]
         )
         
-        doTest(request: req, platform: platform, name: name, identifier: identifier, version: version, build: build, tags: tags, iconSize: iconSize)
+        return doTest(request: req, platform: platform, name: name, identifier: identifier, version: version, build: build, tags: tags, iconSize: iconSize)
     }
     
-    private func doTestJWTUpload(appFileName fileName: String, platform: App.Platform, name: String, identifier: String, version: String? = nil, build: String? = nil, tags: [String] = ["tagging_like_crazy", "All Year Round"], iconSize: Int? = nil) {
+    @discardableResult private func doTestJWTUpload(appFileName fileName: String, platform: App.Platform, name: String, identifier: String, version: String? = nil, build: String? = nil, tags: [String] = ["tagging_like_crazy", "All Year Round"], iconSize: Int? = nil) -> TestResponse {
         let appUrl = Application.testable.paths.resourcesUrl.appendingPathComponent("apps").appendingPathComponent(fileName)
         let postData = try! Data(contentsOf: appUrl)
         let encodedTags: String = tags.joined(separator: "|").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
@@ -249,7 +307,7 @@ extension AppsControllerTests {
             ], authorizedUser: user1, on: app
         )
         
-        doTest(request: req, platform: platform, name: name, identifier: identifier, version: version, build: build, tags: tags, iconSize: iconSize)
+        return doTest(request: req, platform: platform, name: name, identifier: identifier, version: version, build: build, tags: tags, iconSize: iconSize)
     }
     
     @discardableResult private func doTest(request req: HTTPRequest, platform: App.Platform, name: String, identifier: String, version: String?, build: String?, tags: [String], iconSize: Int?) -> TestResponse {
@@ -298,7 +356,6 @@ extension AppsControllerTests {
         let fakeReq = app.testable.fakeRequest()
         let allTags = try! object.tags.query(on: fakeReq).all().wait()
         for tag in tags {
-            XCTAssertTrue(allTags.contains(name: tag), "Tag needs to be present")
             XCTAssertTrue(allTags.contains(identifier: tag.safeText), "Tag needs to be present")
         }
             

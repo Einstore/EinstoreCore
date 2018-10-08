@@ -4,15 +4,18 @@ extension AppsControllerTests {
     static let __allTests = [
         ("testAppIconIsRetrieved", testAppIconIsRetrieved),
         ("testAppTags", testAppTags),
+        ("testAuthReturnsAValidToken", testAuthReturnsAValidToken),
         ("testBadTokenUpload", testBadTokenUpload),
         ("testCantDeleteOtherPeoplesApp", testCantDeleteOtherPeoplesApp),
         ("testDeleteApp", testDeleteApp),
+        ("testDownloadApp", testDownloadApp),
         ("testGetApp", testGetApp),
-        ("testGetAppsOverview", testGetAppsOverview),
+        ("testGetApps", testGetApps),
         ("testLinuxTests", testLinuxTests),
         ("testObfuscatedApkUploadWithJWTAuth", testObfuscatedApkUploadWithJWTAuth),
         ("testOldIosApp", testOldIosApp),
         ("testOldIosAppTokenUpload", testOldIosAppTokenUpload),
+        ("testPlistForApp", testPlistForApp),
         ("testUnobfuscatedApkUploadWithJWTAuth", testUnobfuscatedApkUploadWithJWTAuth),
     ]
 }
