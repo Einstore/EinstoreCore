@@ -326,11 +326,10 @@ class AppsController: Controller {
             guard let token = try? req.query.decode(UploadKey.Token.self) else {
                 throw ErrorsCore.HTTPError.missingAuthorizationData
             }
-            return UploadKey.query(on: req).filter(\.token == token.token).first().flatMap(to: Response.self) { (uploadToken) -> Future<Response> in
+            return try UploadKey.query(on: req).filter(\.token == token.token.sha()).first().flatMap(to: Response.self) { (uploadToken) -> Future<Response> in
                 guard let uploadToken = uploadToken else {
                     throw AuthError.authenticationFailed
                 }
-                
                 return upload(teamId: uploadToken.teamId, on: req)
             }
         }

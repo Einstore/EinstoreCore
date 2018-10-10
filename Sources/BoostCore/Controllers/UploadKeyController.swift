@@ -53,7 +53,7 @@ class UploadKeyController: Controller {
                 return try req.content.decode(UploadKey.New.self).flatMap(to: Response.self) { newKey in
                     let key = UploadKey(new: newKey, teamId: teamId)
                     let tokenCache = key.token
-                    key.token = try tokenCache.passwordHash(req)
+                    key.token = try tokenCache.sha()
                     return key.save(on: req).flatMap(to: Response.self) { key in
                         key.token = tokenCache
                         return try key.asResponse(.created, to: req)
