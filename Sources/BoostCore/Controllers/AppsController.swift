@@ -239,7 +239,7 @@ class AppsController: Controller {
                     guard let app = app else {
                         throw ErrorsCore.HTTPError.notFound
                     }
-                    guard app.platform == .ios else {
+                    guard App.Platform.supportedPlatforms.contains(app.platform) else {
                         throw Error.invalidPlatform
                     }
                     let response = try req.response.basic(status: .ok)
