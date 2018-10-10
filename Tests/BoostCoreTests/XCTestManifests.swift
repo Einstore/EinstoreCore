@@ -4,7 +4,7 @@ extension AppsControllerTests {
     static let __allTests = [
         ("testAppIconIsRetrieved", testAppIconIsRetrieved),
         ("testAppTags", testAppTags),
-        ("testAuthReturnsAValidToken", testAuthReturnsAValidToken),
+        ("testAuthReturnsValidToken", testAuthReturnsValidToken),
         ("testBadTokenUpload", testBadTokenUpload),
         ("testCantDeleteOtherPeoplesApp", testCantDeleteOtherPeoplesApp),
         ("testDeleteApp", testDeleteApp),

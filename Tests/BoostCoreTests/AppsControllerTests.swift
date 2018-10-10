@@ -252,10 +252,10 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
     func testPlistForApp() {
         let realApp = createRealApp()
         
-        let auth = app.testable.response(to: HTTPRequest.testable.get(uri: "/apps/\(realApp.id!.uuidString)/auth", authorizedUser: user1, on: app))
+        let auth = app.testable.response(to: HTTPRequest.testable.get(uri: "/apps/plist", authorizedUser: user1, on: app))
         auth.response.testable.debug()
         
-        let authData = auth.response.testable.content(as: DownloadKey.Public.self)!
+        let authData = auth.response.testable.contentString
         
         print(authData)
         
