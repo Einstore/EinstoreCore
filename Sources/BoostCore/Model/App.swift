@@ -42,6 +42,13 @@ final public class App: DbCoreModel {
             ]
         }
         
+        public static var supportedPlatforms: [Platform] {
+            return [
+                Platform.ios,
+                Platform.android
+            ]
+        }
+        
         /// File extension
         public var fileExtension: String {
             switch self {
