@@ -42,11 +42,17 @@ final public class App: DbCoreModel {
             ]
         }
         
+        /// Returns currently supported platforms
         public static var supportedPlatforms: [Platform] {
             return [
-                Platform.ios,
-                Platform.android
+                .ios,
+                .android
             ]
+        }
+        
+        /// Check if platform is supported
+        public static func `is`(supported platform: Platform) -> Bool {
+            return supportedPlatforms.contains(platform)
         }
         
         /// File extension

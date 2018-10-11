@@ -34,6 +34,8 @@ extension AppTestCaseSetup {
     
     public func setupApps() {
         app.testable.delete(allFor: App.self)
+        app.testable.delete(allFor: Tag.self)
+        app.testable.delete(allFor: AppTag.self)
         
         setupUploadKeys()
         

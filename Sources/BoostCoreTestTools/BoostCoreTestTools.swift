@@ -11,7 +11,7 @@ import BoostCore
 
 
 extension UploadKey: Testable { }
+extension DownloadKey: Testable { }
 extension App: Testable { }
 extension Cluster: Testable { }
 extension Tag: Testable { }
-

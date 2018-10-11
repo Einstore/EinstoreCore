@@ -7,7 +7,8 @@
 
 import Foundation
 import XCTest
-import Vapor
+@testable import Vapor
+@testable import NIO
 import VaporTestTools
 import FluentTestTools
 import ApiCoreTestTools
@@ -44,19 +45,23 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
     // MARK: Linux
     
     static let allTests: [(String, Any)] = [
-        ("testGetApps", testGetApps),
-//        ("testGetAppsOverview", testGetAppsOverview),
-        ("testGetApp", testGetApp),
-        ("testDeleteApp", testDeleteApp),
+        ("testG etAppsOverview", testGetAppsOverview),
+        ("testAppIconIsRetrieved", testAppIconIsRetrieved),
         ("testAppTags", testAppTags),
+        ("testAuthReturnsValidToken", testAuthReturnsValidToken),
+        ("testBadTokenUpload", testBadTokenUpload),
         ("testCantDeleteOtherPeoplesApp", testCantDeleteOtherPeoplesApp),
+        ("testDeleteApp", testDeleteApp),
+        ("testDownloadAndroidApp", testDownloadAndroidApp),
+        ("testDownloadIosApp", testDownloadIosApp),
+        ("testGetApp", testGetApp),
+        ("testGetApps", testGetApps),
+        ("testLinuxTests", testLinuxTests),
+        ("testObfuscatedApkUploadWithJWTAuth", testObfuscatedApkUploadWithJWTAuth),
         ("testOldIosApp", testOldIosApp),
         ("testOldIosAppTokenUpload", testOldIosAppTokenUpload),
-        ("testAppIconIsRetrieved", testAppIconIsRetrieved),
+        ("testPlistForApp", testPlistForApp),
         ("testUnobfuscatedApkUploadWithJWTAuth", testUnobfuscatedApkUploadWithJWTAuth),
-        ("testObfuscatedApkUploadWithJWTAuth", testObfuscatedApkUploadWithJWTAuth),
-        ("testBadTokenUpload", testBadTokenUpload),
-        ("testLinuxTests", testLinuxTests)
     ]
     
     func testLinuxTests() {
@@ -100,26 +105,19 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing or invalid content type")
     }
     
-//    func testGetAppsOverview() {
-//        let count = app.testable.count(allFor: App.self)
-//        XCTAssertEqual(count, 107, "There should be right amount of apps to begin with")
-//
-//        let req = HTTPRequest.testable.get(uri: "/apps/overview", authorizedUser: user1, on: app)
-//        let r = app.testable.response(to: req)
-//
-//        r.response.testable.debug()
-//
-//        let objects = r.response.testable.content(as: [Cluster.Public].self)!
-//
-//        XCTAssertEqual(objects.count, 99, "There should be right amount of apps")
-//
-//        objects.forEach { app in
-//            XCTAssertNotNil(app.latestAppId, "No last app id should be nil")
-//        }
-//
-//        XCTAssertTrue(r.response.testable.has(statusCode: .ok), "Wrong status code")
-//        XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing or invalid content type")
-//    }
+    func testGetAppsOverview() {
+        let req = HTTPRequest.testable.get(uri: "/apps/overview", authorizedUser: user1, on: app)
+        let r = app.testable.response(to: req)
+
+        r.response.testable.debug()
+
+        let objects = r.response.testable.content(as: [Cluster.Public].self)!
+
+        XCTAssertEqual(objects.count, 8, "There should be right amount of apps")
+
+        XCTAssertTrue(r.response.testable.has(statusCode: .ok), "Wrong status code")
+        XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing or invalid content type")
+    }
     
     func testGetApp() {
         let req = HTTPRequest.testable.get(uri: "/apps/\(app1.id!.uuidString)", authorizedUser: user1, on: app)
@@ -252,27 +250,62 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
     func testPlistForApp() {
         let realApp = createRealApp()
         
-        let auth = app.testable.response(to: HTTPRequest.testable.get(uri: "/apps/plist", authorizedUser: user1, on: app))
-        auth.response.testable.debug()
+        let token = DownloadKey.testable.create(forAppId: realApp.id!, on: app)
         
-        let authData = auth.response.testable.contentString
+        let r = app.testable.response(to: HTTPRequest.testable.get(uri: "/apps/plist?token=\(token.token)", authorizedUser: user1, on: app))
+        r.response.testable.debug()
         
-        print(authData)
+        let plistData = r.response.testable.contentString!.data(using: .utf8)!
         
-        // TODO: Finish!!!!!!!!!!!!
+        let plist = try! PropertyListDecoder().decode(AppPlist.self, from: plistData)
+        
+        print(plist)
+        
+        XCTAssertEqual(plist.items[0].assets[0].kind, "software-package")
+        XCTAssertEqual(plist.items[0].assets[0].url, "http://localhost:8080/app.boost")
+        
+        XCTAssertEqual(plist.items[0].metadata.bundleIdentifier, "com.fuerteint.iDeviant")
+        XCTAssertEqual(plist.items[0].metadata.bundleVersion, "4.0")
+        XCTAssertEqual(plist.items[0].metadata.kind, "software")
+        XCTAssertEqual(plist.items[0].metadata.title, "iDeviant")
     }
     
-    func testDownloadApp() {
+    func testDownloadIosApp() {
         let realApp = createRealApp()
         
-        let auth = app.testable.response(to: HTTPRequest.testable.get(uri: "/apps/\(realApp.id!.uuidString)/auth", authorizedUser: user1, on: app))
-        auth.response.testable.debug()
+        let token = DownloadKey.testable.create(forAppId: realApp.id!, on: app)
         
-        let authData = auth.response.testable.content(as: DownloadKey.Public.self)!
+        let r = app.testable.response(to: HTTPRequest.testable.get(uri: "/apps/file?token=\(token.token)", authorizedUser: user1, on: app))
+        r.response.testable.debug()
         
-        print(authData)
+        let data: Data = try! r.response.http.body.consumeData(on: app.testable.fakeRequest()).wait()
         
-        // TODO: Finish!!!!!!!!!!!!
+        let appUrl = Application.testable.paths.resourcesUrl.appendingPathComponent("apps").appendingPathComponent("app.ipa")
+        let appData = try! Data(contentsOf: appUrl)
+        
+        XCTAssertEqual(data, appData, "Downloaded app doesn't match the one uploaded")
+        
+        XCTAssertTrue(r.response.testable.has(statusCode: .ok), "Wrong status code")
+        XCTAssertTrue(r.response.testable.has(contentType: "application/octet-stream"), "Missing or incorrect content type")
+    }
+    
+    func testDownloadAndroidApp() {
+        let realApp = createRealApp(.android)
+        
+        let token = DownloadKey.testable.create(forAppId: realApp.id!, on: app)
+        
+        let r = app.testable.response(to: HTTPRequest.testable.get(uri: "/apps/file?token=\(token.token)", authorizedUser: user1, on: app))
+        r.response.testable.debug()
+        
+        let data: Data = try! r.response.http.body.consumeData(on: app.testable.fakeRequest()).wait()
+        
+        let appUrl = Application.testable.paths.resourcesUrl.appendingPathComponent("apps").appendingPathComponent("app.apk")
+        let appData = try! Data(contentsOf: appUrl)
+        
+        XCTAssertEqual(data, appData, "Downloaded app doesn't match the one uploaded")
+        
+        XCTAssertTrue(r.response.testable.has(statusCode: .ok), "Wrong status code")
+        XCTAssertTrue(r.response.testable.has(contentType: "application/vnd.android.package-archive"), "Missing or incorrect content type")
     }
     
 }
@@ -280,10 +313,16 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
 
 extension AppsControllerTests {
     
-    private func createRealApp() -> App {
-        let r = doTestTokenUpload(appFileName: "app.ipa", platform: .ios, name: "iDeviant", identifier: "com.fuerteint.iDeviant", version: "4.0", build: "1.0", iconSize: 4776)
-        let app = r.response.testable.content(as: App.self)!
-        return app
+    private func createRealApp(_ platform: App.Platform = .ios) -> App {
+        if platform == .ios {
+            let r = doTestTokenUpload(appFileName: "app.ipa", platform: .ios, name: "iDeviant", identifier: "com.fuerteint.iDeviant", version: "4.0", build: "1.0", iconSize: 4776)
+            let app = r.response.testable.content(as: App.self)!
+            return app
+        } else {
+            let r = doTestJWTUpload(appFileName: "app.apk", platform: .android, name: "Bytecheck", identifier: "cz.vhrdina.bytecheck.ByteCheckApplication", version: "7.1.1", build: "25", iconSize: 2018)
+            let app = r.response.testable.content(as: App.self)!
+            return app
+        }
     }
     
     @discardableResult private func doTestTokenUpload(appFileName fileName: String, platform: App.Platform, name: String, identifier: String, version: String? = nil, build: String? = nil, tags: [String] = ["tagging_like_crazy", "All Year Round"], iconSize: Int? = nil) -> TestResponse {
