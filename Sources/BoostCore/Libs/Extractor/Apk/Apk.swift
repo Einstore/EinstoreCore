@@ -99,7 +99,7 @@ class Apk: BaseExtractor, Extractor {
     
     /// Parse additional application info
     private func getOtherApplicationInfo() throws {
-        appIdentifier = manifest?.manifest.application.identifier ?? manifest?.manifest.package
+        appIdentifier = manifest?.manifest.package
         versionLong = manifest?.manifest.platformBuildVersionName
         versionShort = manifest?.manifest.platformBuildVersionCode
     }
