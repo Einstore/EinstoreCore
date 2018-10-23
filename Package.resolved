@@ -6,7 +6,7 @@
         "repositoryURL": "https://github.com/LiveUI/ApiCore.git",
         "state": {
           "branch": "master",
-          "revision": "ad860cb2ce7b185300a0ea953a0f9ba7e0f8f551",
+          "revision": "ffb47d20a3c39345ee571a6d510a33a5e7f2918d",
           "version": null
         }
       },
@@ -105,8 +105,8 @@
         "repositoryURL": "https://github.com/vapor/fluent.git",
         "state": {
           "branch": null,
-          "revision": "413a975c18ae2c1e4af179cef1c5dcdb87ca4603",
-          "version": "3.0.1"
+          "revision": "dc258fe53880f80508df317df3c903ee2c2b9317",
+          "version": "3.1.0"
         }
       },
       {
@@ -204,7 +204,7 @@
         "repositoryURL": "https://github.com/LiveUI/S3.git",
         "state": {
           "branch": "master",
-          "revision": "9a7e7aa5486396665a792eed6489499ef33c344b",
+          "revision": "438923a6fa0a61723d9066eeecb066dbd290c3ec",
           "version": null
         }
       },
@@ -366,8 +366,8 @@
         "repositoryURL": "https://github.com/vapor/websocket.git",
         "state": {
           "branch": null,
-          "revision": "149af03348f60ac8b84defdf277112d62fd8c704",
-          "version": "1.0.2"
+          "revision": "eb4277f75f1d96a3d15c852cdd89af1799093dcd",
+          "version": "1.1.0"
         }
       },
       {
