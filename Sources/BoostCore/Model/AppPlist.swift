@@ -20,9 +20,14 @@ public struct AppPlist: Codable {
             let kind: String = "software-package"
             let url: String
             
-            public init(app: App, request req: Request) throws {
+            public init(app: App, token: String, request req: Request) throws {
                 let serverUrl = req.serverURL()
-                self.url = serverUrl.appendingPathComponent("app.boost").absoluteString
+                var components = URLComponents(string: serverUrl.appendingPathComponent("apps").appendingPathComponent("file").absoluteString)
+                components?.query = "token=\(token)"
+                guard let url = components?.url else {
+                    fatalError()
+                }
+                self.url = url.absoluteString
             }
             
         }
@@ -52,9 +57,9 @@ public struct AppPlist: Codable {
         let assets: [Asset]
         let metadata: Metadata
         
-        public init(app: App, request req: Request) throws {
+        public init(app: App, token: String, request req: Request) throws {
             self.assets = [
-                try Asset(app: app, request: req)
+                try Asset(app: app, token: token, request: req)
             ]
             self.metadata = Metadata(app: app)
         }
@@ -63,9 +68,9 @@ public struct AppPlist: Codable {
     
     let items: [Item]
     
-    public init(app: App, request req: Request) throws {
+    public init(app: App, token: String, request req: Request) throws {
         self.items = [
-            try Item(app: app, request: req)
+            try Item(app: app, token: token, request: req)
         ]
     }
     

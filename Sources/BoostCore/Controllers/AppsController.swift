@@ -220,7 +220,7 @@ class AppsController: Controller {
                     }
                     let response = try req.response.basic(status: .ok)
                     response.http.headers = HTTPHeaders([("Content-Type", "application/xml; charset=utf-8")])
-                    response.http.body = try HTTPBody(data: AppPlist(app: app, request: req).asPropertyList())
+                    response.http.body = try HTTPBody(data: AppPlist(app: app, token: token.token, request: req).asPropertyList())
                     return response
                 }
             }
