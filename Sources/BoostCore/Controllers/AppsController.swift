@@ -106,7 +106,7 @@ class AppsController: Controller {
     
     /// Overview app query
     static func overviewQuery(teams: Teams, on req: Request) throws -> QueryBuilder<ApiCoreDatabase, Cluster.Public> {
-        let q = try Cluster.query(on: req).filter(\Cluster.teamId ~~ teams.ids).decode(Cluster.Public.self).paginate(on: req)
+        let q = try Cluster.query(on: req).filter(\Cluster.teamId ~~ teams.ids).sort(\Cluster.latestAppAdded, .descending).decode(Cluster.Public.self).paginate(on: req)
         return q
     }
     
@@ -203,6 +203,7 @@ class AppsController: Controller {
         }
         
         // App plist
+        // Plist documentation: https://help.apple.com/deployment/ios/#/apd11fd167c4
         router.get("apps", "plist") { (req) -> Future<Response> in
             let token = try req.query.decode(DownloadKey.Token.self)
             return try DownloadKey.query(on: req).filter(\DownloadKey.token == token.token.sha()).filter(\DownloadKey.added >= Date().addMinute(n: -15)).first().flatMap(to: Response.self) { key in
