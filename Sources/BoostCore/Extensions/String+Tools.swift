@@ -14,4 +14,13 @@ extension String {
         return addingPercentEncoding(withAllowedCharacters: CharacterSet.init(charactersIn: "?&").inverted) ?? "badUrl"
     }
     
+    public func stripExtension() -> String {
+        guard contains(".") else {
+            return self
+        }
+        var parts = split(separator: ".")
+        parts.removeLast()
+        return parts.joined(separator: ".")
+    }
+    
 }

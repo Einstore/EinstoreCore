@@ -14,7 +14,7 @@ import FluentPostgreSQL
 
 class ConfigurationController: Controller {
     
-    static func boot(router: Router) throws {
+    static func boot(router: Router, secure: Router, debug: Router) throws {
         router.get("teams", DbIdentifier.parameter, "config") { (req) -> Future<Config> in
             let teamId = try req.parameters.next(DbIdentifier.self)
             return try req.me.verifiedTeam(id: teamId).flatMap(to: Config.self) { team in
@@ -22,7 +22,7 @@ class ConfigurationController: Controller {
             }
         }
         
-        router.post("teams", DbIdentifier.parameter, "config") { (req) -> Future<Config> in
+        secure.post("teams", DbIdentifier.parameter, "config") { (req) -> Future<Config> in
             let teamId = try req.parameters.next(DbIdentifier.self)
             return try req.content.decode(Config.self).flatMap(to: Config.self) { data in
                 return try req.me.verifiedTeam(id: teamId).flatMap(to: Config.self) { team in

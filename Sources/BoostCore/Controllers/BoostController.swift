@@ -37,9 +37,9 @@ public class BoostController: Controller {
     }
     
     /// Boot controller
-    public static func boot(router: Router) throws {
+    public static func boot(router: Router, secure: Router, debug: Router) throws {
         // Install demo data
-        router.get("demo") { (req)->Future<Response> in
+        debug.get("demo") { (req)->Future<Response> in
             return Team.query(on: req).first().flatMap(to: Response.self) { team in
                 guard let team = team else {
                     throw Error.installMissing

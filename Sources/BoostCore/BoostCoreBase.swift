@@ -27,16 +27,6 @@ public class BoostCoreBase {
         ConfigurationController.self
     ]
     
-    /// Boot sequence
-    public static func boot(router: Router) throws {
-        try ApiCoreBase.boot(router: router)
-        try SettingsCore.boot(router: router)
-        
-        for c in controllers {
-            try c.boot(router: router)
-        }
-    }
-    
     /// Private temp file handler
     private static var _tempFileHandler: FileHandler?
     
@@ -101,12 +91,7 @@ public class BoostCoreBase {
     }
     
     /// Main Vapor configuration method
-    public static func configure(_ config: inout Vapor.Config, _ env: inout Vapor.Environment, _ services: inout Services) throws {
-        // Enable unsecured API endpoints
-        ApiAuthMiddleware.allowedGetUri.append("/apps/plist")
-        ApiAuthMiddleware.allowedGetUri.append("/apps/file")
-        ApiAuthMiddleware.allowedPostUri.append("/apps")
-        
+    public static func configure(_ config: inout Vapor.Config, _ env: inout Vapor.Environment, _ services: inout Services) throws {        
         // Add BoostCore models to the migrations
         ApiCoreBase.add(model: Cluster.self, database: .db)
         ApiCoreBase.add(model: App.self, database: .db)
@@ -116,8 +101,13 @@ public class BoostCoreBase {
         ApiCoreBase.add(model: UploadKey.self, database: .db)
         ApiCoreBase.add(model: Config.self, database: .db)
         
+        // Register controllers
+        for c in controllers {
+            ApiCoreBase.controllers.append(c)
+        }
+        
         // Setup SettingsCore
-        try SettingsCore.configure(&config, &env, &services)
+        try SettingsCoreBase.configure(&config, &env, &services)
         
         // Setup ApiCore
         try ApiCoreBase.configure(&config, &env, &services)

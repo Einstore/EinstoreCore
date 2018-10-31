@@ -22,12 +22,14 @@ public struct AppPlist: Codable {
             
             public init(app: App, token: String, request req: Request) throws {
                 let serverUrl = req.serverURL()
-                var components = URLComponents(string: serverUrl.appendingPathComponent("apps").appendingPathComponent("file").absoluteString)
-                components?.query = "token=\(token)"
-                guard let url = components?.url else {
-                    fatalError()
-                }
-                self.url = url.absoluteString
+                self.url = serverUrl
+                    .appendingPathComponent("apps")
+                    .appendingPathComponent(app.id!.uuidString)
+                    .appendingPathComponent("file")
+                    .appendingPathComponent(token)
+                    .appendingPathComponent(app.fileName.safeText)
+                    .appendingPathExtension(app.platform.fileExtension)
+                    .absoluteString
             }
             
         }

@@ -111,9 +111,9 @@ class AppsController: Controller {
     }
     
     /// Loading routes
-    static func boot(router: Router) throws {
+    static func boot(router: Router, secure: Router, debug: Router) throws {
         // Get list of apps based on input parameters
-        router.get("apps") { (req) -> Future<Apps> in
+        secure.get("apps") { (req) -> Future<Apps> in
             return try req.me.teams().flatMap(to: Apps.self) { teams in
                 let q = try App.query(on: req).filter(\App.teamId ~~ teams.ids).sort(\App.created, .descending).appFilters(on: req)
                 return q.decode(App.Public.self).all()
@@ -121,14 +121,14 @@ class AppsController: Controller {
         }
         
         // Overview for apps in all teams
-        router.get("apps", "overview") { (req) -> Future<[Cluster.Public]> in
+        secure.get("apps", "overview") { (req) -> Future<[Cluster.Public]> in
             return try req.me.teams().flatMap(to: [Cluster.Public].self) { teams in
                 return try overviewQuery(teams: teams, on: req).all()
             }
         }
         
         // Overview for apps in selected team
-        router.get("teams", DbIdentifier.parameter, "apps", "overview") { (req) -> Future<[Cluster.Public]> in
+        secure.get("teams", DbIdentifier.parameter, "apps", "overview") { (req) -> Future<[Cluster.Public]> in
             let teamId = try req.parameters.next(DbIdentifier.self)
             return try req.me.teams().flatMap(to: [Cluster.Public].self) { teams in
                 return try overviewQuery(teams: teams, on: req).filter(\Cluster.teamId == teamId).all()
@@ -136,7 +136,7 @@ class AppsController: Controller {
         }
         
         // Team apps info
-        router.get("teams", DbIdentifier.parameter, "apps", "info") { (req) -> Future<App.Info> in
+        secure.get("teams", DbIdentifier.parameter, "apps", "info") { (req) -> Future<App.Info> in
             let teamId = try req.parameters.next(DbIdentifier.self)
             return try req.me.teams().flatMap(to: App.Info.self) { teams in
                 return try overviewQuery(teams: teams, on: req).filter(\Cluster.teamId == teamId).all().map(to: App.Info.self) { apps in
@@ -151,7 +151,7 @@ class AppsController: Controller {
         }
         
         // App detail
-        router.get("apps", DbIdentifier.parameter) { (req) -> Future<App.Public> in
+        secure.get("apps", DbIdentifier.parameter) { (req) -> Future<App.Public> in
             let appId = try req.parameters.next(DbIdentifier.self)
             return try req.me.teams().flatMap(to: App.Public.self) { teams in
                 return try App.query(on: req).safeApp(appId: appId, teamIds: teams.ids).decode(App.Public.self).first().map(to: App.Public.self) { app in
@@ -164,7 +164,7 @@ class AppsController: Controller {
         }
         
         // App icon
-        router.get("apps", DbIdentifier.parameter, "icon") { (req) -> Future<Response> in
+        secure.get("apps", DbIdentifier.parameter, "icon") { (req) -> Future<Response> in
             let appId = try req.parameters.next(DbIdentifier.self)
             return try req.me.teams().flatMap(to: Response.self) { teams in
                 return try App.query(on: req).safeApp(appId: appId, teamIds: teams.ids).first().flatMap(to: Response.self) { app in
@@ -182,7 +182,7 @@ class AppsController: Controller {
         }
         
         // App download auth
-        router.get("apps", DbIdentifier.parameter, "auth") { (req) -> Future<Response> in
+        secure.get("apps", DbIdentifier.parameter, "auth") { (req) -> Future<Response> in
             let appId = try req.parameters.next(DbIdentifier.self)
             return try req.me.teams().flatMap(to: Response.self) { teams in
                 return try App.query(on: req).safeApp(appId: appId, teamIds: teams.ids).first().flatMap(to: Response.self) { app in
@@ -195,7 +195,7 @@ class AppsController: Controller {
                     return key.save(on: req).flatMap(to: Response.self) { key in
                         return DownloadKey.query(on: req).filter(\DownloadKey.added < Date().addMinute(n: -15)).delete().flatMap(to: Response.self) { _ in
                             key.token = originalToken
-                            return try DownloadKey.Public(downloadKey: key, request: req).asResponse(.ok, to: req)
+                            return try DownloadKey.Public(app: app, downloadKey: key, request: req).asResponse(.ok, to: req)
                         }
                     }
                 }
@@ -204,9 +204,10 @@ class AppsController: Controller {
         
         // App plist
         // Plist documentation: https://help.apple.com/deployment/ios/#/apd11fd167c4
-        router.get("apps", "plist") { (req) -> Future<Response> in
-            let token = try req.query.decode(DownloadKey.Token.self)
-            return try DownloadKey.query(on: req).filter(\DownloadKey.token == token.token.sha()).filter(\DownloadKey.added >= Date().addMinute(n: -15)).first().flatMap(to: Response.self) { key in
+        router.get("apps", DbIdentifier.parameter, "plist", UUID.parameter, String.parameter) { (req) -> Future<Response> in
+            let _ = try req.parameters.next(DbIdentifier.self)
+            let token = try req.parameters.next(UUID.self).uuidString
+            return try DownloadKey.query(on: req).filter(\DownloadKey.token == token.sha()).filter(\DownloadKey.added >= Date().addMinute(n: -15)).first().flatMap(to: Response.self) { key in
                 guard let key = key else {
                     return DownloadKey.query(on: req).filter(\DownloadKey.added < Date().addMinute(n: -15)).delete().map(to: Response.self) { _ in
                         throw ErrorsCore.HTTPError.notAuthorized
@@ -221,16 +222,17 @@ class AppsController: Controller {
                     }
                     let response = try req.response.basic(status: .ok)
                     response.http.headers = HTTPHeaders([("Content-Type", "application/xml; charset=utf-8")])
-                    response.http.body = try HTTPBody(data: AppPlist(app: app, token: token.token, request: req).asPropertyList())
+                    response.http.body = try HTTPBody(data: AppPlist(app: app, token: token, request: req).asPropertyList())
                     return response
                 }
             }
         }
         
         // App file
-        router.get("apps", "file") { (req) -> Future<Response> in
-            let token = try req.query.decode(DownloadKey.Token.self)
-            return try DownloadKey.query(on: req).filter(\DownloadKey.token == token.token.sha()).filter(\DownloadKey.added >= Date().addMinute(n: -15)).first().flatMap(to: Response.self) { key in
+        router.get("apps", DbIdentifier.parameter, "file", UUID.parameter, String.parameter) { (req) -> Future<Response> in
+            let _ = try req.parameters.next(DbIdentifier.self)
+            let token = try req.parameters.next(UUID.self).uuidString
+            return try DownloadKey.query(on: req).filter(\DownloadKey.token == token.sha()).filter(\DownloadKey.added >= Date().addMinute(n: -15)).first().flatMap(to: Response.self) { key in
                 guard let key = key else {
                     return DownloadKey.query(on: req).filter(\DownloadKey.added < Date().addMinute(n: -15)).delete().map(to: Response.self) { _ in
                         throw ErrorsCore.HTTPError.notAuthorized
@@ -261,7 +263,7 @@ class AppsController: Controller {
         }
         
         // Delete app
-        router.delete("apps", DbIdentifier.parameter) { (req) -> Future<Response> in
+        secure.delete("apps", DbIdentifier.parameter) { (req) -> Future<Response> in
             let appId = try req.parameters.next(DbIdentifier.self)
             return try req.me.teams().flatMap(to: Response.self) { teams in
                 return try App.query(on: req).safeApp(appId: appId, teamIds: teams.ids).first().flatMap(to: Response.self) { app in
@@ -336,7 +338,7 @@ class AppsController: Controller {
         }
         
         // Upload app from authenticated session (browser, app, etc ...)
-        router.post("teams", UUID.parameter, "apps") { (req) -> Future<Response> in
+        secure.post("teams", UUID.parameter, "apps") { (req) -> Future<Response> in
             let teamId = try req.parameters.next(DbIdentifier.self)
             return try req.me.verifiedTeam(id: teamId).flatMap(to: Response.self) { (team) -> Future<Response> in
                 return upload(teamId: teamId, on: req)

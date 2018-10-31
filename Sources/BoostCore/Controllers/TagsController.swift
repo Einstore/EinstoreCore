@@ -15,14 +15,14 @@ import ErrorsCore
 
 class TagsController: Controller {
     
-    static func boot(router: Router) throws {
+    static func boot(router: Router, secure: Router, debug: Router) throws {
         // Tags for an app
-        router.get("apps", DbIdentifier.parameter, "tags") { (req) -> Future<Tags> in
+        secure.get("apps", DbIdentifier.parameter, "tags") { (req) -> Future<Tags> in
             let appId = try req.parameters.next(DbIdentifier.self)
             return try TagsManager.tags(appId: appId, on: req)
         }
         
-        router.post("apps", DbIdentifier.parameter, "tags") { (req) -> Future<Response> in
+        secure.post("apps", DbIdentifier.parameter, "tags") { (req) -> Future<Response> in
             let appId = try req.parameters.next(DbIdentifier.self)
             return try [String].fill(post: req).flatMap(to: Response.self) { tags in
                 guard !tags.isEmpty else {
@@ -39,7 +39,7 @@ class TagsController: Controller {
             }
         }
         
-        router.delete("apps", DbIdentifier.parameter, "tags", DbIdentifier.parameter) { (req) -> Future<Response> in
+        secure.delete("apps", DbIdentifier.parameter, "tags", DbIdentifier.parameter) { (req) -> Future<Response> in
             let appId = try req.parameters.next(DbIdentifier.self)
             let tagId = try req.parameters.next(DbIdentifier.self)
             return try TagsManager.delete(tagId: tagId, appId: appId, on: req).asResponse(to: req)

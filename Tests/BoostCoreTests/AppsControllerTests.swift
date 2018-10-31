@@ -252,7 +252,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         
         let token = DownloadKey.testable.create(forAppId: realApp.id!, on: app)
         
-        let r = app.testable.response(to: HTTPRequest.testable.get(uri: "/apps/plist?token=\(token.token)", authorizedUser: user1, on: app))
+        let r = app.testable.response(to: HTTPRequest.testable.get(uri: "/apps/\(realApp.id!)/plist/\(token.token)/\(realApp.fileName).plist", authorizedUser: user1, on: app))
         r.response.testable.debug()
         
         let plistData = r.response.testable.contentString!.data(using: .utf8)!
@@ -262,7 +262,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         print(plist)
         
         XCTAssertEqual(plist.items[0].assets[0].kind, "software-package")
-        XCTAssertEqual(plist.items[0].assets[0].url, "http://localhost:8080/app.boost")
+        XCTAssertEqual(plist.items[0].assets[0].url, "http://localhost:8080/apps/\(realApp.id!)/file/\(token.token)/app-ipa.ipa")
         
         XCTAssertEqual(plist.items[0].metadata.bundleIdentifier, "com.fuerteint.iDeviant")
         XCTAssertEqual(plist.items[0].metadata.bundleVersion, "4.0")
@@ -275,7 +275,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         
         let token = DownloadKey.testable.create(forAppId: realApp.id!, on: app)
         
-        let r = app.testable.response(to: HTTPRequest.testable.get(uri: "/apps/file?token=\(token.token)", authorizedUser: user1, on: app))
+        let r = app.testable.response(to: HTTPRequest.testable.get(uri: "/apps/\(realApp.id!)/file/\(token.token)/\(realApp.fileName).ipa", authorizedUser: user1, on: app))
         r.response.testable.debug()
         
         let data: Data = try! r.response.http.body.consumeData(on: app.testable.fakeRequest()).wait()
@@ -294,7 +294,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         
         let token = DownloadKey.testable.create(forAppId: realApp.id!, on: app)
         
-        let r = app.testable.response(to: HTTPRequest.testable.get(uri: "/apps/file?token=\(token.token)", authorizedUser: user1, on: app))
+        let r = app.testable.response(to: HTTPRequest.testable.get(uri: "/apps/\(realApp.id!)/file/\(token.token)/\(realApp.fileName).apk", authorizedUser: user1, on: app))
         r.response.testable.debug()
         
         let data: Data = try! r.response.http.body.consumeData(on: app.testable.fakeRequest()).wait()

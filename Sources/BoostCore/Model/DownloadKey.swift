@@ -17,10 +17,6 @@ public typealias DownloadKeys = [DownloadKey]
 
 final public class DownloadKey: DbCoreModel {
     
-    public struct Token: Codable {
-        public var token: String
-    }
-    
     public struct Public: Content {
         let appId: DbIdentifier
         var token: String
@@ -28,16 +24,36 @@ final public class DownloadKey: DbCoreModel {
         let file: String
         let ios: String
         
-        init(downloadKey: DownloadKey, request req: Request) {
+        init(app: App, downloadKey: DownloadKey, request req: Request) {
             token = downloadKey.token
             
-            guard let serverUrlString = ApiCoreBase.configuration.server.url, let url = URL(string: serverUrlString)?.appendingPathComponent("apps") else {
+            guard let serverUrlString = ApiCoreBase.configuration.server.url, let appId = app.id else {
                 fatalError("Server URL is not properly configured")
             }
-            plist = url.appendingPathComponent("plist").absoluteString + "?token=\(downloadKey.token)"
-            file = url.appendingPathComponent("file").absoluteString + "?token=\(downloadKey.token)"
+            
+            enum URLType: String {
+                case file
+                case plist
+            }
+            
+            func urlBuilder(type: URLType) -> String {
+                let ext = type == .plist ? "plist" : app.platform.fileExtension
+                guard let url = URL(string: serverUrlString)?
+                    .appendingPathComponent("apps")
+                    .appendingPathComponent(appId.uuidString)
+                    .appendingPathComponent(type.rawValue)
+                    .appendingPathComponent(downloadKey.token)
+                    .appendingPathComponent(app.fileName.stripExtension())
+                    .appendingPathExtension(ext).absoluteString else {
+                        fatalError("Server URL is not properly configured")
+                }
+                return url
+            }
+            
+            plist = urlBuilder(type: .plist)
+            file = urlBuilder(type: .file)
             ios = "itms-services://?action=download-manifest&url=\(plist.encodeURLforUseAsQuery())"
-            appId = downloadKey.appId
+            self.appId = appId
         }
         
         enum CodingKeys: String, CodingKey {
