@@ -29,15 +29,15 @@ final public class DownloadKey: DbCoreModel {
         let ios: String
         
         init(downloadKey: DownloadKey, request req: Request) {
-            self.token = downloadKey.token
+            token = downloadKey.token
             
             guard let serverUrlString = ApiCoreBase.configuration.server.url, let url = URL(string: serverUrlString)?.appendingPathComponent("apps") else {
                 fatalError("Server URL is not properly configured")
             }
-            self.plist = url.appendingPathComponent("plist").absoluteString + "?token=\(downloadKey.token)"
-            self.file = url.appendingPathComponent("file").absoluteString + "?token=\(downloadKey.token)"
-            self.ios = "itms-services://?action=download-manifest&url=\(self.plist)"
-            self.appId = downloadKey.appId
+            plist = url.appendingPathComponent("plist").absoluteString + "?token=\(downloadKey.token)"
+            file = url.appendingPathComponent("file").absoluteString + "?token=\(downloadKey.token)"
+            ios = "itms-services://?action=download-manifest&url=\(plist.encodeURLforUseAsQuery())"
+            appId = downloadKey.appId
         }
         
         enum CodingKeys: String, CodingKey {
