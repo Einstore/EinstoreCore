@@ -58,7 +58,7 @@ public class BoostController: Controller {
                                 let version = "1.\(i1).\(i2)"
                                 let sdk = "\(name)SDK_\(version)"
                                 let sdk2 = "AnotherSDK_1.\(i2)"
-                                let app = App(teamId: team.id!, clusterId: (cluster?.id ?? UUID()), name: name, identifier: identifier, version: version, build: String(build), platform: platform, size: 5000, sizeTotal: 5678, info: nil, hasIcon: false)
+                                let app = App(teamId: team.id!, clusterId: (cluster?.id ?? UUID()), name: name, identifier: identifier, version: version, build: String(build), platform: platform, size: 5000, sizeTotal: 5678, info: nil, minSdk: "19", hasIcon: false)
                                 let save = app.save(on: req).flatMap(to: Void.self) { app in
                                     func saveTags() -> Future<Void> {
                                         let tags: [Future<Void>] = [

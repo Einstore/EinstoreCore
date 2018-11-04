@@ -34,4 +34,10 @@ public class ThirdpartyUtilities {
         return url
     }
     
+    public static var aaptUrl: URL {
+        var url: URL = System.default.binUrl
+        url.appendPathComponent("aapt")
+        return url
+    }
+    
 }
