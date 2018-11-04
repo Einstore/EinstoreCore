@@ -38,129 +38,80 @@ class Apk: BaseExtractor, Extractor {
         
     }
     
-    /// Manifest store
-    private(set) var manifest: ApkManifest?
-    
-    /// App permissions store
-    private(set) var appPermissions: [String] = []
-    
-    /// App features store
-    private(set) var appFeatures: [String] = []
-    
-    // MARK: URL's
-    
-    /// Manifest file URL
-    var manifestFileUrl: URL {
-        get {
-            var manifestFileUrl: URL = extractedApkFolder
-            manifestFileUrl.appendPathComponent("AndroidManifest.xml")
-            return manifestFileUrl
-        }
-    }
-    
-    /// Folder with extracted APK data
-    var extractedApkFolder: URL {
-        get {
-            var url: URL = archive
-            url.appendPathComponent("Decoded")
-            return url
-        }
-    }
-    
-    // MARK: Parsing
-    
-    /// Parse application name
-    private func getApplicationName() throws {
-        var pathUrl: URL = extractedApkFolder
-        pathUrl.appendPathComponent("res")
-        pathUrl.appendPathComponent("values")
-        
-        var xmlUrl = pathUrl
-        xmlUrl.appendPathComponent("strings.xml")
-        if FileManager.default.fileExists(atPath:xmlUrl.path) {
-            var jsonUrl = pathUrl
-            jsonUrl.appendPathComponent("strings.json")
-            
-            // Convert XML to JSON
-            // TODO: Replace with XMLCoder which is already used in S3!!!
-            try runAndPrint(ThirdpartyUtilities.xml2jsonUrl.path, "-t", "xml2json", "-o", jsonUrl.path, xmlUrl.path)
-            
-            let strings = try ApkStrings.decode.fromJSON(file: jsonUrl)
-            
-            if let iconInfo: [String] = manifest?.manifest.application.nameAddress.components(separatedBy: "/"), iconInfo.count > 1 {
-                appName = strings[iconInfo[1]]?.text
-            }
-        }
-        
-        if appName == nil {
-            appName = file.lastPathComponent
-        }
-    }
-    
-    /// Parse additional application info
-    private func getOtherApplicationInfo() throws {
-        appIdentifier = manifest?.manifest.application.identifier ?? manifest?.manifest.package
-        versionLong = manifest?.manifest.platformBuildVersionName
-        versionShort = manifest?.manifest.platformBuildVersionCode
-    }
-    
-    /// Parse application icon info & icon itself
-    private func getApplicationIcon() throws {
-        appIconId = manifest?.manifest.application.icon
-        if appIconId == nil {
-            appIconId = manifest?.manifest.application.roundIcon
-        }
-        
-        var pathUrl: URL = extractedApkFolder
-        pathUrl.appendPathComponent("res")
-        
-        guard let iconInfo: [String] = appIconId?.replacingOccurrences(of: "@", with: "").components(separatedBy: "/") else {
-            return
-        }
-        
-        let folders: [String] = try FileManager.default.contentsOfDirectory(atPath: pathUrl.path).filter({ (folder) -> Bool in
-            return folder.contains(iconInfo[0])
-        }).sorted()
-        for folder: String in folders {
-            var iconBaseUrl: URL = pathUrl
-            iconBaseUrl.appendPathComponent(folder)
-            
-            var iconUrl: URL = iconBaseUrl
-            iconUrl.appendPathComponent(iconInfo[1])
-            // QUESTION: Can this be uppercased after extraction?
-            iconUrl.appendPathExtension("png")
-            
-            if FileManager.default.fileExists(atPath: iconUrl.path) {
-                let data: Data = try Data(contentsOf: iconUrl)
-                if data.count > (iconData?.count ?? 0) {
-                    iconData = data
+    func fetchApkInfo() -> ApkInfo {
+        var apkInfo: ApkInfo = ApkInfo()
+        let output = run(ThirdpartyUtilities.aaptUrl.path.replacingOccurrences(of: "file://", with: ""), "dump", "--values", "badging", self.file.path).stdout
+        let outputLines = output.lines()
+        outputLines.forEach() {
+            if $0.contains(":") {
+                let line = $0.split(separator: ":")
+                let key = String(line[0])
+                let value = String(line[1])
+                
+                if key == ApkInfo.ParseKeys.package.rawValue {
+                    apkInfo.addPackageInfo(package: value)
+                } else if key == ApkInfo.ParseKeys.sdkVersion.rawValue {
+                    apkInfo.sdkVersion = value
+                } else if key == ApkInfo.ParseKeys.targetSdkVersion.rawValue {
+                    apkInfo.targetSdkVersion = value
+                } else if ApkInfo.ParseKeys.hasPermission(perm: key) {
+                    apkInfo.addPermission(permission: value)
+                } else if ApkInfo.ParseKeys.hasFeature(feature: key) {
+                    apkInfo.addFeature(feature: value)
+                } else if ApkInfo.ParseKeys.isLabel(key: key) {
+                    apkInfo.addApplicationLabel(key: key, label: value)
+                } else if key == ApkInfo.ParseKeys.application.rawValue {
+                    apkInfo.addApplicationInfo(rawData: value)
+                } else if key == ApkInfo.ParseKeys.supportsScreens.rawValue {
+                    apkInfo.addSupportsScreens(rawData: value)
+                } else if key == ApkInfo.ParseKeys.locales.rawValue {
+                    apkInfo.addLocales(rawData: value)
+                } else if key == ApkInfo.ParseKeys.nativeCode.rawValue {
+                    apkInfo.addNativeCode(rawData: value)
+                } else if ApkInfo.ParseKeys.isDensityIcon(key: key) {
+                    apkInfo.addApplicationIconForDensity(key: key, icon: value)
                 }
             }
         }
+        
+        return apkInfo
     }
     
-    private var appIconId: String?
-    
-    private var appNameId: String?
-    
-    /// Parse manifest file
-    func parseManifest() throws {
-        guard FileManager.default.fileExists(atPath: manifestFileUrl.path) else {
-            throw Error.missingManifestFile
+    //TODO fix grep cmd
+    func findAppIconPath(iconName: String?) -> [String]? {
+        guard let iconName = iconName else {
+            return nil
         }
         
-        let xmlUrl = archive.appendingPathComponent("Decoded/AndroidManifest.xml")
-        if FileManager.default.fileExists(atPath:xmlUrl.path) {
-            let jsonUrl = archive.appendingPathComponent("Decoded/AndroidManifest.json")
-            try runAndPrint(ThirdpartyUtilities.xml2jsonUrl.path, "-t", "xml2json", "-o", jsonUrl.path, xmlUrl.path)
-            
-            do {
-                manifest = try ApkManifest.decode.fromJSON(file: jsonUrl)
-            } catch {
-                print("Apk error 179")
-                dump(error)
-                throw error
+        let output = run(ThirdpartyUtilities.aaptUrl.path.replacingOccurrences(of: "file://", with: ""),
+                         "dump",
+                         "--values",
+                         "resources",
+                         self.file.path,
+                         "|",
+                         "grep",
+                         "-w",
+                         "'"+iconName+"'").stdout
+        
+        let patternPath = "\".+\""
+        let patternName = "/"+iconName+"\\."
+
+        let outputLines = output.lines().filter {
+            let string = $0 as NSString
+            let regexPath = try? NSRegularExpression(pattern: patternPath, options: .caseInsensitive)
+            let regexName = try? NSRegularExpression(pattern: patternName, options: .caseInsensitive)
+            let range = NSRange(location: 0, length: string.length)
+            return string.contains(iconName) && regexPath?.firstMatch(in: $0, options: [], range: range) != nil && regexName?.firstMatch(in: $0, options: [], range: range) != nil
+        }
+        
+        return outputLines.map {
+            let string = $0 as NSString
+            let regexValue = try? NSRegularExpression(pattern: patternPath, options: .caseInsensitive)
+            let range = NSRange(location: 0, length: string.length)
+            let path = regexValue?.firstMatch(in: $0, options: [], range: range).map {
+                string.substring(with: $0.range).replacingOccurrences(of: "\"", with: "")
             }
+            return path ?? ""
         }
     }
     
@@ -170,23 +121,19 @@ class Apk: BaseExtractor, Extractor {
         
         DispatchQueue.global().async {
             do {
-                // Extract archive
-                try runAndPrint("java", "-jar", ThirdpartyUtilities.apkExtractorUrl.path.replacingOccurrences(of: "file://", with: ""), "d", "-sf", self.file.path, "-o", self.extractedApkFolder.path)
                 
-                // Parse manifest file
-                try self.parseManifest()
-                
-                // Get info
-                try self.getApplicationName()
-                try self.getOtherApplicationInfo()
-                try self.getApplicationIcon()
+                var apk = self.fetchApkInfo()
+                self.appName = apk.applicationLabel
+                self.appIdentifier = apk.packageName
+                self.versionLong = apk.versionName
+                self.versionShort = apk.versionCode
+                self.minSdk = apk.sdkVersion
+                apk.setIconPath(path: self.findAppIconPath(iconName: apk.getIconName()))
                 
                 // TODO: Make the following unblocking!!!
                 let a = try self.app(platform: .android, teamId: teamId, on: req).wait()
                 promise.succeed(result: a)
             } catch {
-                print("Apk error 207")
-                dump(error)
                 promise.fail(error: error)
             }
         }

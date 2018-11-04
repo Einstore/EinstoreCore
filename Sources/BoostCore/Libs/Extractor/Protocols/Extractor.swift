@@ -86,6 +86,9 @@ protocol Extractor {
     /// Long version (version, usually like 1.2.3)
     var versionLong: String? { get }
     
+    /// Minimum supported Sdk
+    var minSdk: String? { get }
+    
     /// Initializer
     init(file: URL, request: Request) throws
     
@@ -109,7 +112,7 @@ extension Extractor {
             let size = Int(truncating: (attr[FileAttributeKey.size] as? NSNumber) ?? 0)
             let iconDataSize = self.iconData?.count ?? 0
             let sizeTotal = size + iconDataSize
-            let app = App(teamId: teamId, clusterId: (cluster?.id ?? UUID()), name: appName, identifier: appIdentifier, version: self.versionLong ?? "0.0", build: self.versionShort ?? "0", platform: platform, size: size, sizeTotal: sizeTotal, hasIcon: (iconDataSize > 0))
+            let app = App(teamId: teamId, clusterId: (cluster?.id ?? UUID()), name: appName, identifier: appIdentifier, version: self.versionLong ?? "0.0", build: self.versionShort ?? "0", platform: platform, size: size, sizeTotal: sizeTotal, minSdk: self.minSdk ?? "", hasIcon: (iconDataSize > 0))
             return app.save(on: req).flatMap(to: App.self) { app in
                 guard let cluster = cluster, cluster.id != nil else {
                     let cluster = Cluster(latestApp: app)

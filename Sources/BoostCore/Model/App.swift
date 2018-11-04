@@ -92,7 +92,8 @@ final public class App: DbCoreModel {
         public var platform: Platform
         public var created: Date
         public var size: Int
-        public var info: String?
+        public var info: [String: String]?
+        public var minSdk: String?
         public var hasIcon: Bool
         
         enum CodingKeys: String, CodingKey {
@@ -106,6 +107,7 @@ final public class App: DbCoreModel {
             case created
             case size
             case info
+            case minSdk
             case hasIcon = "icon"
         }
         
@@ -120,6 +122,7 @@ final public class App: DbCoreModel {
             self.created = app.created
             self.size = app.size
             self.info = app.info
+            self.minSdk = app.minSdk
             self.hasIcon = app.hasIcon
         }
         
@@ -146,7 +149,8 @@ final public class App: DbCoreModel {
     public var created: Date
     public var size: Int
     public var sizeTotal: Int
-    public var info: String?
+    public var info: [String: String]?
+    public var minSdk: String?
     public var hasIcon: Bool
     
     enum CodingKeys: String, CodingKey {
@@ -162,11 +166,12 @@ final public class App: DbCoreModel {
         case size
         case sizeTotal = "size_total"
         case info
+        case minSdk = "min_sdk"
         case hasIcon = "icon"
     }
 
 
-    public init(id: DbIdentifier? = nil, teamId: DbIdentifier? = nil, clusterId: DbIdentifier, name: String, identifier: String, version: String, build: String, platform: Platform, size: Int, sizeTotal: Int, info: String? = nil, hasIcon: Bool = false) {
+    public init(id: DbIdentifier? = nil, teamId: DbIdentifier? = nil, clusterId: DbIdentifier, name: String, identifier: String, version: String, build: String, platform: Platform, size: Int, sizeTotal: Int, info: [String: String]? = nil, minSdk: String? = nil, hasIcon: Bool = false) {
         self.id = id
         self.teamId = teamId
         self.clusterId = clusterId
@@ -179,6 +184,7 @@ final public class App: DbCoreModel {
         self.size = size
         self.sizeTotal = sizeTotal
         self.info = info
+        self.minSdk = minSdk
         self.hasIcon = hasIcon
     }
     
@@ -219,6 +225,7 @@ extension App: Migration {
             schema.field(for: \App.created)
             schema.field(for: \App.size)
             schema.field(for: \App.sizeTotal)
+            schema.field(for: \.minSdk, type: .varchar(20))
             schema.field(for: \.info, type: .text)
             schema.field(for: \App.hasIcon, type: .boolean)
         }

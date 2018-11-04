@@ -36,7 +36,7 @@ extension QueryBuilder where Result == App, Database == ApiCoreDatabase {
             s = s.group(.or) { or in
                 or.filter(\App.name ~~ search)
                 or.filter(\App.identifier ~~ search)
-                or.filter(\App.info ~~ search)
+//                or.filter(\App.info ~~ search)
                 or.filter(\App.version ~~ search)
                 or.filter(\App.build ~~ search)
             }
