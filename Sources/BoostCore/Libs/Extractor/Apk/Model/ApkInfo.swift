@@ -37,9 +37,9 @@ struct ApkInfo {
             switch true {
             case key == ParseKeys.name.rawValue:
                 packageName = value
-            case key == ParseKeys.name.rawValue:
+            case key == ParseKeys.versionCode.rawValue:
                 versionCode = value
-            case key == ParseKeys.name.rawValue:
+            case key == ParseKeys.versionName.rawValue:
                 versionName = value
                 //            case key == ParseKeys.compileSdkVersion.rawValue
                 //                compileSdkVersion = value
@@ -137,6 +137,11 @@ struct ApkInfo {
             .map {
                 string.substring(with: $0.range).replacingOccurrences(of: "/", with: "").replacingOccurrences(of: ".", with: "")
         }
+    }
+    
+    //TODO sort by xxxhdpi, xxhdpi, xhdpi, hdpi, mdpi
+    func getIconPath() -> String? {
+        return applicationIconRealPath?.sorted().reversed().first
     }
     
     private func parseRawKeyValueData(rawData: String) -> [String]? {

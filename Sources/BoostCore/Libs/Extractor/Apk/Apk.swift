@@ -38,6 +38,12 @@ class Apk: BaseExtractor, Extractor {
         
     }
     
+    var extractedApkFolder: URL {
+        get {
+            return archive
+        }
+    }
+    
     func fetchApkInfo() -> ApkInfo {
         var apkInfo: ApkInfo = ApkInfo()
         let output = run(ThirdpartyUtilities.aaptUrl.path.replacingOccurrences(of: "file://", with: ""), "dump", "--values", "badging", self.file.path).stdout
@@ -95,13 +101,16 @@ class Apk: BaseExtractor, Extractor {
         
         let patternPath = "\".+\""
         let patternName = "/"+iconName+"\\."
-
+        
         let outputLines = output.lines().filter {
             let string = $0 as NSString
             let regexPath = try? NSRegularExpression(pattern: patternPath, options: .caseInsensitive)
             let regexName = try? NSRegularExpression(pattern: patternName, options: .caseInsensitive)
             let range = NSRange(location: 0, length: string.length)
-            return string.contains(iconName) && regexPath?.firstMatch(in: $0, options: [], range: range) != nil && regexName?.firstMatch(in: $0, options: [], range: range) != nil
+            return string.contains(iconName)
+                && !string.contains(".xml")
+                && regexPath?.firstMatch(in: $0, options: [], range: range) != nil
+                && regexName?.firstMatch(in: $0, options: [], range: range) != nil
         }
         
         return outputLines.map {
@@ -115,12 +124,27 @@ class Apk: BaseExtractor, Extractor {
         }
     }
     
+    func getApplicationIcon(path: String?) throws {
+        guard let iconPath = path else {
+            return
+        }
+        var pathUrl: URL = extractedApkFolder
+        pathUrl.appendPathComponent(iconPath)
+        if FileManager.default.fileExists(atPath: pathUrl.path) {
+            let data: Data = try Data(contentsOf: pathUrl)
+            if data.count > (iconData?.count ?? 0) {
+                iconData = data
+            }
+        }
+    }
+    
     /// Process app
     func process(teamId: DbIdentifier, on req: Request) throws -> Future<App> {
         let promise = request.eventLoop.newPromise(App.self)
         
         DispatchQueue.global().async {
             do {
+                run("unzip", "-o", self.file.path, "-d", self.archive.path)
                 
                 var apk = self.fetchApkInfo()
                 self.appName = apk.applicationLabel
@@ -129,6 +153,7 @@ class Apk: BaseExtractor, Extractor {
                 self.versionShort = apk.versionCode
                 self.minSdk = apk.sdkVersion
                 apk.setIconPath(path: self.findAppIconPath(iconName: apk.getIconName()))
+                try self.getApplicationIcon(path: apk.getIconPath())
                 
                 // TODO: Make the following unblocking!!!
                 let a = try self.app(platform: .android, teamId: teamId, on: req).wait()
