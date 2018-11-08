@@ -355,7 +355,7 @@ extension AppsController {
     static func upload(teamId: DbIdentifier, on req: Request) -> Future<Response> {
         // TODO: Change to copy file when https://github.com/vapor/core/pull/83 is done
         return req.fileData.flatMap(to: Response.self) { (data) -> Future<Response> in
-            // TODO: -------- REFACTOR ---------
+            // TODO: Think of a better way of identifying the iOS/Android apps
             let url = URL(fileURLWithPath: ApiCoreBase.configuration.storage.local.root)
                 .appendingPathComponent(App.localTempAppFolder(on: req).relativePath)
             return try BoostCoreBase.tempFileHandler.createFolderStructure(url: url, on: req).flatMap(to: Response.self) { _ in
@@ -380,7 +380,6 @@ extension AppsController {
                 else {
                     throw ExtractorError.invalidAppContent
                 }
-                // */ -------- REFACTOR END (or just carry on and make me better!) ---------
                 
                 let extractor: Extractor = try BaseExtractor.decoder(file: tempFilePath.path, platform: platform, on: req)
                 do {
@@ -393,8 +392,6 @@ extension AppsController {
                     }
                 } catch {
                     try extractor.cleanUp()
-                    print("Error during AppsController")
-                    dump(error)
                     throw error
                 }
             }
