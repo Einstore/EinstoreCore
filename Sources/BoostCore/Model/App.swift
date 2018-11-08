@@ -164,8 +164,7 @@ final public class App: DbCoreModel {
         case info
         case hasIcon = "icon"
     }
-
-
+    
     public init(id: DbIdentifier? = nil, teamId: DbIdentifier? = nil, clusterId: DbIdentifier, name: String, identifier: String, version: String, build: String, platform: Platform, size: Int, sizeTotal: Int, info: String? = nil, hasIcon: Bool = false) {
         self.id = id
         self.teamId = teamId
@@ -208,19 +207,19 @@ extension App: Migration {
     
     public static func prepare(on connection: ApiCoreConnection) -> Future<Void> {
         return Database.create(self, on: connection) { (schema) in
-            schema.field(for: \App.id, isIdentifier: true)
-            schema.field(for: \App.teamId)
-            schema.field(for: \App.clusterId)
+            schema.field(for: \.id, isIdentifier: true)
+            schema.field(for: \.teamId)
+            schema.field(for: \.clusterId)
             schema.field(for: \.name, type: .varchar(140))
             schema.field(for: \.identifier, type: .varchar(140))
             schema.field(for: \.version, type: .varchar(20))
             schema.field(for: \.build, type: .varchar(20))
             schema.field(for: \.platform, type: .varchar(10))
-            schema.field(for: \App.created)
-            schema.field(for: \App.size)
-            schema.field(for: \App.sizeTotal)
+            schema.field(for: \.created)
+            schema.field(for: \.size)
+            schema.field(for: \.sizeTotal)
             schema.field(for: \.info, type: .text)
-            schema.field(for: \App.hasIcon, type: .boolean)
+            schema.field(for: \.hasIcon, type: .boolean)
         }
     }
     
