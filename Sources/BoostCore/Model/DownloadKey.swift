@@ -27,8 +27,8 @@ final public class DownloadKey: DbCoreModel {
         init(app: App, downloadKey: DownloadKey, request req: Request) {
             token = downloadKey.token
             
-            guard let serverUrlString = ApiCoreBase.configuration.server.url, let appId = app.id else {
-                fatalError("Server URL is not properly configured")
+            guard let appId = app.id else {
+                fatalError("App has to have an Id!")
             }
             
             enum URLType: String {
@@ -38,15 +38,13 @@ final public class DownloadKey: DbCoreModel {
             
             func urlBuilder(type: URLType) -> String {
                 let ext = type == .plist ? "plist" : app.platform.fileExtension
-                guard let url = URL(string: serverUrlString)?
+                let url = req.serverURL()
                     .appendingPathComponent("apps")
                     .appendingPathComponent(appId.uuidString)
                     .appendingPathComponent(type.rawValue)
                     .appendingPathComponent(downloadKey.token)
                     .appendingPathComponent(app.fileName.stripExtension())
-                    .appendingPathExtension(ext).absoluteString else {
-                        fatalError("Server URL is not properly configured")
-                }
+                    .appendingPathExtension(ext).absoluteString
                 return url
             }
             
