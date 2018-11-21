@@ -181,12 +181,26 @@ class AppsController: Controller {
             }
         }
         
+        // App download history
+        secure.get("apps", DbIdentifier.parameter, "history") { (req) -> Future<[Download]> in
+            let appId = try req.parameters.next(DbIdentifier.self)
+            return try req.me.teams().flatMap(to: [Download].self) { teams in
+                return try App.query(on: req).safeApp(appId: appId, teamIds: teams.ids).first().flatMap(to: [Download].self) { app in
+                    guard let _ = app else {
+                        throw ErrorsCore.HTTPError.notFound
+                    }
+                    
+                    return Download.query(on: req).filter(\Download.appId == appId).all()
+                }
+            }
+        }
+        
         // App download auth
         secure.get("apps", DbIdentifier.parameter, "auth") { (req) -> Future<Response> in
             let appId = try req.parameters.next(DbIdentifier.self)
             return try req.me.teams().flatMap(to: Response.self) { teams in
                 return try App.query(on: req).safeApp(appId: appId, teamIds: teams.ids).first().flatMap(to: Response.self) { app in
-                    guard let app = app, let appId = app.id else {
+                    guard let app = app else {
                         throw ErrorsCore.HTTPError.notFound
                     }
                     let key = DownloadKey(appId: appId)
@@ -252,11 +266,15 @@ class AppsController: Controller {
                         throw ErrorsCore.HTTPError.notFound
                     }
                     
-                    let fm = try req.makeFileCore()
-                    
-                    return try fm.get(file: path, on: req).map(to: Response.self) { appData in
-                        response.http.body = HTTPBody(data: appData)
-                        return response
+                    // Save an info about the download
+                    let download = Download(appId: key.appId)
+                    return download.save(on: req).flatMap(to: Response.self) { download in
+                        // Serve the file
+                        let fm = try req.makeFileCore()
+                        return try fm.get(file: path, on: req).map(to: Response.self) { appData in
+                            response.http.body = HTTPBody(data: appData)
+                            return response
+                        }
                     }
                 }
             }
