@@ -185,12 +185,12 @@ class AppsController: Controller {
         secure.get("apps", DbIdentifier.parameter, "history") { (req) -> Future<[Download]> in
             let appId = try req.parameters.next(DbIdentifier.self)
             return try req.me.teams().flatMap(to: [Download].self) { teams in
-                return try App.query(on: req).safeApp(appId: appId, teamIds: teams.ids).first().flatMap(to: [Download].self) { app in
-                    guard let _ = app else {
+                return try App.query(on: req).safeApp(appId: appId, teamIds: teams.ids).sort(\Download.created, .descending).first().flatMap(to: [Download].self) { app in
+                    guard let _ = app, let userId = try req.me.user().id else {
                         throw ErrorsCore.HTTPError.notFound
                     }
                     
-                    return Download.query(on: req).filter(\Download.appId == appId).all()
+                    return Download.query(on: req).filter(\Download.appId == appId).filter(\Download.userId == userId).all()
                 }
             }
         }
@@ -253,7 +253,7 @@ class AppsController: Controller {
                     }
                 }
                 return App.query(on: req).filter(\App.id == key.appId).first().flatMap(to: Response.self) { app in
-                    guard let app = app else {
+                    guard let app = app, let userId = try req.me.user().id else {
                         throw ErrorsCore.HTTPError.notFound
                     }
                     guard App.Platform.is(supported: app.platform) else {
@@ -267,7 +267,7 @@ class AppsController: Controller {
                     }
                     
                     // Save an info about the download
-                    let download = Download(appId: key.appId)
+                    let download = Download(appId: key.appId, userId: userId)
                     return download.save(on: req).flatMap(to: Response.self) { download in
                         // Serve the file
                         let fm = try req.makeFileCore()

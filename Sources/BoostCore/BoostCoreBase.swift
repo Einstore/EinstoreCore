@@ -100,6 +100,7 @@ public class BoostCoreBase {
         ApiCoreBase.add(model: AppTag.self, database: .db)
         ApiCoreBase.add(model: UploadKey.self, database: .db)
         ApiCoreBase.add(model: Config.self, database: .db)
+        ApiCoreBase.add(model: Download.self, database: .db)
         
         // Register controllers
         for c in controllers {

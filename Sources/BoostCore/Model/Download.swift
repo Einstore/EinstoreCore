@@ -19,17 +19,20 @@ final public class Download: DbCoreModel {
     
     public var id: DbIdentifier?
     public var appId: DbIdentifier
+    public var userId: DbIdentifier
     public var created: Date
     
     enum CodingKeys: String, CodingKey {
         case id
         case appId = "app_id"
+        case userId = "user_id"
         case created
     }
     
-    public init(id: DbIdentifier? = nil, appId: DbIdentifier) {
+    public init(id: DbIdentifier? = nil, appId: DbIdentifier, userId: DbIdentifier) {
         self.id = id
         self.appId = appId
+        self.userId = userId
         self.created = Date()
     }
     
@@ -41,6 +44,10 @@ extension Download {
     
     var app: Parent<Download, App> {
         return parent(\Download.appId)
+    }
+    
+    var user: Parent<Download, User> {
+        return parent(\Download.userId)
     }
     
 }
