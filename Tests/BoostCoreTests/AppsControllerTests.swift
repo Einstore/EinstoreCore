@@ -257,17 +257,25 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         
         let plistData = r.response.testable.contentString!.data(using: .utf8)!
         
+        let link = "http://localhost:8080/apps/\(realApp.id!)/file/\(token.token)/app-ipa.ipa"
+        
+        // Temporary hack before PropertyListDecoder becomes available on linux (https://bugs.swift.org/browse/SR-8259)
+        #if os(Linux)
+        let plistString = String(data: plistData, encoding: .utf8)!
+        XCTAssertTrue(plistString.contains(link))
+        #elseif os(macOS)
         let plist = try! PropertyListDecoder().decode(AppPlist.self, from: plistData)
         
         print(plist)
         
         XCTAssertEqual(plist.items[0].assets[0].kind, "software-package")
-        XCTAssertEqual(plist.items[0].assets[0].url, "http://localhost:8080/apps/\(realApp.id!)/file/\(token.token)/app-ipa.ipa")
+        XCTAssertEqual(plist.items[0].assets[0].url, link)
         
         XCTAssertEqual(plist.items[0].metadata.bundleIdentifier, "com.fuerteint.iDeviant")
         XCTAssertEqual(plist.items[0].metadata.bundleVersion, "4.0")
         XCTAssertEqual(plist.items[0].metadata.kind, "software")
         XCTAssertEqual(plist.items[0].metadata.title, "iDeviant")
+        #endif
     }
     
     func testDownloadIosApp() {

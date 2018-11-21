@@ -18,7 +18,13 @@ public typealias UploadKeys = [UploadKey]
 final public class UploadKey: DbCoreModel {
     
     public struct Token: Codable {
-        public var token: String
+        
+        public var value: String
+        
+        enum CodingKeys: String, CodingKey {
+            case value = "token"
+        }
+        
     }
     
     public struct New: Codable {
