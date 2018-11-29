@@ -169,7 +169,8 @@ final public class App: DbCoreModel {
         case minSdk = "min_sdk"
         case hasIcon = "icon"
     }
-    public init(id: DbIdentifier? = nil, teamId: DbIdentifier? = nil, clusterId: DbIdentifier, name: String, identifier: String, version: String, build: String, platform: Platform, size: Int, sizeTotal: Int, info: [String: String]? = nil, minSdk: String? = nil, hasIcon: Bool = false) {
+  
+    public init(id: DbIdentifier? = nil, teamId: DbIdentifier? = nil, clusterId: DbIdentifier, name: String, identifier: String, version: String, build: String, platform: Platform, size: Int, sizeTotal: Int, info: String? = nil, hasIcon: Bool = false) {
         self.id = id
         self.teamId = teamId
         self.clusterId = clusterId
@@ -225,7 +226,7 @@ extension App: Migration {
             schema.field(for: \App.sizeTotal)
             schema.field(for: \.minSdk, type: .varchar(20))
             schema.field(for: \.info, type: .text)
-            schema.field(for: \App.hasIcon, type: .boolean)
+            schema.field(for: \.hasIcon, type: .boolean)
         }
     }
     
