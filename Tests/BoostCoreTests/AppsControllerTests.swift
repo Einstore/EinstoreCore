@@ -295,12 +295,12 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
     
     func testUnobfuscatedApkUploadWithJWTAuth() {
         // TODO: Make another app!!!!!!!!!
-        doTestJWTUpload(appFileName: "app.apk", platform: .android, name: "Bytecheck", identifier: "cz.vhrdina.bytecheck.ByteCheckApplication", version: "7.1.1", build: "25", iconSize: 2018)
+        doTestJWTUpload(appFileName: "app.apk", platform: .android, name: "Bytecheck", identifier: "cz.vhrdina.bytecheck", version: "0.1", build: "1", iconSize: 2018)
         // TODO: Test token upload
     }
     
     func testObfuscatedApkUploadWithJWTAuth() {
-        doTestJWTUpload(appFileName: "app-obfuscated.apk", platform: .android, name: "BoostTest", identifier: "io.liveui.boosttest", iconSize: 9250)
+        doTestJWTUpload(appFileName: "app-obfuscated.apk", platform: .android, name: "BoostTest", identifier: "io.liveui.boosttest", version: "1.0-test", build: "1", iconSize: 9250)
     }
     
     func testAuthReturnsValidToken() {
@@ -387,7 +387,7 @@ extension AppsControllerTests {
             let app = r.response.testable.content(as: App.self)!
             return app
         } else {
-            let r = doTestJWTUpload(appFileName: "app.apk", platform: .android, name: "Bytecheck", identifier: "cz.vhrdina.bytecheck.ByteCheckApplication", version: "7.1.1", build: "25", iconSize: 2018)
+            let r = doTestJWTUpload(appFileName: "app.apk", platform: .android, name: "Bytecheck", identifier: "cz.vhrdina.bytecheck", version: "0.1", build: "1", iconSize: 2018)
             let app = r.response.testable.content(as: App.self)!
             return app
         }
