@@ -170,7 +170,7 @@ final public class App: DbCoreModel {
         case hasIcon = "icon"
     }
   
-    public init(id: DbIdentifier? = nil, teamId: DbIdentifier? = nil, clusterId: DbIdentifier, name: String, identifier: String, version: String, build: String, platform: Platform, size: Int, sizeTotal: Int, info: String? = nil, hasIcon: Bool = false) {
+    public init(id: DbIdentifier? = nil, teamId: DbIdentifier? = nil, clusterId: DbIdentifier, name: String, identifier: String, version: String, build: String, platform: Platform, size: Int, sizeTotal: Int, info: [String: String]? = nil, minSdk: String = "", hasIcon: Bool = false) {
         self.id = id
         self.teamId = teamId
         self.clusterId = clusterId
