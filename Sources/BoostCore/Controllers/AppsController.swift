@@ -280,6 +280,92 @@ class AppsController: Controller {
             }
         }
         
+        func delete(cluster: Cluster?, on req: Request) throws -> Future<Response> {
+            guard let cluster = cluster, let teamId = cluster.teamId else {
+                throw Error.clusterInconsistency
+            }
+            return try req.me.verifiedTeam(id: teamId).flatMap(to: Response.self) { team in
+                return try cluster.apps.query(on: req).all().flatMap(to: Response.self) { apps in
+                    var futures: [Future<Void>] = []
+                    try apps.forEach({
+                        try futures.append(contentsOf: delete(app: $0, on: req))
+                    })
+                    
+                    return try futures.flatten(on: req).asResponse(to: req)
+                }
+            }
+        }
+        
+        func delete(app: App, countCluster cluster: Cluster? = nil, on req: Request) throws -> [Future<Void>] {
+            var futures: [Future<Void>] = []
+            // TODO: Refactor and split following into smaller methods!!
+            
+            // Handle cluster data
+            if let cluster = cluster {
+                if cluster.appCount <= 1 {
+                    futures.append(cluster.delete(on: req).flatten())
+                } else {
+                    cluster.appCount -= 1
+                    let save = App.query(on: req).sort(\App.created, .descending).first().flatMap(to: Void.self) { app in
+                        guard let app = app else {
+                            throw Error.clusterInconsistency
+                        }
+                        return cluster.add(app: app, on: req).flatten()
+                    }
+                    futures.append(save)
+                }
+            }
+            
+            let f = try app.tags.query(on: req).all().flatMap(to: Void.self) { tags in
+                try tags.forEach({ tag in
+                    let tagFuture = try tag.apps.query(on: req).count().flatMap(to: Void.self) { count in
+                        if count <= 1 {
+                            return tag.delete(on: req).flatten()
+                        }
+                        else {
+                            return app.tags.detach(tag, on: req).flatten()
+                        }
+                    }
+                    futures.append(tagFuture)
+                })
+                
+                // Delete app
+                futures.append(app.delete(on: req).flatten())
+                
+                // Delete all files
+                guard let path = app.targetFolderPath?.relativePath else {
+                    // TODO: Report if there was a problem somehow!!
+                    return req.future()
+                }
+                
+                let fm = try req.makeFileCore()
+                let deleteFuture = try fm.delete(file: path, on: req)
+                futures.append(deleteFuture)
+                return futures.flatten(on: req)
+            }
+            futures.append(f)
+            
+            return futures
+        }
+        
+        // Delete all apps foir platform and identifier
+        secure.delete("cluster") { (req) -> Future<Response> in
+            guard let identifier = try? req.query.decode(Cluster.Identifier.self) else {
+                throw ErrorsCore.HTTPError.missingRequestData
+            }
+            return Cluster.query(on: req).filter(\Cluster.identifier == identifier.value).filter(\Cluster.platform == identifier.platform).first().flatMap(to: Response.self) { cluster in
+                return try delete(cluster: cluster, on: req)
+            }
+        }
+        
+        // Delete whole cluster of apps
+        secure.delete("cluster", DbIdentifier.parameter) { (req) -> Future<Response> in
+            let clusterId = try req.parameters.next(DbIdentifier.self)
+            return Cluster.query(on: req).filter(\Cluster.id == clusterId).first().flatMap(to: Response.self) { cluster in
+                return try delete(cluster: cluster, on: req)
+            }
+        }
+        
         // Delete app
         secure.delete("apps", DbIdentifier.parameter) { (req) -> Future<Response> in
             let appId = try req.parameters.next(DbIdentifier.self)
@@ -293,50 +379,7 @@ class AppsController: Controller {
                             throw Error.clusterInconsistency
                         }
                         
-                        var futures: [Future<Void>] = []
-                        // TODO: Refactor and split following into smaller methods!!
-                        
-                        // Handle cluster data
-                        if cluster.appCount <= 1 {
-                            futures.append(cluster.delete(on: req).flatten())
-                        } else {
-                            cluster.appCount -= 1
-                            let save = App.query(on: req).sort(\App.created, .descending).first().flatMap(to: Void.self) { app in
-                                guard let app = app else {
-                                    throw Error.clusterInconsistency
-                                }
-                                return cluster.add(app: app, on: req).flatten()
-                            }
-                            futures.append(save)
-                        }
-                        
-                        // Delete all tags
-                        return try app.tags.query(on: req).all().flatMap(to: Response.self) { tags in
-                            try tags.forEach({ tag in
-                                let tagFuture = try tag.apps.query(on: req).count().flatMap(to: Void.self) { count in
-                                    if count <= 1 {
-                                        return tag.delete(on: req).flatten()
-                                    }
-                                    else {
-                                        return app.tags.detach(tag, on: req).flatten()
-                                    }
-                                }
-                                futures.append(tagFuture)
-                            })
-                            
-                            // Delete app
-                            futures.append(app.delete(on: req).flatten())
-                            
-                            // Delete all files
-                            guard let path = app.targetFolderPath?.relativePath else {
-                                return try req.eventLoop.newSucceededFuture(result: req.response.internalServerError(message: "Unable to delete files"))
-                            }
-                            
-                            let fm = try req.makeFileCore()
-                            let deleteFuture = try fm.delete(file: path, on: req)
-                            futures.append(deleteFuture)
-                            return try futures.flatten(on: req).asResponse(to: req)
-                        }
+                        return try delete(app: app, countCluster: cluster, on: req).flatten(on: req).asResponse(to: req)
                     }
                 }
             }

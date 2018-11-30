@@ -22,6 +22,7 @@ class TagsController: Controller {
             return try TagsManager.tags(appId: appId, on: req)
         }
         
+        // Submit new tags
         secure.post("apps", DbIdentifier.parameter, "tags") { (req) -> Future<Response> in
             let appId = try req.parameters.next(DbIdentifier.self)
             return try [String].fill(post: req).flatMap(to: Response.self) { tags in
@@ -39,11 +40,16 @@ class TagsController: Controller {
             }
         }
         
+        // Delete a tag
         secure.delete("apps", DbIdentifier.parameter, "tags", DbIdentifier.parameter) { (req) -> Future<Response> in
             let appId = try req.parameters.next(DbIdentifier.self)
             let tagId = try req.parameters.next(DbIdentifier.self)
             return try TagsManager.delete(tagId: tagId, appId: appId, on: req).asResponse(to: req)
         }
+        
+        // Find apps with specific tags
+        
+        // Display tag stats for selected tags
     }
     
 }

@@ -62,7 +62,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         ("testOldIosAppTokenUpload", testOldIosAppTokenUpload),
         ("testPlistForApp", testPlistForApp),
         ("testUnobfuscatedApkUploadWithJWTAuth", testUnobfuscatedApkUploadWithJWTAuth),
-    ]
+        ]
     
     func testLinuxTests() {
         doTestLinuxTestsAreOk()
@@ -108,13 +108,13 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
     func testGetAppsOverview() {
         let req = HTTPRequest.testable.get(uri: "/apps/overview", authorizedUser: user1, on: app)
         let r = app.testable.response(to: req)
-
+        
         r.response.testable.debug()
-
+        
         let objects = r.response.testable.content(as: [Cluster.Public].self)!
-
+        
         XCTAssertEqual(objects.count, 8, "There should be right amount of apps")
-
+        
         XCTAssertTrue(r.response.testable.has(statusCode: .ok), "Wrong status code")
         XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing or invalid content type")
     }
@@ -405,7 +405,7 @@ extension AppsControllerTests {
         for tag in tags {
             XCTAssertTrue(allTags.contains(identifier: tag.safeText), "Tag needs to be present")
         }
-            
+        
         // Check final app count after the upload
         count = app.testable.count(allFor: App.self)
         XCTAssertEqual(count, 108, "There should be right amount of apps to begin with")

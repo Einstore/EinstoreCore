@@ -20,7 +20,7 @@ extension TestableProperty where TestableType: Application {
             Env.print()
             try! BoostCoreBase.configure(&config, &env, &services)
         }) { (router) in
-            try? ApiCoreBase.boot(router: router)
+            
         }
         return app
     }
