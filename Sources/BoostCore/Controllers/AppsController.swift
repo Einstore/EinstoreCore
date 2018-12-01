@@ -390,11 +390,13 @@ class AppsController: Controller {
             guard let token = try? req.query.decode(UploadKey.Token.self) else {
                 throw ErrorsCore.HTTPError.missingAuthorizationData
             }
-            return try UploadKey.query(on: req).filter(\UploadKey.token == token.value.sha()).first().flatMap(to: Response.self) { (uploadToken) -> Future<Response> in
+            return try UploadKey.query(on: req).filter(\UploadKey.token == token.value.sha()).first().flatMap(to: Response.self) { uploadToken in
                 guard let uploadToken = uploadToken else {
                     throw AuthError.authenticationFailed
                 }
-                return upload(teamId: uploadToken.teamId, on: req)
+                return try req.me.verifiedTeam(id: uploadToken.teamId).flatMap(to: Response.self) { team in
+                    return try upload(team: team, on: req)
+                }
             }
         }
         
@@ -402,7 +404,7 @@ class AppsController: Controller {
         secure.post("teams", UUID.parameter, "apps") { (req) -> Future<Response> in
             let teamId = try req.parameters.next(DbIdentifier.self)
             return try req.me.verifiedTeam(id: teamId).flatMap(to: Response.self) { (team) -> Future<Response> in
-                return upload(teamId: teamId, on: req)
+                return try upload(team: team, on: req)
             }
         }
     }
@@ -413,7 +415,10 @@ class AppsController: Controller {
 extension AppsController {
     
     /// Shared upload method
-    static func upload(teamId: DbIdentifier, on req: Request) -> Future<Response> {
+    static func upload(team: Team, on req: Request) throws -> Future<Response> {
+        guard let teamId = team.id else {
+            throw Team.Error.invalidTeam
+        }
         // TODO: Change to copy file when https://github.com/vapor/core/pull/83 is done
         return req.fileData.flatMap(to: Response.self) { (data) -> Future<Response> in
             // TODO: Think of a better way of identifying the iOS/Android apps
@@ -444,9 +449,9 @@ extension AppsController {
                 
                 let extractor: Extractor = try BaseExtractor.decoder(file: tempFilePath.path, platform: platform, on: req)
                 do {
-                    return try extractor.process(teamId: teamId, on: req).flatMap(to: Response.self) { app -> Future<Response> in
+                    return try extractor.process(teamId: teamId, on: req).flatMap(to: Response.self) { app in
                         return try extractor.save(app, request: req).flatMap(to: Response.self) { (_) -> Future<Response> in
-                            return try handleTags(on: req, app: app).flatMap(to: Response.self) { (_) -> Future<Response> in
+                            return try handleTags(on: req, team: team, app: app).flatMap(to: Response.self) { (_) -> Future<Response> in
                                 return try app.asResponse(.created, to: req)
                             }
                         }
@@ -460,10 +465,10 @@ extension AppsController {
     }
     
     /// Handle tags during upload
-    static func handleTags(on req: Request, app: App) throws -> Future<Void> {
+    static func handleTags(on req: Request, team: Team, app: App) throws -> Future<Void> {
         if req.http.url.query != nil, let query = try? req.query.decode([String: String].self) {
             if let tags = query["tags"]?.split(separator: "|").map({ String($0) }) {
-                return try TagsManager.save(tags: tags, for: app, on: req)
+                return try TagsManager.save(tags: tags, for: app, team: team, on: req)
             }
         }
         return req.eventLoop.newSucceededVoidFuture()

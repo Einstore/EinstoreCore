@@ -34,7 +34,12 @@ class TagsController: Controller {
                         guard let app = app else {
                             throw ErrorsCore.HTTPError.notFound
                         }
-                        return try TagsManager.save(tags: tags, for: app, on: req).asResponse(to: req)
+                        return Team.query(on: req).filter(\Team.id == app.teamId).first().flatMap(to: Response.self) { team in
+                            guard let team = team else {
+                                throw ErrorsCore.HTTPError.notFound
+                            }
+                            return try TagsManager.save(tags: tags, for: app, team: team, on: req).asResponse(to: req)
+                        }
                     }
                 }
             }
@@ -48,8 +53,34 @@ class TagsController: Controller {
         }
         
         // Find apps with specific tags
+        secure.get("apps") { (req) -> Future<Response> in
+            guard let search = req.query.search else {
+                throw ErrorsCore.HTTPError.missingSearchParams
+            }
+            fatalError()
+        }
+        
+        // Find builds with specific tags
+        secure.get("apps", DbIdentifier.parameter) { (req) -> Future<Response> in
+            let appId = try req.parameters.next(DbIdentifier.self)
+            fatalError()
+        }
         
         // Display tag stats for selected tags
+        
+        // Tags available for a team
+        secure.get("teams", DbIdentifier.parameter, "tags") { (req) -> Future<Tags> in
+            let teamId = try req.parameters.next(DbIdentifier.self)
+            return try req.me.verifiedTeam(id: teamId).flatMap(to: Tags.self) { team in
+                // TODO: Pass searched identifiers
+                return try TagsManager.tags(identifiers: [], team: team, on: req)
+            }
+        }
+        
+        // Tags available to user
+        secure.get("tags") { (req) -> Future<Tags> in
+            return try TagsManager.tags(identifiers: [], team: nil, on: req)
+        }
     }
     
 }

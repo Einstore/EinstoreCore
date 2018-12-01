@@ -16,7 +16,7 @@ import FluentPostgreSQL
 public class TagsManager {
     
     /// Save an array of tags on an app
-    public static func save(tags: [String], for app: App, on req: Request) throws -> Future<Void> {
+    public static func save(tags: [String], for app: App, team: Team, on req: Request) throws -> Future<Void> {
         return try app.tags.query(on: req).all().flatMap(to: Void.self) { appTags in
             var futures: [Future<Void>] = []
             tags.forEach { tagSubstring in
@@ -28,10 +28,14 @@ public class TagsManager {
                     guard let tagObject = tagObject else {
                         let t = Tag(id: nil, identifier: tag)
                         return t.save(on: req).flatMap(to: Void.self, { (tag) -> Future<Void> in
-                            return app.tags.attach(tag, on: req).flatten()
+                            return app.tags.attach(tag, on: req).flatMap(to: Void.self) { appTag in
+                                return team.tags.attach(tag, on: req).flatten()
+                            }
                         })
                     }
-                    return app.tags.attach(tagObject, on: req).flatten()
+                    return app.tags.attach(tagObject, on: req).flatMap(to: Void.self) { appTag in
+                        return team.tags.attach(tagObject, on: req).flatten()
+                    }
                 }
                 futures.append(future)
             }
@@ -84,17 +88,23 @@ public class TagsManager {
         }
     }
     
-    public static func tags(identifier: String? = nil, bundleIdentifier: String, platform: App.Platform, on req: Request) throws -> Future<Tags> {
+    public static func tags(identifiers: [String] = [], bundleIdentifier: String, platform: App.Platform, on req: Request) throws -> Future<Tags> {
         fatalError()
         
     }
     
-    public static func tags(identifier: String? = nil, cluster: Cluster, on req: Request) throws -> Future<Tags> {
-        return try tags(identifier: identifier, bundleIdentifier: cluster.identifier, platform: cluster.platform, on: req)
+    public static func tags(identifiers: [String] = [], cluster: Cluster, on req: Request) throws -> Future<Tags> {
+        return try tags(identifiers: identifiers, bundleIdentifier: cluster.identifier, platform: cluster.platform, on: req)
     }
     
-    public static func tags(identifier: String, team: Team? = nil, on req: Request) throws -> Future<Tags> {
-        fatalError()
+    public static func tags(identifiers: [String] = [], team: Team? = nil, on req: Request) throws -> Future<Tags> {
+        if let team = team { // Search only tags attached to a specific team
+            let q = try team.tags.query(on: req).sort(\Tag.identifier, .ascending)
+            q.filter(\Tag.identifier ~~ identifiers)
+            return q.all()
+        } else { // Search for all tags for user
+            fatalError()
+        }
     }
     
 }

@@ -98,6 +98,7 @@ public class BoostCoreBase {
         ApiCoreBase.add(model: DownloadKey.self, database: .db)
         ApiCoreBase.add(model: Tag.self, database: .db)
         ApiCoreBase.add(model: AppTag.self, database: .db)
+        ApiCoreBase.add(model: TeamTag.self, database: .db)
         ApiCoreBase.add(model: UploadKey.self, database: .db)
         ApiCoreBase.add(model: Config.self, database: .db)
         ApiCoreBase.add(model: Download.self, database: .db)
