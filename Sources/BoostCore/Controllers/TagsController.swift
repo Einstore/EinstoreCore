@@ -72,14 +72,21 @@ class TagsController: Controller {
         secure.get("teams", DbIdentifier.parameter, "tags") { (req) -> Future<[String]> in
             let teamId = try req.parameters.next(DbIdentifier.self)
             return try req.me.verifiedTeam(id: teamId).flatMap(to: [String].self) { team in
-                // TODO: Pass searched identifiers
-                return try TagsManager.tags(identifiers: [], team: team, on: req)
+                var search: [String] = []
+                if let searchTerm = req.query.search {
+                    search.append(searchTerm)
+                }
+                return try TagsManager.tags(identifiers: search, team: team, on: req)
             }
         }
         
         // Tags available to user
         secure.get("tags") { (req) -> Future<[String]> in
-            return try TagsManager.tags(identifiers: [], team: nil, on: req)
+            var search: [String] = []
+            if let searchTerm = req.query.search {
+                search.append(searchTerm)
+            }
+            return try TagsManager.tags(identifiers: search, team: nil, on: req)
         }
     }
     

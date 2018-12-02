@@ -102,7 +102,11 @@ public class TagsManager {
     public static func tags(identifiers: [String] = [], team: Team? = nil, on req: Request) throws -> Future<[String]> {
         func search(q: inout Fluent.QueryBuilder<PostgreSQLDatabase, Tag>, identifiers: [String]) {
             if !identifiers.isEmpty {
-                q.filter(\Tag.identifier ~~ identifiers)
+                q.group(.or) { q in
+                    identifiers.forEach({ i in
+                        q.filter(\Tag.identifier ~~ i)
+                    })
+                }
             }
             _ = q.sort(\Tag.identifier, .ascending)
             // TODO: Fix!!!!!!!!!
