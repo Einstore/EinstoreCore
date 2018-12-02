@@ -142,15 +142,16 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         
         let req = HTTPRequest.testable.delete(uri: "/apps/\(app1.id!.uuidString)", authorizedUser: user1, on: app)
         let r = app.testable.response(to: req)
-        
+
         r.response.testable.debug()
-        
+
         // TODO: Test all tags were deleted!!!!
+        // TODO: Test only tags shared with nothing else were deleted!!!!
         // TODO: Test all files were deleted!!!!
-        
+
         XCTAssertTrue(r.response.testable.has(statusCode: .noContent), "Wrong status code")
         XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing or invalid content type")
-        
+
         count = app.testable.count(allFor: App.self)
         XCTAssertEqual(count, 106, "There should be right amount of apps to finish with")
     }
