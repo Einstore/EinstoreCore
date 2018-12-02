@@ -218,8 +218,8 @@ class AppsController: Controller {
         
         // App plist
         // Plist documentation: https://help.apple.com/deployment/ios/#/apd11fd167c4
-        router.get("apps", DbIdentifier.parameter, "plist", UUID.parameter, String.parameter) { (req) -> Future<Response> in
-            let _ = try req.parameters.next(DbIdentifier.self)
+        router.get("apps", UUID.parameter, "plist", UUID.parameter, String.parameter) { (req) -> Future<Response> in
+            let _ = try req.parameters.next(UUID.self)
             let token = try req.parameters.next(UUID.self).uuidString
             return try DownloadKey.query(on: req).filter(\DownloadKey.token == token.sha()).filter(\DownloadKey.added >= Date().addMinute(n: -15)).first().flatMap(to: Response.self) { key in
                 guard let key = key else {
@@ -235,7 +235,7 @@ class AppsController: Controller {
                         throw Error.invalidPlatform
                     }
                     let response = try req.response.basic(status: .ok)
-                    response.http.headers = HTTPHeaders([("Content-Type", "application/xml; charset=utf-8")])
+                    response.http.headers = HTTPHeaders([("Content-Type", "text/xml; charset=utf-8")])
                     response.http.body = try HTTPBody(data: AppPlist(app: app, token: token, request: req).asPropertyList())
                     return response
                 }

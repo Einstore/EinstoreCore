@@ -103,6 +103,7 @@ public class TagsManager {
             q.filter(\Tag.identifier ~~ identifiers)
             return q.all()
         } else { // Search for all tags for user
+            let teams = try req.me.teams()
             fatalError()
         }
     }
