@@ -9,6 +9,7 @@
 	},
 	"server": {
 		"name": "Booster!",
+		"subtitle": "Enterprise AppStore!",
 		"url": "http://localhost:8080",
 		"max_upload": 50
 	},
