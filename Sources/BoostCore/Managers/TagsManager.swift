@@ -11,6 +11,8 @@ import ApiCore
 import ErrorsCore
 import Fluent
 import FluentPostgreSQL
+import DatabaseKit
+import SQL
 
 
 public class TagsManager {
@@ -24,14 +26,14 @@ public class TagsManager {
                 guard !appTags.contains(identifier: tag) else {
                     return
                 }   
-                let future = Tag.query(on: req).filter(\Tag.identifier == tag).first().flatMap(to: Void.self) { tagObject -> Future<Void> in
+                let future = Tag.query(on: req).filter(\Tag.identifier == tag).first().flatMap(to: Void.self) {  tagObject in
                     guard let tagObject = tagObject else {
                         let t = Tag(id: nil, identifier: tag)
-                        return t.save(on: req).flatMap(to: Void.self, { (tag) -> Future<Void> in
+                        return t.save(on: req).flatMap(to: Void.self) { tag in
                             return app.tags.attach(tag, on: req).flatMap(to: Void.self) { appTag in
                                 return team.tags.attach(tag, on: req).flatten()
                             }
-                        })
+                        }
                     }
                     return app.tags.attach(tagObject, on: req).flatMap(to: Void.self) { appTag in
                         return team.tags.attach(tagObject, on: req).flatten()
@@ -97,14 +99,36 @@ public class TagsManager {
         return try tags(identifiers: identifiers, bundleIdentifier: cluster.identifier, platform: cluster.platform, on: req)
     }
     
-    public static func tags(identifiers: [String] = [], team: Team? = nil, on req: Request) throws -> Future<Tags> {
+    public static func tags(identifiers: [String] = [], team: Team? = nil, on req: Request) throws -> Future<[String]> {
+        func search(q: inout Fluent.QueryBuilder<PostgreSQLDatabase, Tag>, identifiers: [String]) {
+            if !identifiers.isEmpty {
+                q.filter(\Tag.identifier ~~ identifiers)
+            }
+            _ = q.sort(\Tag.identifier, .ascending)
+            // TODO: Fix!!!!!!!!!
+//            _ = q.groupBy(\Tag.identifier)
+        }
+        
         if let team = team { // Search only tags attached to a specific team
-            let q = try team.tags.query(on: req).sort(\Tag.identifier, .ascending)
-            q.filter(\Tag.identifier ~~ identifiers)
-            return q.all()
+            var q = try team.tags.query(on: req)
+            search(q: &q, identifiers: identifiers)
+            let tags: Future<Tags> = q.all()
+            return tags.map(to: [String].self) { tags in
+                let t: [String] = tags.map({ $0.identifier })
+                // TODO: Fix using SQL!!!!!!!!!
+                return Array(Set<String>(t)).sorted()
+            }
         } else { // Search for all tags for user
-            let teams = try req.me.teams()
-            fatalError()
+            return try req.me.teams().flatMap(to: [String].self) { teams in
+                var q = Tag.query(on: req).join(\TeamTag.tagId, to: \Tag.id).filter(\TeamTag.teamId ~~ teams.ids)
+                search(q: &q, identifiers: identifiers)
+                let tags: Future<Tags> = q.all()
+                return tags.map(to: [String].self) { tags in
+                    let t: [String] = tags.map({ $0.identifier })
+                    // TODO: Fix using SQL!!!!!!!!!
+                    return Array(Set<String>(t)).sorted()
+                }
+            }
         }
     }
     

@@ -17,6 +17,21 @@ public typealias Tags = [Tag]
 
 final public class Tag: DbCoreModel {
     
+    public struct Identifier: Content {
+        
+        public var identifier: String
+        
+        // TODO: Remove when https://github.com/vapor/fluent/pull/596 gets merged
+        enum CodingKeys: String, CodingKey {
+            case identifier = "fluentAggregate"
+        }
+        
+        public init(identifier: String) {
+            self.identifier = identifier
+        }
+        
+    }
+    
     public var id: DbIdentifier?
     public var identifier: String
     

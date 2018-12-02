@@ -43,6 +43,16 @@ public final class TeamTag: ModifiablePivot, DbCoreModel {
     
 }
 
+// MARK: - Relationships
+
+extension TeamTag {
+    
+    var tag: Parent<TeamTag, Tag> {
+        return parent(\TeamTag.tagId)
+    }
+    
+}
+
 // MARK: - Migrations
 
 extension TeamTag: Migration {

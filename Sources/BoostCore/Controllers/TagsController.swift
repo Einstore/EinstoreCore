@@ -69,16 +69,16 @@ class TagsController: Controller {
         // Display tag stats for selected tags
         
         // Tags available for a team
-        secure.get("teams", DbIdentifier.parameter, "tags") { (req) -> Future<Tags> in
+        secure.get("teams", DbIdentifier.parameter, "tags") { (req) -> Future<[String]> in
             let teamId = try req.parameters.next(DbIdentifier.self)
-            return try req.me.verifiedTeam(id: teamId).flatMap(to: Tags.self) { team in
+            return try req.me.verifiedTeam(id: teamId).flatMap(to: [String].self) { team in
                 // TODO: Pass searched identifiers
                 return try TagsManager.tags(identifiers: [], team: team, on: req)
             }
         }
         
         // Tags available to user
-        secure.get("tags") { (req) -> Future<Tags> in
+        secure.get("tags") { (req) -> Future<[String]> in
             return try TagsManager.tags(identifiers: [], team: nil, on: req)
         }
     }
