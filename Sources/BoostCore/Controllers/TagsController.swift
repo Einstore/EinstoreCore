@@ -52,19 +52,26 @@ class TagsController: Controller {
             return try TagsManager.delete(tagId: tagId, appId: appId, on: req).asResponse(to: req)
         }
         
-        // Find apps with specific tags
-        secure.get("apps") { (req) -> Future<Response> in
-            guard let search = req.query.search else {
-                throw ErrorsCore.HTTPError.missingSearchParams
-            }
-            fatalError()
-        }
-        
-        // Find builds with specific tags
-        secure.get("apps", DbIdentifier.parameter) { (req) -> Future<Response> in
-            let appId = try req.parameters.next(DbIdentifier.self)
-            fatalError()
-        }
+//        // Find apps with specific tags
+//        secure.get("apps") { (req) -> Future<Response> in
+//            guard let search = req.query.search else {
+//                throw ErrorsCore.HTTPError.missingSearchParams
+//            }
+//            fatalError()
+//        }
+//        
+//        secure.get("apps") { (req) -> Future<Response> in
+//            guard let search = req.query.search else {
+//                throw ErrorsCore.HTTPError.missingSearchParams
+//            }
+//            fatalError()
+//        }
+//        
+//        // Find builds with specific tags
+//        secure.get("apps", DbIdentifier.parameter) { (req) -> Future<Response> in
+//            let appId = try req.parameters.next(DbIdentifier.self)
+//            fatalError()
+//        }
         
         // Display tag stats for selected tags
         
