@@ -17,6 +17,55 @@ public typealias Apps = [App.Public]
 
 final public class App: DbCoreModel {
     
+    /// Info
+    public struct Info: Codable {
+        
+        /// Source control
+        public struct SourceControl: Codable {
+            
+            /// Full commit link
+            public let commit: String?
+            
+            /// Full pull request / merge request (PR/MR) link
+            public let pr: String?
+            
+            /// Commit message
+            public let commitMessage: String?
+            
+            /// PR/MR message
+            public let prMessage: String?
+            
+            /// Initializer
+            public init(commit: String? = nil, pr: String? = nil, commitMessage: String? = nil, prMessage: String? = nil) {
+                self.commit = commit
+                self.pr = pr
+                self.commitMessage = commitMessage
+                self.prMessage = prMessage
+            }
+            
+            enum CodingKeys: String, CodingKey {
+                case commit
+                case pr
+                case commitMessage = "commit_message"
+                case prMessage = "pr_message"
+            }
+
+        }
+        
+        /// Source control info
+        public let sourceControl: SourceControl?
+        
+        /// Initializer
+        public init(sourceControl: SourceControl? = nil) {
+            self.sourceControl = sourceControl
+        }
+        
+        enum CodingKeys: String, CodingKey {
+            case sourceControl = "source_control"
+        }
+        
+    }
+    
     /// Platform
     public enum Platform: String, Codable, CaseIterable, ReflectionDecodable {
         case unknown
@@ -92,7 +141,7 @@ final public class App: DbCoreModel {
         public var platform: Platform
         public var created: Date
         public var size: Int
-        public var info: String?
+        public var info: Info?
         public var hasIcon: Bool
         
         enum CodingKeys: String, CodingKey {
@@ -125,7 +174,7 @@ final public class App: DbCoreModel {
         
     }
     
-    public struct Info: Content {
+    public struct Overview: Content {
         
         public var teamId: DbIdentifier
         public var apps: Int
@@ -146,7 +195,7 @@ final public class App: DbCoreModel {
     public var created: Date
     public var size: Int
     public var sizeTotal: Int
-    public var info: String?
+    public var info: Info?
     public var hasIcon: Bool
     
     enum CodingKeys: String, CodingKey {
@@ -165,7 +214,7 @@ final public class App: DbCoreModel {
         case hasIcon = "icon"
     }
     
-    public init(id: DbIdentifier? = nil, teamId: DbIdentifier? = nil, clusterId: DbIdentifier, name: String, identifier: String, version: String, build: String, platform: Platform, size: Int, sizeTotal: Int, info: String? = nil, hasIcon: Bool = false) {
+    public init(id: DbIdentifier? = nil, teamId: DbIdentifier? = nil, clusterId: DbIdentifier, name: String, identifier: String, version: String, build: String, platform: Platform, size: Int, sizeTotal: Int, info: Info? = nil, hasIcon: Bool = false) {
         self.id = id
         self.teamId = teamId
         self.clusterId = clusterId
@@ -218,7 +267,11 @@ extension App: Migration {
             schema.field(for: \.created)
             schema.field(for: \.size)
             schema.field(for: \.sizeTotal)
-            schema.field(for: \.info, type: .text)
+            
+            // TODO: change to `schema.field(for: \.info, type: .jsonb)` when this gets fixed: https://github.com/vapor/fluent/issues/594
+            let col = PostgreSQLColumnDefinition.columnDefinition(.column(nil, "info"), .jsonb, [])
+            schema.field(col)
+            
             schema.field(for: \.hasIcon, type: .boolean)
         }
     }

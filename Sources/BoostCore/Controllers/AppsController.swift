@@ -36,7 +36,6 @@ extension QueryBuilder where Result == App, Database == ApiCoreDatabase {
             s = s.group(.or) { or in
                 or.filter(\App.name ~~ search)
                 or.filter(\App.identifier ~~ search)
-                or.filter(\App.info ~~ search)
                 or.filter(\App.version ~~ search)
                 or.filter(\App.build ~~ search)
             }
@@ -130,15 +129,15 @@ class AppsController: Controller {
         }
         
         // Team apps info
-        secure.get("teams", DbIdentifier.parameter, "apps", "info") { (req) -> Future<App.Info> in
+        secure.get("teams", DbIdentifier.parameter, "apps", "info") { (req) -> Future<App.Overview> in
             let teamId = try req.parameters.next(DbIdentifier.self)
-            return try req.me.teams().flatMap(to: App.Info.self) { teams in
-                return try AppsManager.overviewQuery(teams: teams, on: req).filter(\Cluster.teamId == teamId).all().map(to: App.Info.self) { apps in
+            return try req.me.teams().flatMap(to: App.Overview.self) { teams in
+                return try AppsManager.overviewQuery(teams: teams, on: req).filter(\Cluster.teamId == teamId).all().map(to: App.Overview.self) { apps in
                     var builds: Int = 0
                     apps.forEach({ item in
                         builds += item.appCount
                     })
-                    let info = App.Info(teamId: teamId, apps: apps.count, builds: builds)
+                    let info = App.Overview(teamId: teamId, apps: apps.count, builds: builds)
                     return info
                 }
             }
