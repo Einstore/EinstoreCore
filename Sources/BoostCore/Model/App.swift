@@ -20,50 +20,83 @@ final public class App: DbCoreModel {
     /// Info
     public struct Info: Codable {
         
+        /// URL:Message object
+        public struct URLMessagePair: Codable {
+            
+            /// Id
+            public let id: String?
+            
+            /// Full URL (including protocol)
+            public let url: String?
+            
+            /// Message
+            public let message: String?
+            
+            /// Initializer
+            public init(id: String? = nil, url: String? = nil, message: String? = nil) {
+                self.id = id
+                self.url = url
+                self.message = message
+            }
+            
+        }
+        
         /// Source control
         public struct SourceControl: Codable {
             
             /// Full commit link
-            public let commit: String?
+            public let commit: URLMessagePair?
             
             /// Full pull request / merge request (PR/MR) link
-            public let pr: String?
-            
-            /// Commit message
-            public let commitMessage: String?
-            
-            /// PR/MR message
-            public let prMessage: String?
+            public let pr: URLMessagePair?
             
             /// Initializer
-            public init(commit: String? = nil, pr: String? = nil, commitMessage: String? = nil, prMessage: String? = nil) {
+            public init(commit: URLMessagePair? = nil, pr: URLMessagePair? = nil) {
                 self.commit = commit
                 self.pr = pr
-                self.commitMessage = commitMessage
-                self.prMessage = prMessage
             }
             
             enum CodingKeys: String, CodingKey {
                 case commit
                 case pr
-                case commitMessage = "commit_message"
-                case prMessage = "pr_message"
             }
-
+            
+        }
+        
+        /// Project management
+        public struct ProjectManagement: Codable {
+            
+            /// Ticket
+            public let ticket: URLMessagePair?
+            
+            /// Initializer
+            public init(ticket: URLMessagePair? = nil) {
+                self.ticket = ticket
+            }
+            
+            enum CodingKeys: String, CodingKey {
+                case ticket
+            }
+            
         }
         
         /// Source control info
         public let sourceControl: SourceControl?
         
+        /// Project management reference
+        public let projectManagement: ProjectManagement?
+        
         /// Initializer
-        public init(sourceControl: SourceControl? = nil) {
+        public init(sourceControl: SourceControl? = nil, projectManagement: ProjectManagement? = nil) {
             self.sourceControl = sourceControl
+            self.projectManagement = projectManagement
         }
         
         enum CodingKeys: String, CodingKey {
-            case sourceControl = "source_control"
+            case sourceControl = "sc"
+            case projectManagement = "pm"
         }
-        
+
     }
     
     /// Platform

@@ -110,6 +110,12 @@ extension Extractor {
             let iconDataSize = self.iconData?.count ?? 0
             let sizeTotal = size + iconDataSize
             let app = App(teamId: teamId, clusterId: (cluster?.id ?? UUID()), name: appName, identifier: appIdentifier, version: self.versionLong ?? "0.0", build: self.versionShort ?? "0", platform: platform, size: size, sizeTotal: sizeTotal, hasIcon: (iconDataSize > 0))
+            
+            // Compile info (in any is present)
+            let info = try? req.query.decode(App.Info.self)
+            app.info = info
+            
+            // Save app
             return app.save(on: req).flatMap(to: App.self) { app in
                 guard let cluster = cluster, cluster.id != nil else {
                     let cluster = Cluster(latestApp: app)

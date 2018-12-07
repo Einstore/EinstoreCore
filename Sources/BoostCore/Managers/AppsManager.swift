@@ -60,7 +60,6 @@ public class AppsManager {
                 let extractor: Extractor = try BaseExtractor.decoder(file: tempFilePath.path, platform: platform, on: req)
                 do {
                     return try extractor.process(teamId: teamId, on: req).flatMap(to: Response.self) { app in
-//                        let sourceControl = App.Info(sourceControl: nil)
                         return try extractor.save(app, request: req).flatMap(to: Response.self) { (_) -> Future<Response> in
                             return try handleTags(on: req, team: team, app: app).flatMap(to: Response.self) { (_) -> Future<Response> in
                                 return try app.asResponse(.created, to: req)
