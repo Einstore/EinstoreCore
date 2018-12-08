@@ -204,7 +204,7 @@
         "repositoryURL": "https://github.com/LiveUI/S3.git",
         "state": {
           "branch": "master",
-          "revision": "c1a4defef149cbc71e78dba592041ca74e8fde40",
+          "revision": "d8058ae64ad7bcfa42830e9570d04ef4fb25e6ad",
           "version": null
         }
       },
@@ -249,8 +249,8 @@
         "repositoryURL": "https://github.com/apple/swift-nio.git",
         "state": {
           "branch": null,
-          "revision": "035962e6b6e03c8721a91a9b96dc084289795cb4",
-          "version": "1.11.0"
+          "revision": "a20e129c22ad00a51c902dca54a5456f90664780",
+          "version": "1.12.0"
         }
       },
       {
