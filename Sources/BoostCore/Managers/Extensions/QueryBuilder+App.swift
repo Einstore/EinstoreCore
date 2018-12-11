@@ -12,13 +12,6 @@ import Fluent
 import FluentPostgreSQL
 
 
-/// Object holding main filters
-fileprivate struct RequestFilters: Codable {
-    let platform: App.Platform?
-    let identifier: String?
-}
-
-
 extension QueryBuilder where Result == App, Database == ApiCoreDatabase {
     
     /// Set filters

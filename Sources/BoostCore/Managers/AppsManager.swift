@@ -18,7 +18,7 @@ public class AppsManager {
 
     /// Overview app query
     static func overviewQuery(teams: Teams, on req: Request) throws -> QueryBuilder<ApiCoreDatabase, Cluster.Public> {
-        let q = try Cluster.query(on: req).filter(\Cluster.teamId ~~ teams.ids).sort(\Cluster.latestAppAdded, .descending).decode(Cluster.Public.self).paginate(on: req)
+        let q = try Cluster.query(on: req).filter(\Cluster.teamId ~~ teams.ids).clusterFilters(on: req).sort(\Cluster.latestAppAdded, .descending).decode(Cluster.Public.self)
         return q
     }
     

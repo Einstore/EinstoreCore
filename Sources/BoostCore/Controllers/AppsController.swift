@@ -128,25 +128,28 @@ class AppsController: Controller {
         secure.get("apps", DbIdentifier.parameter, "history") { (req) -> Future<[Download]> in
             let appId = try req.parameters.next(DbIdentifier.self)
             return try req.me.teams().flatMap(to: [Download].self) { teams in
-                return try App.query(on: req).safeApp(appId: appId, teamIds: teams.ids).sort(\Download.created, .descending).first().flatMap(to: [Download].self) { app in
+                return try App.query(on: req).safeApp(appId: appId, teamIds: teams.ids).first().flatMap(to: [Download].self) { app in
                     guard let _ = app, let userId = try req.me.user().id else {
                         throw ErrorsCore.HTTPError.notFound
                     }
                     
-                    return Download.query(on: req).filter(\Download.appId == appId).filter(\Download.userId == userId).all()
+                    return Download.query(on: req).filter(\Download.appId == appId).filter(\Download.userId == userId).sort(\Download.created, .descending).all()
                 }
             }
         }
         
         // App download auth
         secure.get("apps", DbIdentifier.parameter, "auth") { (req) -> Future<Response> in
+            guard let userId = try req.me.user().id else {
+                throw ErrorsCore.HTTPError.notAuthorized
+            }
             let appId = try req.parameters.next(DbIdentifier.self)
             return try req.me.teams().flatMap(to: Response.self) { teams in
                 return try App.query(on: req).safeApp(appId: appId, teamIds: teams.ids).first().flatMap(to: Response.self) { app in
                     guard let app = app else {
                         throw ErrorsCore.HTTPError.notFound
                     }
-                    let key = DownloadKey(appId: appId)
+                    let key = DownloadKey(appId: appId, userId: userId)
                     let originalToken: String = key.token
                     key.token = try key.token.sha()
                     return key.save(on: req).flatMap(to: Response.self) { key in
@@ -178,7 +181,7 @@ class AppsController: Controller {
                         throw Error.invalidPlatform
                     }
                     let response = try req.response.basic(status: .ok)
-                    response.http.headers = HTTPHeaders([("Content-Type", "text/xml; charset=utf-8")])
+                    response.http.headers = HTTPHeaders([("Content-Type", "text/xml; charset=utf-8")]) // text/xml (not application/xml) is neccessary for the iOS deployment to work
                     response.http.body = try HTTPBody(data: AppPlist(app: app, token: token, request: req).asPropertyList())
                     return response
                 }
@@ -196,7 +199,7 @@ class AppsController: Controller {
                     }
                 }
                 return App.query(on: req).filter(\App.id == key.appId).first().flatMap(to: Response.self) { app in
-                    guard let app = app, let userId = try req.me.user().id else {
+                    guard let app = app, let path = app.appPath?.relativePath else {
                         throw ErrorsCore.HTTPError.notFound
                     }
                     guard App.Platform.is(supported: app.platform) else {
@@ -205,12 +208,8 @@ class AppsController: Controller {
                     let response = try req.response.basic(status: .ok)
                     response.http.headers = HTTPHeaders([("Content-Type", "\(app.platform.mime)"), ("Content-Disposition", "attachment; filename=\"\(app.name.safeText).\(app.platform.fileExtension)\"")])
                     
-                    guard let path = app.appPath?.relativePath else {
-                        throw ErrorsCore.HTTPError.notFound
-                    }
-                    
                     // Save an info about the download
-                    let download = Download(appId: key.appId, userId: userId)
+                    let download = Download(appId: key.appId, userId: key.userId)
                     return download.save(on: req).flatMap(to: Response.self) { download in
                         // Serve the file
                         let fm = try req.makeFileCore()

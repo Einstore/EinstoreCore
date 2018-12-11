@@ -19,6 +19,7 @@ final public class DownloadKey: DbCoreModel {
     
     public struct Public: Content {
         let appId: DbIdentifier
+        let userId: DbIdentifier
         var token: String
         let plist: String
         let file: String
@@ -51,11 +52,13 @@ final public class DownloadKey: DbCoreModel {
             plist = urlBuilder(type: .plist)
             file = urlBuilder(type: .file)
             ios = "itms-services://?action=download-manifest&url=\(plist.encodeURLforUseAsQuery())"
+            userId = downloadKey.userId
             self.appId = appId
         }
         
         enum CodingKeys: String, CodingKey {
             case appId = "app_id"
+            case userId = "user_id"
             case token
             case plist
             case file
@@ -65,19 +68,22 @@ final public class DownloadKey: DbCoreModel {
     
     public var id: DbIdentifier?
     public var appId: DbIdentifier
+    public var userId: DbIdentifier
     public var token: String
     public var added: Date
     
     enum CodingKeys: String, CodingKey {
         case id
         case appId = "app_id"
+        case userId = "user_id"
         case token
         case added
     }
     
-    public init(id: DbIdentifier? = nil, appId: DbIdentifier) {
+    public init(id: DbIdentifier? = nil, appId: DbIdentifier, userId: DbIdentifier) {
         self.id = id
         self.appId = appId
+        self.userId = userId
         self.token = UUID().uuidString
         self.added = Date()
     }
@@ -102,6 +108,7 @@ extension DownloadKey: Migration {
         return Database.create(self, on: connection) { (schema) in
             schema.field(for: \.id, isIdentifier: true)
             schema.field(for: \.appId)
+            schema.field(for: \.userId)
             schema.field(for: \.token, type: .varchar(64))
             schema.field(for: \.added)
         }
