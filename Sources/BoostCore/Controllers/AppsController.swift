@@ -55,11 +55,22 @@ class AppsController: Controller {
     
     /// Loading routes
     static func boot(router: Router, secure: Router, debug: Router) throws {
+        @discardableResult func filter<M, DB>(q: inout QueryBuilder<M, DB>, tags: [DbIdentifier]) -> QueryBuilder<M, DB> {
+            return q
+        }
+        
         // Get list of apps based on input parameters
         secure.get("apps") { (req) -> Future<Apps> in
             return try req.me.teams().flatMap(to: Apps.self) { teams in
-                let q = try App.query(on: req).filter(\App.teamId ~~ teams.ids).sort(\App.created, .descending).appFilters(on: req)
-                return q.decode(App.Public.self).all()
+                let q = try App.query(on: req).filter(\App.teamId ~~ teams.ids).sort(\App.created, .descending).appFilters(on: req).decode(App.Public.self)
+                if let tags = req.query.app.tags, !tags.isEmpty {
+                    return Tag.query(on: req).filter(\Tag.teamId ~~ teams.ids).filter(\Tag.identifier ~~ tags.safeTagText()).all().flatMap(to: Apps.self) { tags in
+                        q.join(\AppTag.appId, to: \App.id).filter(\AppTag.tagId ~~ tags.ids)
+                        return q.all()
+                    }
+                } else {
+                    return q.all()
+                }
             }
         }
         

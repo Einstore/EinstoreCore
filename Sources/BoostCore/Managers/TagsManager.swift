@@ -19,25 +19,24 @@ public class TagsManager {
     
     /// Save an array of tags on an app
     public static func save(tags: [String], for app: App, team: Team, on req: Request) throws -> Future<Void> {
+        guard let teamId = team.id else {
+            throw ErrorsCore.HTTPError.missingId
+        }
         return try app.tags.query(on: req).all().flatMap(to: Void.self) { appTags in
             var futures: [Future<Void>] = []
             tags.forEach { tagSubstring in
-                let tag = String(tagSubstring).safeText
+                let tag = String(tagSubstring).safeTagText
                 guard !appTags.contains(identifier: tag) else {
                     return
                 }   
-                let future = Tag.query(on: req).filter(\Tag.identifier == tag).first().flatMap(to: Void.self) {  tagObject in
+                let future = Tag.query(on: req).filter(\Tag.identifier == tag).filter(\Tag.teamId == teamId).first().flatMap(to: Void.self) {  tagObject in
                     guard let tagObject = tagObject else {
-                        let t = Tag(id: nil, identifier: tag)
+                        let t = Tag(id: nil, teamId: teamId, identifier: tag)
                         return t.save(on: req).flatMap(to: Void.self) { tag in
-                            return app.tags.attach(tag, on: req).flatMap(to: Void.self) { appTag in
-                                return team.tags.attach(tag, on: req).flatten()
-                            }
+                            return app.tags.attach(tag, on: req).flatten()
                         }
                     }
-                    return app.tags.attach(tagObject, on: req).flatMap(to: Void.self) { appTag in
-                        return team.tags.attach(tagObject, on: req).flatten()
-                    }
+                    return app.tags.attach(tagObject, on: req).flatten()
                 }
                 futures.append(future)
             }
@@ -90,15 +89,6 @@ public class TagsManager {
         }
     }
     
-    public static func tags(identifiers: [String] = [], bundleIdentifier: String, platform: App.Platform, on req: Request) throws -> Future<Tags> {
-        fatalError()
-        
-    }
-    
-    public static func tags(identifiers: [String] = [], cluster: Cluster, on req: Request) throws -> Future<Tags> {
-        return try tags(identifiers: identifiers, bundleIdentifier: cluster.identifier, platform: cluster.platform, on: req)
-    }
-    
     public static func tags(identifiers: [String] = [], team: Team? = nil, on req: Request) throws -> Future<[String]> {
         func search(q: inout Fluent.QueryBuilder<PostgreSQLDatabase, Tag>, identifiers: [String]) {
             if !identifiers.isEmpty {
@@ -113,8 +103,8 @@ public class TagsManager {
 //            _ = q.groupBy(\Tag.identifier)
         }
         
-        if let team = team { // Search only tags attached to a specific team
-            var q = try team.tags.query(on: req)
+        if let team = team, let teamId = team.id { // Search only tags attached to a specific team
+            var q = Tag.query(on: req).filter(\Tag.teamId == teamId)
             search(q: &q, identifiers: identifiers)
             let tags: Future<Tags> = q.all()
             return tags.map(to: [String].self) { tags in
@@ -124,7 +114,8 @@ public class TagsManager {
             }
         } else { // Search for all tags for user
             return try req.me.teams().flatMap(to: [String].self) { teams in
-                var q = Tag.query(on: req).join(\TeamTag.tagId, to: \Tag.id).filter(\TeamTag.teamId ~~ teams.ids)
+                var q = Tag.query(on: req).filter(\Tag.teamId ~~ teams.ids)
+                // TODO: Refactor following duplicate code
                 search(q: &q, identifiers: identifiers)
                 let tags: Future<Tags> = q.all()
                 return tags.map(to: [String].self) { tags in

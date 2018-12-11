@@ -62,10 +62,10 @@ public class BoostController: Controller {
                                 let save = app.save(on: req).flatMap(to: Void.self) { app in
                                     func saveTags() -> Future<Void> {
                                         let tags: [Future<Void>] = [
-                                            Tag(identifier: sdk.lowercased()).save(on: req).flatMap(to: Void.self) { tag in
+                                            Tag(teamId: team.id!, identifier: sdk.lowercased()).save(on: req).flatMap(to: Void.self) { tag in
                                                 return app.tags.attach(tag, on: req).flatten()
                                             },
-                                            Tag(identifier: sdk2.lowercased()).save(on: req).flatMap(to: Void.self) { tag in
+                                            Tag(teamId: team.id!, identifier: sdk2.lowercased()).save(on: req).flatMap(to: Void.self) { tag in
                                                 return app.tags.attach(tag, on: req).flatten()
                                             }
                                         ]

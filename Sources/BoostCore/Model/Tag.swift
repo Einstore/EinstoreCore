@@ -33,15 +33,18 @@ final public class Tag: DbCoreModel {
     }
     
     public var id: DbIdentifier?
+    public var teamId: DbIdentifier
     public var identifier: String
     
     enum CodingKeys: String, CodingKey {
         case id
+        case teamId = "team_id"
         case identifier
     }
     
-    public init(id: DbIdentifier? = nil, identifier: String) {
+    public init(id: DbIdentifier? = nil, teamId: DbIdentifier, identifier: String) {
         self.id = id
+        self.teamId = teamId
         self.identifier = identifier
     }
     
@@ -55,6 +58,10 @@ extension Tag {
         return siblings()
     }
     
+    var team: Parent<Tag, Team> {
+        return parent(\Tag.teamId)
+    }
+    
 }
 
 // MARK: - Migrations
@@ -64,6 +71,7 @@ extension Tag: Migration {
     public static func prepare(on connection: ApiCoreConnection) -> Future<Void> {
         return Database.create(self, on: connection) { (schema) in
             schema.field(for: \.id, isIdentifier: true)
+            schema.field(for: \.teamId)
             schema.field(for: \.identifier, type: .varchar(80))
         }
     }

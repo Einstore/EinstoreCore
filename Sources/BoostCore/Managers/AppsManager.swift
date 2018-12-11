@@ -75,8 +75,9 @@ public class AppsManager {
     /// Handle tags during upload
     static func handleTags(on req: Request, team: Team, app: App) throws -> Future<Void> {
         if req.http.url.query != nil, let query = try? req.query.decode([String: String].self) {
+            // TODO: Add support for URL array (?tags[0]=tag1&tags[1]=tag2)!!!!!!!
             if let tags = query["tags"]?.split(separator: "|").map({ String($0) }) {
-                return try TagsManager.save(tags: tags, for: app, team: team, on: req)
+                return try TagsManager.save(tags: tags.safeTagText(), for: app, team: team, on: req)
             }
         }
         return req.eventLoop.newSucceededVoidFuture()
