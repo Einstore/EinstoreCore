@@ -15,9 +15,9 @@ import VaporTestTools
 
 extension TestableProperty where TestableType == DownloadKey {
     
-    @discardableResult public static func create(forAppId appId: DbIdentifier, on app: Application) -> DownloadKey {
+    @discardableResult public static func create(forAppId appId: DbIdentifier, user: User, on app: Application) -> DownloadKey {
         let req = app.testable.fakeRequest()
-        let key = DownloadKey(appId: appId)
+        let key = DownloadKey(appId: appId, userId: user.id!)
         let backupToken = key.token
         key.token = try! key.token.sha()
         _ = try! key.save(on: req).wait()

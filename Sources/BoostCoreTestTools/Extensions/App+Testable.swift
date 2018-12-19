@@ -26,9 +26,9 @@ extension TestableProperty where TestableType == App {
         return try! object.save(on: req).wait()
     }
     
-    public func addTag(name: String, identifier: String, on app: Application) {
+    public func addTag(name: String, team: Team, identifier: String, on app: Application) {
         let req = app.testable.fakeRequest()
-        let tag = try! Tag(identifier: "tag-for-app-2").save(on: req).wait()
+        let tag = try! Tag(teamId: team.id!, identifier: "tag-for-app-2").save(on: req).wait()
         _  = try! element.tags.attach(tag, on: req).wait()
     }
     

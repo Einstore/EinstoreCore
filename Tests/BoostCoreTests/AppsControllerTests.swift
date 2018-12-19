@@ -251,7 +251,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
     func testPlistForApp() {
         let realApp = createRealApp()
         
-        let token = DownloadKey.testable.create(forAppId: realApp.id!, on: app)
+        let token = DownloadKey.testable.create(forAppId: realApp.id!, user: user1, on: app)
         
         let r = app.testable.response(to: HTTPRequest.testable.get(uri: "/apps/\(realApp.id!)/plist/\(token.token)/\(realApp.fileName).plist", authorizedUser: user1, on: app))
         r.response.testable.debug()
@@ -282,7 +282,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
     func testDownloadIosApp() {
         let realApp = createRealApp()
         
-        let token = DownloadKey.testable.create(forAppId: realApp.id!, on: app)
+        let token = DownloadKey.testable.create(forAppId: realApp.id!, user: user1, on: app)
         
         let r = app.testable.response(to: HTTPRequest.testable.get(uri: "/apps/\(realApp.id!)/file/\(token.token)/\(realApp.fileName).ipa", authorizedUser: user1, on: app))
         r.response.testable.debug()
@@ -301,7 +301,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
     func testDownloadAndroidApp() {
         let realApp = createRealApp(.android)
         
-        let token = DownloadKey.testable.create(forAppId: realApp.id!, on: app)
+        let token = DownloadKey.testable.create(forAppId: realApp.id!, user: user1, on: app)
         
         let r = app.testable.response(to: HTTPRequest.testable.get(uri: "/apps/\(realApp.id!)/file/\(token.token)/\(realApp.fileName).apk", authorizedUser: user1, on: app))
         r.response.testable.debug()

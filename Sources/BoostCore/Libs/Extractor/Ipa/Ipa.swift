@@ -9,6 +9,7 @@ import Foundation
 import Vapor
 import SwiftShell
 import ApiCore
+import Normalized
 
 
 class Ipa: BaseExtractor, Extractor {
@@ -122,11 +123,12 @@ extension Ipa {
             return
         }
         let iconUrl = archive.appendingPathComponent("icon.png")
-        try iconData.write(to: iconUrl)
-        
-//        // TODO: Normalize binary image
-//        let normalize = ThirdpartyUtilities.normalizePNG
-//        try runAndPrint("python", normalize.path, iconUrl.path)
+        do {
+            let normalized = try Normalize.getNormalizedPNG(data: iconData)
+            try normalized.write(to: iconUrl)
+        } catch {
+            try iconData.write(to: iconUrl)
+        }
     }
     
     private func parseIcon(_ plist: [String: Any]) throws {
