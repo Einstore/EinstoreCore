@@ -58,6 +58,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         ("testGetApps", testGetApps),
         ("testLinuxTests", testLinuxTests),
         ("testObfuscatedApkUploadWithJWTAuth", testObfuscatedApkUploadWithJWTAuth),
+        ("testIosApp", testIosApp),
         ("testOldIosApp", testOldIosApp),
         ("testOldIosAppWithInfo", testOldIosAppWithInfo),
         ("testOldIosAppTokenUpload", testOldIosAppTokenUpload),
@@ -184,6 +185,11 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         
         count = app.testable.count(allFor: App.self)
         XCTAssertEqual(count, 107, "There should be right amount of apps to finish with")
+    }
+    
+    func testIosApp() {
+        // TODO: Change app!!!!!
+        doTestJWTUpload(appFileName: "app2.ipa", platform: .ios, name: "Cocktail", identifier: "Marco-Tini.Cocktail", version: "1.9", build: "1", iconSize: 30056)
     }
     
     func testOldIosApp() {
