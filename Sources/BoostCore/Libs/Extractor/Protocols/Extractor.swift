@@ -112,7 +112,10 @@ extension Extractor {
             let app = App(teamId: teamId, clusterId: (cluster?.id ?? UUID()), name: appName, identifier: appIdentifier, version: self.versionLong ?? "0.0", build: self.versionShort ?? "0", platform: platform, size: size, sizeTotal: sizeTotal, hasIcon: (iconDataSize > 0))
             
             // Compile info (in any is present)
-            let info = try? req.query.decode(App.Info.self)
+            var info = try? req.query.decode(App.Info.self)
+            if let i = info, i.isEmpty {
+                info = nil
+            }
             app.info = info
             
             // Save app

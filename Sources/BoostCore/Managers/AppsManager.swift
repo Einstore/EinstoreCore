@@ -74,10 +74,24 @@ public class AppsManager {
     
     /// Handle tags during upload
     static func handleTags(on req: Request, team: Team, app: App) throws -> Future<Void> {
-        if req.http.url.query != nil, let query = try? req.query.decode([String: String].self) {
-            // TODO: Add support for URL array (?tags[0]=tag1&tags[1]=tag2)!!!!!!!
-            if let tags = query["tags"]?.split(separator: "|").map({ String($0) }) {
-                return try TagsManager.save(tags: tags.safeTagText(), for: app, team: team, on: req)
+        if req.http.url.query != nil {
+            // Internal struct for tags in the URL
+            struct Tags: Decodable {
+                let value: String?
+                let values: [String]?
+                enum CodingKeys: String, CodingKey {
+                    case value = "tags"
+                    case values = "tag"
+                }
+            }
+            // Decode tags
+            if let tags = try? req.query.decode(Tags.self) {
+                // Parse tags as ?tags=tag1|tag2|tag3
+                if let tags = tags.value?.split(separator: "|").map({ String($0) }) {
+                    return try TagsManager.save(tags: tags.safeTagText(), for: app, team: team, on: req)
+                } else if let tags = tags.values { // Parse tags as URL array (?tag[0]=tag1&tag[1]=tag2)
+                    return try TagsManager.save(tags: tags.safeTagText(), for: app, team: team, on: req)
+                }
             }
         }
         return req.eventLoop.newSucceededVoidFuture()
@@ -120,6 +134,7 @@ public class AppsManager {
         }
         
         let f = try app.tags.query(on: req).all().flatMap(to: Void.self) { tags in
+            var futures: [Future<Void>] = []
             try tags.forEach({ tag in
                 let tagFuture = try tag.apps.query(on: req).count().flatMap(to: Void.self) { count in
                     if count <= 1 {

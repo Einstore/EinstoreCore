@@ -96,6 +96,11 @@ final public class App: DbCoreModel {
             case sourceControl = "sc"
             case projectManagement = "pm"
         }
+        
+        /// Check if info is empty
+        public var isEmpty: Bool {
+            return sourceControl == nil && projectManagement == nil
+        }
 
     }
     

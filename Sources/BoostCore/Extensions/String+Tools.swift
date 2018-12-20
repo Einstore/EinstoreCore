@@ -12,7 +12,7 @@ import ApiCore
 extension String {
     
     public func encodeURLforUseAsQuery() -> String {
-        return addingPercentEncoding(withAllowedCharacters: CharacterSet.init(charactersIn: "?&").inverted) ?? "badUrl"
+        return addingPercentEncoding(withAllowedCharacters: CharacterSet(charactersIn: "?& \n").inverted) ?? "badUrl"
     }
     
     public func stripExtension() -> String {

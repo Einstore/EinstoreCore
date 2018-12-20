@@ -59,6 +59,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         ("testLinuxTests", testLinuxTests),
         ("testObfuscatedApkUploadWithJWTAuth", testObfuscatedApkUploadWithJWTAuth),
         ("testOldIosApp", testOldIosApp),
+        ("testOldIosAppWithInfo", testOldIosAppWithInfo),
         ("testOldIosAppTokenUpload", testOldIosAppTokenUpload),
         ("testPlistForApp", testPlistForApp),
         ("testUnobfuscatedApkUploadWithJWTAuth", testUnobfuscatedApkUploadWithJWTAuth),
@@ -187,6 +188,31 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
     
     func testOldIosApp() {
         doTestJWTUpload(appFileName: "app.ipa", platform: .ios, name: "iDeviant", identifier: "com.fuerteint.iDeviant", version: "4.0", build: "1.0", iconSize: 4776)
+    }
+    
+    func testOldIosAppWithInfo() {
+        // TODO: Build the URL properly
+        let jira = "http://jira.example.com/tickets?id=123456".encodeURLforUseAsQuery()
+        let jiraMessage = "Build a wall, big wall, we are good at building walls!\nVERY GOOD!".encodeURLforUseAsQuery()
+        let pr = "http://github.example.com/pull/6".encodeURLforUseAsQuery()
+        let prMessage = "Adding bricks\nAnd mortar".encodeURLforUseAsQuery()
+        let commit = "http://github.example.com/commit/ig84rtx1984r9h2837yrx28".encodeURLforUseAsQuery()
+        let commitMessage = "Another brick in the wall!".encodeURLforUseAsQuery()
+        
+        let r = doTestJWTUpload(appFileName: "app.ipa", platform: .ios, name: "iDeviant", identifier: "com.fuerteint.iDeviant", version: "4.0", build: "1.0", iconSize: 4776, info: "&pm[ticket][url]=\(jira)&pm[ticket][message]=\(jiraMessage)&sc[commit][url]=\(commit)&sc[commit][message]=\(commitMessage)&sc[pr][url]=\(pr)&sc[pr][message]=\(prMessage)&sc[commit][id]=ig84rtx1984r9h2837yrx28")
+        
+        let object = r.response.testable.content(as: App.self)!
+        XCTAssertNil(object.info!.projectManagement!.ticket!.id, "We are not sending an Id")
+        XCTAssertEqual(object.info!.projectManagement!.ticket!.url, jira.removingPercentEncoding)
+        XCTAssertEqual(object.info!.projectManagement!.ticket!.message, jiraMessage.removingPercentEncoding)
+        
+        XCTAssertNil(object.info!.sourceControl!.pr!.id, "We are not sending an Id so where did this come from!")
+        XCTAssertEqual(object.info!.sourceControl!.pr!.url, pr.removingPercentEncoding)
+        XCTAssertEqual(object.info!.sourceControl!.pr!.message, prMessage.removingPercentEncoding)
+        
+        XCTAssertEqual(object.info!.sourceControl!.commit!.id, "ig84rtx1984r9h2837yrx28")
+        XCTAssertEqual(object.info!.sourceControl!.commit!.url, commit)
+        XCTAssertEqual(object.info!.sourceControl!.commit!.message, commitMessage.removingPercentEncoding)
     }
     
     func testOldIosAppTokenUpload() {
@@ -346,11 +372,13 @@ extension AppsControllerTests {
         return doTest(request: req, platform: platform, name: name, identifier: identifier, version: version, build: build, tags: tags, iconSize: iconSize)
     }
     
-    @discardableResult private func doTestJWTUpload(appFileName fileName: String, platform: App.Platform, name: String, identifier: String, version: String? = nil, build: String? = nil, tags: [String] = ["tagging_like_crazy", "All Year Round"], iconSize: Int? = nil) -> TestResponse {
+    @discardableResult private func doTestJWTUpload(appFileName fileName: String, platform: App.Platform, name: String, identifier: String, version: String? = nil, build: String? = nil, tags: [String] = ["tagging_like_crazy", "All Year Round"], iconSize: Int? = nil, info: String? = nil) -> TestResponse {
         let appUrl = Application.testable.paths.resourcesUrl.appendingPathComponent("apps").appendingPathComponent(fileName)
         let postData = try! Data(contentsOf: appUrl)
         let encodedTags: String = tags.joined(separator: "|").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
-        let req = HTTPRequest.testable.post(uri: "/teams/\(team1.id!.uuidString)/apps?tags=\(encodedTags)", data: postData, headers: [
+        let safeInfo = (info ?? "")
+        let uri = "/teams/\(team1.id!.uuidString)/apps?tags=\(encodedTags)\(safeInfo)"
+        let req = HTTPRequest.testable.post(uri: uri, data: postData, headers: [
             "Content-Type": (platform == .ios ? "application/octet-stream" : "application/vnd.android.package-archive")
             ], authorizedUser: user1, on: app
         )
@@ -404,7 +432,7 @@ extension AppsControllerTests {
         let fakeReq = app.testable.fakeRequest()
         let allTags = try! object.tags.query(on: fakeReq).all().wait()
         for tag in tags {
-            XCTAssertTrue(allTags.contains(identifier: tag.safeText), "Tag needs to be present")
+            XCTAssertTrue(allTags.contains(identifier: tag.safeText), "Tags need to be present")
         }
         
         // Check final app count after the upload
