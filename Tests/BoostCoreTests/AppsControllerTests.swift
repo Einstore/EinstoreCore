@@ -60,6 +60,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         ("testObfuscatedApkUploadWithJWTAuth", testObfuscatedApkUploadWithJWTAuth),
         ("testIosApp", testIosApp),
         ("testOldIosApp", testOldIosApp),
+        ("testAppUploadsToRightTeamAndCluster", testAppUploadsToRightTeamAndCluster),
         ("testOldIosAppWithInfo", testOldIosAppWithInfo),
         ("testOldIosAppTokenUpload", testOldIosAppTokenUpload),
         ("testPlistForApp", testPlistForApp),
@@ -194,6 +195,32 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
     
     func testOldIosApp() {
         doTestJWTUpload(appFileName: "app.ipa", platform: .ios, name: "iDeviant", identifier: "com.fuerteint.iDeviant", version: "4.0", build: "1.0", iconSize: 4776)
+    }
+    
+    func testAppUploadsToRightTeamAndCluster() {
+        let fakeReq = app.testable.fakeRequest()
+        
+        _ = try! team2.users.attach(user1, on: fakeReq).wait()
+        
+        // Upload two apps
+        let r1 = doTestJWTUpload(appFileName: "app.ipa", platform: .ios, name: "iDeviant", identifier: "com.fuerteint.iDeviant", version: "4.0", build: "1.0", iconSize: 4776, team: team1)
+        let r2 = doTestJWTUpload(appFileName: "app.ipa", platform: .ios, name: "iDeviant", identifier: "com.fuerteint.iDeviant", version: "4.0", build: "1.0", iconSize: 4776, team: team2, appsTotal: 108)
+        
+        // Get and check first app
+        let object1 = r1.response.testable.content(as: App.self)!
+        let cluster1 = Cluster.testable.cluster(withId: object1.clusterId, on: app)
+        XCTAssertNotNil(object1.teamId)
+        XCTAssertEqual(object1.teamId, team1.id)
+        
+        // Get and check second app
+        let object2 = r2.response.testable.content(as: App.self)!
+        let cluster2 = Cluster.testable.cluster(withId: object2.clusterId, on: app)
+        XCTAssertNotNil(object2.teamId)
+        XCTAssertEqual(object2.teamId, team2.id)
+        
+        // Check clusters are not the same
+        XCTAssertNotNil(cluster1.id)
+        XCTAssertNotEqual(cluster1.id, cluster2.id)
     }
     
     func testOldIosAppWithInfo() {
@@ -378,24 +405,24 @@ extension AppsControllerTests {
         return doTest(request: req, platform: platform, name: name, identifier: identifier, version: version, build: build, tags: tags, iconSize: iconSize)
     }
     
-    @discardableResult private func doTestJWTUpload(appFileName fileName: String, platform: App.Platform, name: String, identifier: String, version: String? = nil, build: String? = nil, tags: [String] = ["tagging_like_crazy", "All Year Round"], iconSize: Int? = nil, info: String? = nil) -> TestResponse {
+    @discardableResult private func doTestJWTUpload(appFileName fileName: String, platform: App.Platform, name: String, identifier: String, version: String? = nil, build: String? = nil, tags: [String] = ["tagging_like_crazy", "All Year Round"], iconSize: Int? = nil, info: String? = nil, team: Team? = nil, appsTotal: Int = 107) -> TestResponse {
         let appUrl = Application.testable.paths.resourcesUrl.appendingPathComponent("apps").appendingPathComponent(fileName)
         let postData = try! Data(contentsOf: appUrl)
         let encodedTags: String = tags.joined(separator: "|").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
         let safeInfo = (info ?? "")
-        let uri = "/teams/\(team1.id!.uuidString)/apps?tags=\(encodedTags)\(safeInfo)"
+        let uri = "/teams/\((team ?? team1).id!.uuidString)/apps?tags=\(encodedTags)\(safeInfo)"
         let req = HTTPRequest.testable.post(uri: uri, data: postData, headers: [
             "Content-Type": (platform == .ios ? "application/octet-stream" : "application/vnd.android.package-archive")
             ], authorizedUser: user1, on: app
         )
         
-        return doTest(request: req, platform: platform, name: name, identifier: identifier, version: version, build: build, tags: tags, iconSize: iconSize)
+        return doTest(request: req, platform: platform, name: name, identifier: identifier, version: version, build: build, tags: tags, iconSize: iconSize, appsTotal: appsTotal)
     }
     
-    @discardableResult private func doTest(request req: HTTPRequest, platform: App.Platform, name: String, identifier: String, version: String?, build: String?, tags: [String], iconSize: Int?) -> TestResponse {
+    @discardableResult private func doTest(request req: HTTPRequest, platform: App.Platform, name: String, identifier: String, version: String?, build: String?, tags: [String], iconSize: Int?, appsTotal: Int = 107) -> TestResponse {
         // Check initial app count
         var count = app.testable.count(allFor: App.self)
-        XCTAssertEqual(count, 107, "There should be right amount of apps to begin with")
+        XCTAssertEqual(count, appsTotal, "There should be right amount of apps to begin with")
         
         let r = app.testable.response(to: req)
         
@@ -443,7 +470,7 @@ extension AppsControllerTests {
         
         // Check final app count after the upload
         count = app.testable.count(allFor: App.self)
-        XCTAssertEqual(count, 108, "There should be right amount of apps to begin with")
+        XCTAssertEqual(count, (appsTotal + 1), "There should be right amount of apps to begin with")
         
         return r
     }

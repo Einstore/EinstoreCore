@@ -26,5 +26,11 @@ extension TestableProperty where TestableType == Cluster {
         }
     }
     
+    @discardableResult public static func cluster(withId id: DbIdentifier, on app: Application) -> Cluster {
+        let req = app.testable.fakeRequest()
+        let cluster = try! Cluster.query(on: req).filter(\Cluster.id == id).first().wait()
+        return cluster!
+    }
+    
 }
 

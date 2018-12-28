@@ -103,7 +103,7 @@ extension Extractor {
             throw ExtractorError.invalidAppContent
         }
         
-        return Cluster.query(on: req).filter(\Cluster.identifier == appIdentifier).filter(\Cluster.platform == platform).first().flatMap(to: App.self) { cluster in
+        return ClusterManager.cluster(for: appIdentifier, platform: platform, teamId: teamId, on: req).flatMap(to: App.self) { cluster in
             let attr = try FileManager.default.attributesOfItem(atPath: self.file.path)
             // TODO: Fix on linux (file size is not loading)!!!!!!!!!!
             let size = Int(truncating: (attr[FileAttributeKey.size] as? NSNumber) ?? 0)
