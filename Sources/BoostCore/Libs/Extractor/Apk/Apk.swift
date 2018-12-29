@@ -171,7 +171,9 @@ class Apk: BaseExtractor, Extractor {
         DispatchQueue.global().async {
             do {
                 // Extract archive
-                try runAndPrint("java", "-jar", ThirdpartyUtilities.apkExtractorUrl.path.replacingOccurrences(of: "file://", with: ""), "d", "-sf", self.file.path, "-o", self.extractedApkFolder.path)
+                let apkTool = ThirdpartyUtilities.apkExtractorUrl.path.replacingOccurrences(of: "file://", with: "")
+                let temp = self.archive.appendingPathComponent("apktool")
+                try runAndPrint("java", "-jar", apkTool, "d", "-sf", self.file.path, "-o", self.extractedApkFolder.path, "--frame-path", temp.path)
                 
                 // Parse manifest file
                 try self.parseManifest()
