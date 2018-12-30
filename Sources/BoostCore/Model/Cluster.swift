@@ -36,6 +36,7 @@ final public class Cluster: DbCoreModel {
         
         public typealias Database = ApiCoreDatabase
         
+        public var teamId: DbIdentifier?
         public var latestAppName: String
         public var latestAppVersion: String
         public var latestAppBuild: String
@@ -47,6 +48,7 @@ final public class Cluster: DbCoreModel {
         public var identifier: String
         
         enum CodingKeys: String, CodingKey {
+            case teamId = "team_id"
             case latestAppName = "latest_app_name"
             case latestAppVersion = "latest_app_version"
             case latestAppBuild = "latest_app_build"
@@ -59,6 +61,7 @@ final public class Cluster: DbCoreModel {
         }
         
         public init(_ cluster: Cluster) {
+            self.teamId = cluster.teamId
             self.latestAppName = cluster.latestAppName
             self.latestAppVersion = cluster.latestAppVersion
             self.latestAppBuild = cluster.latestAppBuild
