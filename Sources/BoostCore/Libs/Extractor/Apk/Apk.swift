@@ -144,6 +144,8 @@ class Apk: BaseExtractor, Extractor {
         
         DispatchQueue.global().async {
             do {
+                run("unzip", "-o", self.file.path, "-d", self.archive.path)
+                
                 var apk = self.fetchApkInfo()
                 self.appName = apk.applicationLabel
                 self.appIdentifier = apk.packageName
