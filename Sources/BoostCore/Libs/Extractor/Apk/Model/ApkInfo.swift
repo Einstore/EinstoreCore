@@ -52,7 +52,7 @@ struct ApkInfo {
     }
     
     mutating func addPermission(permission: String) {
-        if(usesPermissions == nil) {
+        if (usesPermissions == nil) {
             self.usesPermissions = [UsesPermission]()
         }
         usesPermissions?.append(UsesPermission.init(name: permission, reason: nil))
