@@ -97,7 +97,7 @@ class Apk: BaseExtractor, Extractor {
                          "|",
                          "grep",
                          "-w",
-                         "'"+iconName+"'").stdout
+                         "\"\(iconName)\"").stdout
         
         let patternPath = "\".+\""
         let patternName = "/"+iconName+"\\."
