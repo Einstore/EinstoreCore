@@ -59,7 +59,7 @@ struct ApkInfo {
     }
     
     mutating func addFeature(feature: String) {
-        if(usesFeatures == nil) {
+        if (usesFeatures == nil) {
             self.usesFeatures = [UsesFeature]()
         }
         usesFeatures?.append(UsesFeature.init(name: feature, reason: nil))
