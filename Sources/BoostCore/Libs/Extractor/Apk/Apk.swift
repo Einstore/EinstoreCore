@@ -100,7 +100,7 @@ class Apk: BaseExtractor, Extractor {
                          "\"\(iconName)\"").stdout
         
         let patternPath = "\".+\""
-        let patternName = "/"+iconName+"\\."
+        let patternName = "/\(iconName)\\."
         
         let outputLines = output.lines().filter {
             let string = $0 as NSString
