@@ -139,7 +139,7 @@ struct ApkInfo {
         }
     }
     
-    //TODO sort by xxxhdpi, xxhdpi, xhdpi, hdpi, mdpi
+    // TODO: sort by xxxhdpi, xxhdpi, xhdpi, hdpi, mdpi
     func getIconPath() -> String? {
         return applicationIconRealPath?.sorted().reversed().first
     }
