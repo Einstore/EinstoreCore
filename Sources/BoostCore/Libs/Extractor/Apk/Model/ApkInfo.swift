@@ -66,7 +66,7 @@ struct ApkInfo {
     }
     
     mutating func addApplicationLabel(key: String, label: String) {
-        if(key == ParseKeys.applicationLabel.rawValue) {
+        if (key == ParseKeys.applicationLabel.rawValue) {
             self.applicationLabel = label
         } else {
             if(applicationLabelTranslations == nil) {
