@@ -46,7 +46,7 @@ class Apk: BaseExtractor, Extractor {
     
     func fetchApkInfo() -> ApkInfo {
         var apkInfo: ApkInfo = ApkInfo()
-        let output = run(ThirdpartyUtilities.aaptUrl.path.replacingOccurrences(of: "file://", with: ""), "dump", "--values", "badging", self.file.path).stdout
+        let output = run(ThirdpartyUtilities.aaptUrl.path, "dump", "--values", "badging", self.file.path).stdout
         let outputLines = output.lines()
         outputLines.forEach() {
             if $0.contains(":") {
