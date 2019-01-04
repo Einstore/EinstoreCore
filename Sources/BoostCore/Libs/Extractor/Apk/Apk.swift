@@ -83,7 +83,7 @@ class Apk: BaseExtractor, Extractor {
         return apkInfo
     }
     
-    //TODO fix grep cmd
+    // TODO: fix grep cmd
     func findAppIconPath(iconName: String?) -> [String]? {
         guard let iconName = iconName else {
             return nil
