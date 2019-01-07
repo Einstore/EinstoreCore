@@ -41,6 +41,7 @@ struct ApkInfo {
                 versionCode = value
             case key == ParseKeys.versionName.rawValue:
                 versionName = value
+                // TODO: Add the following info somewhere!
                 //            case key == ParseKeys.compileSdkVersion.rawValue
                 //                compileSdkVersion = value
                 //            case key == ParseKeys.parsedKeyValue.rawValue

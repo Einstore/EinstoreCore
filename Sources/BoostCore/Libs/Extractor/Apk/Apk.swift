@@ -46,7 +46,12 @@ class Apk: BaseExtractor, Extractor {
     
     func fetchApkInfo() -> ApkInfo {
         var apkInfo: ApkInfo = ApkInfo()
-        let output = run(ThirdpartyUtilities.aaptUrl.path, "dump", "--values", "badging", self.file.path).stdout
+        #if os(macOS)
+        let aapt = ThirdpartyUtilities.aaptUrl.path.replacingOccurrences(of: "file://", with: "")
+        #elseif os(Linux)
+        let aapt = "/usr/bin/aapt"
+        #endif
+        let output = run(aapt, "dump", "--values", "badging", self.file.path).stdout
         let outputLines = output.lines()
         outputLines.forEach() {
             if $0.contains(":") {
@@ -141,11 +146,9 @@ class Apk: BaseExtractor, Extractor {
     /// Process app
     func process(teamId: DbIdentifier, on req: Request) throws -> Future<App> {
         let promise = request.eventLoop.newPromise(App.self)
-        
         DispatchQueue.global().async {
             do {
                 run("unzip", "-o", self.file.path, "-d", self.archive.path)
-                
                 var apk = self.fetchApkInfo()
                 self.appName = apk.applicationLabel
                 self.appIdentifier = apk.packageName
@@ -155,9 +158,11 @@ class Apk: BaseExtractor, Extractor {
                 apk.setIconPath(path: self.findAppIconPath(iconName: apk.getIconName()))
                 try self.getApplicationIcon(path: apk.getIconPath())
                 
-                // TODO: Make the following unblocking!!!
-                let a = try self.app(platform: .android, teamId: teamId, on: req).wait()
-                promise.succeed(result: a)
+                try self.app(platform: .android, teamId: teamId, on: req).do({ app in
+                    promise.succeed(result: app)
+                }).catch({ error in
+                    promise.fail(error: error)
+                })
             } catch {
                 promise.fail(error: error)
             }
