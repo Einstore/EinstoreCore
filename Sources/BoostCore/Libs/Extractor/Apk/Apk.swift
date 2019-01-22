@@ -148,7 +148,12 @@ class Apk: BaseExtractor, Extractor {
         let promise = request.eventLoop.newPromise(App.self)
         DispatchQueue.global().async {
             do {
-                run("unzip", "-o", self.file.path, "-d", self.archive.path)
+                #if os(macOS)
+                let unzip = "unzip"
+                #elseif os(Linux)
+                let unzip = "/usr/bin/unzip"
+                #endif
+                run(unzip, "-o", self.file.path, "-d", self.archive.path)
                 var apk = self.fetchApkInfo()
                 self.appName = apk.applicationLabel
                 self.appIdentifier = apk.packageName
