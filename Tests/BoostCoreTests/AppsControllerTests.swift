@@ -51,6 +51,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         ("testAuthReturnsValidToken", testAuthReturnsValidToken),
         ("testBadTokenUpload", testBadTokenUpload),
         ("testCantDeleteOtherPeoplesApp", testCantDeleteOtherPeoplesApp),
+        ("testDeleteCluster", testDeleteCluster),
         ("testDeleteApp", testDeleteApp),
         ("testDownloadAndroidApp", testDownloadAndroidApp),
         ("testDownloadIosApp", testDownloadIosApp),
@@ -164,9 +165,38 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         let r = app.testable.response(to: req)
         
         r.response.testable.debug()
+        
+        let objects = r.response.testable.content(as: Tags.self)
+        
+        XCTAssertEqual(objects?.count, 2)
+        
+        XCTAssertEqual(objects?[0].identifier, "tag-for-app-1")
+        XCTAssertEqual(objects?[1].identifier, "tag-for-app-1")
     }
     
     func testCantDeleteOtherPeoplesApp() {
+        var count = app.testable.count(allFor: App.self)
+        XCTAssertEqual(count, 107, "There should be right amount of apps to begin with")
+        
+        let req = HTTPRequest.testable.delete(uri: "/apps/\(app2.id!.uuidString)", authorizedUser: user1, on: app)
+        let r = app.testable.response(to: req)
+        
+        r.response.testable.debug()
+        
+        let object = app.testable.one(for: App.self, id: app2!.id!)
+        let tagsCount = try! object!.tags.query(on: r.request).count().wait()
+        XCTAssertEqual(tagsCount, 2)
+        
+        // TODO: Test files are still there!!!
+        
+        XCTAssertTrue(r.response.testable.has(statusCode: .notFound), "Wrong status code")
+        XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing or invalid content type")
+        
+        count = app.testable.count(allFor: App.self)
+        XCTAssertEqual(count, 107, "There should be right amount of apps to finish with")
+    }
+    
+    func testDeleteCluster() {
         var count = app.testable.count(allFor: App.self)
         XCTAssertEqual(count, 107, "There should be right amount of apps to begin with")
         

@@ -63,6 +63,10 @@ class AppsController: Controller {
         secure.get("apps") { (req) -> Future<Apps> in
             return try req.me.teams().flatMap(to: Apps.self) { teams in
                 let q = try App.query(on: req).filter(\App.teamId ~~ teams.ids).sort(\App.created, .descending).appFilters(on: req).decode(App.Public.self)
+                let cluster = try req.query.decode(Cluster.Id.self)
+                if let id = cluster.value {
+                    q.filter(\App.clusterId == id)
+                }
                 if let tags = req.query.app.tags, !tags.isEmpty {
                     return Tag.query(on: req).filter(\Tag.teamId ~~ teams.ids).filter(\Tag.identifier ~~ tags.safeTagText()).all().flatMap(to: Apps.self) { tags in
                         q.join(\AppTag.appId, to: \App.id).filter(\AppTag.tagId ~~ tags.ids)
@@ -235,10 +239,10 @@ class AppsController: Controller {
         
         // Delete all apps foir platform and identifier
         secure.delete("cluster") { (req) -> Future<Response> in
-            guard let identifier = try? req.query.decode(Cluster.Identifier.self) else {
+            guard let identifier = try? req.query.decode(Cluster.Id.self) else {
                 throw ErrorsCore.HTTPError.missingRequestData
             }
-            return Cluster.query(on: req).filter(\Cluster.identifier == identifier.value).filter(\Cluster.platform == identifier.platform).first().flatMap(to: Response.self) { cluster in
+            return Cluster.query(on: req).filter(\Cluster.id == identifier.value).first().flatMap(to: Response.self) { cluster in
                 return try AppsManager.delete(cluster: cluster, on: req)
             }
         }

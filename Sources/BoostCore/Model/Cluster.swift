@@ -18,17 +18,16 @@ public typealias Clusters = [Cluster]
 /// Cluster is a logical entry grouping apps bundle id and platform
 final public class Cluster: DbCoreModel {
     
-    public struct Identifier: Codable {
-        
-        public let value: String
-        public var platform: App.Platform
-        
+    public struct Id: Codable {
+
+        public var value: DbIdentifier?
+
         enum CodingKeys: String, CodingKey {
-            case value = "identifier"
-            case platform
+            case value = "id"
         }
-        
+
     }
+
     
     public struct Public: Model, Content, Equatable {
         
