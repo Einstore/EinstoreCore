@@ -18,25 +18,29 @@ import SQL
 public class TagsManager {
     
     /// Save an array of tags on an app
-    public static func save(tags: [String], for app: App, team: Team, on req: Request) throws -> Future<Void> {
+    public static func save(tags: [String], for app: App, team: Team, on req: Request) throws -> Future<Tags> {
         guard let teamId = team.id else {
             throw ErrorsCore.HTTPError.missingId
         }
-        return try app.tags.query(on: req).all().flatMap(to: Void.self) { appTags in
-            var futures: [Future<Void>] = []
+        return try app.tags.query(on: req).all().flatMap(to: Tags.self) { appTags in
+            var futures: [Future<Tag>] = []
             tags.forEach { tagSubstring in
                 let tag = String(tagSubstring).safeTagText
                 guard !appTags.contains(identifier: tag) else {
                     return
                 }   
-                let future = Tag.query(on: req).filter(\Tag.identifier == tag).filter(\Tag.teamId == teamId).first().flatMap(to: Void.self) {  tagObject in
+                let future = Tag.query(on: req).filter(\Tag.identifier == tag).filter(\Tag.teamId == teamId).first().flatMap(to: Tag.self) {  tagObject in
                     guard let tagObject = tagObject else {
                         let t = Tag(id: nil, teamId: teamId, identifier: tag)
-                        return t.save(on: req).flatMap(to: Void.self) { tag in
-                            return app.tags.attach(tag, on: req).flatten()
+                        return t.save(on: req).flatMap(to: Tag.self) { tag in
+                            return app.tags.attach(tag, on: req).map(to: Tag.self) { _ in
+                                return tag
+                            }
                         }
                     }
-                    return app.tags.attach(tagObject, on: req).flatten()
+                    return app.tags.attach(tagObject, on: req).map(to: Tag.self) { _ in
+                        return tagObject
+                    }
                 }
                 futures.append(future)
             }

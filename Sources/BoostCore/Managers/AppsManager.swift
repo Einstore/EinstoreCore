@@ -73,7 +73,7 @@ public class AppsManager {
     }
     
     /// Handle tags during upload
-    static func handleTags(on req: Request, team: Team, app: App) throws -> Future<Void> {
+    static func handleTags(on req: Request, team: Team, app: App) throws -> Future<Tags> {
         if req.http.url.query != nil {
             // Internal struct for tags in the URL
             struct Tags: Decodable {
@@ -94,7 +94,8 @@ public class AppsManager {
                 }
             }
         }
-        return req.eventLoop.newSucceededVoidFuture()
+        let tags: Tags = []
+        return req.eventLoop.newSucceededFuture(result: tags)
     }
     
     static func delete(cluster: Cluster?, on req: Request) throws -> Future<Response> {
