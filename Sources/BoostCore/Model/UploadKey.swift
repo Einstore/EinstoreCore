@@ -38,26 +38,30 @@ final public class UploadKey: DbCoreModel {
         public var teamId: DbIdentifier
         public var name: String
         public var expires: Date?
+        public var created: Date
         
         enum CodingKeys: String, CodingKey {
             case id
             case teamId = "team_id"
             case name
             case expires
+            case created
         }
         
-        public init(id: DbIdentifier? = nil, teamId: DbIdentifier, name: String, expires: Date? = Date()) {
+        public init(id: DbIdentifier? = nil, teamId: DbIdentifier, name: String, created: Date, expires: Date? = Date()) {
             self.id = id
             self.teamId = teamId
             self.name = name
             self.expires = expires
+            self.created = created
         }
         
         init(key: UploadKey) {
-            self.id = key.id
-            self.teamId = key.teamId
-            self.name = key.name
-            self.expires = key.expires
+            id = key.id
+            teamId = key.teamId
+            name = key.name
+            expires = key.expires
+            created = key.created
         }
         
     }
@@ -67,6 +71,7 @@ final public class UploadKey: DbCoreModel {
     public var name: String
     public var expires: Date?
     public var token: String
+    public var created: Date
     
     enum CodingKeys: String, CodingKey {
         case id
@@ -74,6 +79,7 @@ final public class UploadKey: DbCoreModel {
         case name
         case expires
         case token
+        case created
     }
     
     public init(id: DbIdentifier? = nil, teamId: DbIdentifier, name: String, expires: Date? = nil, token: String = UUID().uuidString) {
@@ -82,6 +88,7 @@ final public class UploadKey: DbCoreModel {
         self.name = name
         self.expires = expires
         self.token = token
+        self.created = Date()
     }
     
     public init(new: New, teamId: DbIdentifier) {
@@ -89,6 +96,7 @@ final public class UploadKey: DbCoreModel {
         self.name = new.name
         self.expires = new.expires
         self.token = UUID().uuidString
+        self.created = Date()
     }
     
 }
@@ -113,6 +121,7 @@ extension UploadKey: Migration {
             schema.field(for: \.teamId, type: .uuid)
             schema.field(for: \.name, type: .varchar(60))
             schema.field(for: \.expires)
+            schema.field(for: \.created)
             schema.field(for: \.token, type: .varchar(64))
         }
     }
