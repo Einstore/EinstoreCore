@@ -66,6 +66,14 @@ class TagsController: Controller {
             }
         }
         
+        // Most commonly used tags for a team
+        secure.get("teams", DbIdentifier.parameter, "tags", "common") { (req) -> Future<[UsedTag.Public]> in
+            let teamId = try req.parameters.next(DbIdentifier.self)
+            return try req.me.verifiedTeam(id: teamId).flatMap(to: [UsedTag.Public].self) { team in
+                return try UsedTagsManager.get(for: teamId, on: req)
+            }
+        }
+        
         // Tags available to user
         secure.get("tags") { (req) -> Future<[String]> in
             var search: [String] = []
@@ -73,6 +81,11 @@ class TagsController: Controller {
                 search.append(searchTerm)
             }
             return try TagsManager.tags(identifiers: search, team: nil, on: req)
+        }
+        
+        // Most commonly used tags across the teams
+        secure.get("tags", "common") { (req) -> Future<[UsedTag.Public]> in
+            return try UsedTagsManager.get(on: req)
         }
     }
     

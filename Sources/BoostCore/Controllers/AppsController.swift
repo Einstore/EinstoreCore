@@ -69,8 +69,16 @@ class AppsController: Controller {
                 }
                 if let tags = req.query.app.tags, !tags.isEmpty {
                     return Tag.query(on: req).filter(\Tag.teamId ~~ teams.ids).filter(\Tag.identifier ~~ tags.safeTagText()).all().flatMap(to: Apps.self) { tags in
-                        q.join(\AppTag.appId, to: \App.id).filter(\AppTag.tagId ~~ tags.ids)
-                        return q.all()
+                        // Account for the searched tags
+                        var futures: [Future<UsedTag>] = []
+                        for tag in tags {
+                            try futures.append(UsedTagsManager.add(statsFor: tag, on: req))
+                        }
+                        return futures.flatten(on: req).flatMap(to: Apps.self) { _ in
+                            // Make the search query
+                            q.join(\AppTag.appId, to: \App.id).filter(\AppTag.tagId ~~ tags.ids)
+                            return q.all()
+                        }
                     }
                 } else {
                     return q.all()
