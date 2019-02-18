@@ -62,6 +62,10 @@ extension Tag {
         return parent(\Tag.teamId)
     }
     
+    var usedTagInfo: Children<Tag, UsedTag> {
+        return children(\UsedTag.tagId)
+    }
+    
 }
 
 // MARK: - Migrations

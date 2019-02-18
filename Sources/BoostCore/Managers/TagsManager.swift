@@ -72,7 +72,9 @@ public class TagsManager {
                 return delete
             }
             return delete.flatMap(to: Void.self) { _ in
-                return tag.delete(on: req)
+                return try tag.usedTagInfo.query(on: req).delete().flatMap(to: Void.self) { _ in
+                    return tag.delete(on: req)
+                }
             }
         }
     }
