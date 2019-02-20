@@ -31,10 +31,11 @@ final public class Cluster: DbCoreModel {
     
     public struct Public: Model, Content, Equatable {
         
-        public static var idKey = \Public.latestAppId
+        public static var idKey = \Public.id
         
         public typealias Database = ApiCoreDatabase
         
+        public var id: DbIdentifier?
         public var teamId: DbIdentifier?
         public var latestAppName: String
         public var latestAppVersion: String
@@ -47,6 +48,7 @@ final public class Cluster: DbCoreModel {
         public var identifier: String
         
         enum CodingKeys: String, CodingKey {
+            case id
             case teamId = "team_id"
             case latestAppName = "latest_app_name"
             case latestAppVersion = "latest_app_version"
@@ -60,6 +62,7 @@ final public class Cluster: DbCoreModel {
         }
         
         public init(_ cluster: Cluster) {
+            self.id = cluster.id
             self.teamId = cluster.teamId
             self.latestAppName = cluster.latestAppName
             self.latestAppVersion = cluster.latestAppVersion
