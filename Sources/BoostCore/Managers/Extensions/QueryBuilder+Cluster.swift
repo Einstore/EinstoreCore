@@ -21,8 +21,8 @@ extension QueryBuilder where Result == Cluster, Database == ApiCoreDatabase {
         // Basic search
         if let search = req.query.search {
             s = s.group(.or) { or in
-                or.filter(\Cluster.latestAppName ~~ search)
-                or.filter(\Cluster.identifier ~~ search)
+                or.filter(\Cluster.latestAppName, "~~*", search)
+                or.filter(\Cluster.identifier, "~~*", search)
             }
         }
         
@@ -35,7 +35,7 @@ extension QueryBuilder where Result == Cluster, Database == ApiCoreDatabase {
         
         // Identifier
         if let identifier = query.identifier {
-            s = s.filter(\Cluster.identifier ~~ identifier)
+            s = s.filter(\Cluster.identifier, "~~*", identifier)
         }
         
         return s

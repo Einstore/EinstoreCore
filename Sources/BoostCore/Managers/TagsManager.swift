@@ -100,7 +100,7 @@ public class TagsManager {
             if !identifiers.isEmpty {
                 q.group(.or) { q in
                     identifiers.forEach({ i in
-                        q.filter(\Tag.identifier ~~ i)
+                        q.filter(\Tag.identifier, "~~*", i)
                     })
                 }
             }
