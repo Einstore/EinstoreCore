@@ -44,6 +44,11 @@ jobs:
       - setup_remote_docker:
           docker_layer_caching: true
       - checkout
+      - restore_cache:
+          keys:
+            - build-v1-{{ checksum "Package.swift" }}-{{ checksum "Package.resolved" }}
+            - build-v1-{{ checksum "Package.swift" }}-
+            - build-v1-
       - run:
           command: export BRANCH_SLUG=$(echo ${CIRCLE_BRANCH} | sed -r s/[~\^]+//g | sed -r s/[^a-zA-Z0-9]+/-/g | sed -r s/^-+\|-+$//g | tr A-Z a-z)
       - run:
@@ -63,6 +68,11 @@ jobs:
       - setup_remote_docker:
           docker_layer_caching: true
       - checkout
+      - restore_cache:
+          keys:
+            - build-v1-{{ checksum "Package.swift" }}-{{ checksum "Package.resolved" }}
+            - build-v1-{{ checksum "Package.swift" }}-
+            - build-v1-
       - run:
           command: docker build -t liveui/boost-core:${CIRCLE_TAG} . --pull
       - run:
@@ -80,6 +90,11 @@ jobs:
       - setup_remote_docker:
           docker_layer_caching: true
       - checkout
+      - restore_cache:
+          keys:
+            - build-v1-{{ checksum "Package.swift" }}-{{ checksum "Package.resolved" }}
+            - build-v1-{{ checksum "Package.swift" }}-
+            - build-v1-
       - run:
           command: docker build -t liveui/boost-core:test . --pull
 
