@@ -108,6 +108,9 @@ public class BoostCoreBase {
             ApiCoreBase.controllers.append(c)
         }
         
+        // Setup templates
+        Templates.templates.append(AppNotificationEmailTemplate.self) // Add app notification template
+        
         // Setup SettingsCore
         try SettingsCoreBase.configure(&config, &env, &services)
         

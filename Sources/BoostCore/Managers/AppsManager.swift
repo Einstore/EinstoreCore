@@ -12,12 +12,14 @@ import ErrorsCore
 import Fluent
 import FluentPostgreSQL
 import SwiftShell
+import MailCore
 
 
 public class AppsManager {
 
     /// Overview app query
     static func overviewQuery(teams: Teams, on req: Request) throws -> QueryBuilder<ApiCoreDatabase, Cluster.Public> {
+        // add sorting
         let q = try Cluster.query(on: req).filter(\Cluster.teamId ~~ teams.ids).clusterFilters(on: req).sort(\Cluster.latestAppAdded, .descending).decode(Cluster.Public.self)
         return q
     }
@@ -60,7 +62,30 @@ public class AppsManager {
                     return try extractor.process(teamId: teamId, on: req).flatMap(to: Response.self) { app in
                         return try extractor.save(app, request: req).flatMap(to: Response.self) { (_) -> Future<Response> in
                             return try handleTags(on: req, team: team, app: app).flatMap(to: Response.self) { (_) -> Future<Response> in
-                                return try app.asResponse(.created, to: req)
+                                let inputLinkFromQuery = try? req.query.decode(App.DetailTemplate.Link.self)
+                                let user = try req.me.user()
+                                let templateModel = try App.DetailTemplate(
+                                    link: inputLinkFromQuery?.value,
+                                    app: app,
+                                    user: user,
+                                    on: req
+                                )
+                                return try PasswordRecoveryEmailTemplate.parsed(model: templateModel, on: req).flatMap(to: Response.self) { template in
+                                    let from = ApiCoreBase.configuration.mail.email
+                                    let subject = "Install \(app.name) - \(ApiCoreBase.configuration.server.name)" // TODO: Localize!!!!!!
+                                    return try team.users.query(on: req).all().flatMap(to: Response.self) { teamUsers in
+                                        let userEmails: [String] = teamUsers.map({ $0.email }) // QUESTION: Do we want name in the email too?
+                                        let mail = Mailer.Message(from: from, to: "", bcc: userEmails, subject: subject, text: template.string, html: template.html)
+                                        return try req.mail.send(mail).flatMap(to: Response.self) { mailResult in
+                                            switch mailResult {
+                                            case .success:
+                                                return try app.asResponse(.created, to: req)
+                                            default:
+                                                throw AuthError.emailFailedToSend
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }

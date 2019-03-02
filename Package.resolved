@@ -6,7 +6,7 @@
         "repositoryURL": "https://github.com/LiveUI/ApiCore.git",
         "state": {
           "branch": "master",
-          "revision": "fd45ad30d0e6691be31ede4e6524853328fa49f4",
+          "revision": "1de1e745ad2c3e8296d9b8dc01127a3df785431f",
           "version": null
         }
       },
@@ -15,8 +15,8 @@
         "repositoryURL": "https://github.com/IBM-Swift/BlueCryptor.git",
         "state": {
           "branch": null,
-          "revision": "25186dc1a53f3eb6d900853f659dff8b9af523aa",
-          "version": "1.0.23"
+          "revision": "fe59cc1fcabb390bf9b3b6dd4f8cacc897d91cf6",
+          "version": "1.0.24"
         }
       },
       {
@@ -69,8 +69,8 @@
         "repositoryURL": "https://github.com/vapor/core.git",
         "state": {
           "branch": null,
-          "revision": "1794ff138bd669175a2528d27695028d7cb30471",
-          "version": "3.5.0"
+          "revision": "33e6b1a5fe0cfd06353022fe03a8da7bf7a1fb01",
+          "version": "3.6.0"
         }
       },
       {
@@ -168,7 +168,7 @@
         "repositoryURL": "https://github.com/LiveUI/MailCore.git",
         "state": {
           "branch": "master",
-          "revision": "d9542f264dc16dafc8a29138a375da444e652645",
+          "revision": "b921d882715cdebdc8f03e79e3f0dd78a65ba4c4",
           "version": null
         }
       },
@@ -186,8 +186,8 @@
         "repositoryURL": "https://github.com/vapor/postgresql.git",
         "state": {
           "branch": null,
-          "revision": "d34cf720a43ea2ef8dbf2ba7d9f18d39bb1eb795",
-          "version": "1.2.2"
+          "revision": "830abbc80de4fad428987bea1bf3d43013f17cc1",
+          "version": "1.4.0"
         }
       },
       {
@@ -195,8 +195,8 @@
         "repositoryURL": "https://github.com/vapor/routing.git",
         "state": {
           "branch": null,
-          "revision": "3219e328491b0853b8554c5a694add344d2c6cfb",
-          "version": "3.0.1"
+          "revision": "626190ddd2bd9f967743b60ba6adaf90bbd2651c",
+          "version": "3.0.2"
         }
       },
       {
@@ -249,8 +249,8 @@
         "repositoryURL": "https://github.com/apple/swift-nio.git",
         "state": {
           "branch": null,
-          "revision": "98434c1f1d687ff5a24d2cabfbd19b5c7d2d7a2f",
-          "version": "1.13.0"
+          "revision": "87dbd0216c47ea2e7ddb1b545271b716e03b943e",
+          "version": "1.13.1"
         }
       },
       {
@@ -339,8 +339,8 @@
         "repositoryURL": "https://github.com/vapor/vapor.git",
         "state": {
           "branch": null,
-          "revision": "6c7284681c3432fee29c268babf954be6816cbfb",
-          "version": "3.2.2"
+          "revision": "c86ada59b31c69f08a6abd4f776537cba48d5df6",
+          "version": "3.3.0"
         }
       },
       {

@@ -17,6 +17,51 @@ public typealias Apps = [App.Public]
 
 final public class App: DbCoreModel {
     
+    /// Detail link template
+    public struct DetailTemplate: Content {
+        
+        /// Link
+        public struct Link: Codable {
+            
+            /// Value of the link (URL)
+            public var value: String?
+            
+            enum CodingKeys: String, CodingKey {
+                case value = "link"
+            }
+            
+        }
+        
+        /// User
+        public var user: User
+        
+        /// App detail link
+        public var link: String
+        
+        /// System wide template data
+        public var system: FrontendSystemData
+        
+        /// App info
+        public var app: App
+        
+        /// Initializer
+        ///
+        /// - Parameters:
+        ///   - verification: Verification token
+        ///   - link: App detail link value (optional)
+        ///   - app: App model
+        ///   - user: User model
+        ///   - req: Request
+        /// - Throws: whatever comes it's way
+        public init(link: String? = nil, app: App, user: User, on req: Request) throws {
+            self.user = user
+            self.link = link ?? req.serverURL().absoluteString.finished(with: "/") + "build/\(app.id?.uuidString ?? "error")"
+            system = try FrontendSystemData(req)
+            self.app = app
+        }
+        
+    }
+    
     /// Info
     public struct Info: Codable {
         
@@ -226,7 +271,7 @@ final public class App: DbCoreModel {
     public static var idKey: WritableKeyPath<App, DbIdentifier?> = \App.id
     
     public var id: DbIdentifier?
-    public var teamId: DbIdentifier?
+    public var teamId: DbIdentifier
     public var clusterId: DbIdentifier
     public var name: String
     public var identifier: String
@@ -257,7 +302,7 @@ final public class App: DbCoreModel {
         case hasIcon = "icon"
     }
 
-    public init(id: DbIdentifier? = nil, teamId: DbIdentifier? = nil, clusterId: DbIdentifier, name: String, identifier: String, version: String, build: String, platform: Platform, size: Int, sizeTotal: Int, info: Info? = nil, minSdk: String? = nil, hasIcon: Bool = false) {
+    public init(id: DbIdentifier? = nil, teamId: DbIdentifier, clusterId: DbIdentifier, name: String, identifier: String, version: String, build: String, platform: Platform, size: Int, sizeTotal: Int, info: Info? = nil, minSdk: String? = nil, hasIcon: Bool = false) {
         self.id = id
         self.teamId = teamId
         self.clusterId = clusterId
@@ -279,6 +324,10 @@ final public class App: DbCoreModel {
 // MARK: - Relationships
 
 extension App {
+    
+    var team: Parent<App, Team> {
+        return parent(\App.teamId)
+    }
     
     var tags: Siblings<App, Tag, AppTag> {
         return siblings()

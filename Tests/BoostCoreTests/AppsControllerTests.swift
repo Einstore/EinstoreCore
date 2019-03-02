@@ -460,6 +460,8 @@ extension AppsControllerTests {
         
         let object = r.response.testable.content(as: App.self)!
         
+        // TODO: Test email notification has been received!!!!!!!!
+        
         // Check parsed values
         XCTAssertEqual(object.platform, platform, "Wrong platform")
         XCTAssertEqual(object.name, name, "Wrong name")
