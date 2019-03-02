@@ -1,0 +1,43 @@
+version: '2.4'
+
+services:
+    api:
+        build: .
+        ports:
+            - "8080:8080"
+        restart: on-failure
+        environment:
+            apicore.server.name: BoostCore
+            apicore.database.host: postgres
+            apicore.database.user: boost
+            apicore.database.password: boost
+            apicore.database.database: boost
+            apicore.database.port: 5432
+            apicore.jwt_secret: secret
+            apicore.storage.s3.enabled: 0
+            apicore.storage.local.root: /home/BoostCore
+        depends_on:
+            - postgres
+
+    postgres:
+        image: postgres:11-alpine
+        restart: always
+        environment:
+            POSTGRES_USER: boost
+            POSTGRES_PASSWORD: boost
+            POSTGRES_DB: boost
+
+    adminer:
+        image: michalhosna/adminer:master
+        ports:
+            - 8080:8080
+        environment:
+            ADMINER_DB: boost
+            ADMINER_DRIVER: pgsql
+            ADMINER_PASSWORD: boost
+            ADMINER_SERVER: postgres
+            ADMINER_USERNAME: boost
+            ADMINER_AUTOLOGIN: 1
+            ADMINER_NAME: BoostCore
+        depends_on:
+            - postgres
