@@ -5,8 +5,7 @@ COPY . /app
 
 RUN swift build --configuration debug
 
-# TODO
-#RUN swift build --configuration release
+RUN ln -s .build/debug/BoostRun
 
-ENTRYPOINT /app/run
+ENTRYPOINT /app/BoostRun
 CMD ["serve", "--hostname", "0.0.0.0", "--port", "8080"]
