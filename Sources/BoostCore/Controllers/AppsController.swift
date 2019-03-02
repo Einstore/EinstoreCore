@@ -86,6 +86,33 @@ class AppsController: Controller {
             }
         }
         
+        // Get list of apps for a cluster
+        secure.get("cluster", DbIdentifier.parameter, "apps") { (req) -> Future<Apps> in
+            return try req.me.teams().flatMap(to: Apps.self) { teams in
+                let q = try App.query(on: req).filter(\App.teamId ~~ teams.ids).sort(\App.created, .descending).appFilters(on: req).decode(App.Public.self)
+                let cluster = try req.query.decode(Cluster.Id.self)
+                if let id = cluster.value {
+                    q.filter(\App.clusterId == id)
+                }
+                if let tags = req.query.app.tags, !tags.isEmpty {
+                    return Tag.query(on: req).filter(\Tag.teamId ~~ teams.ids).filter(\Tag.identifier ~~ tags.safeTagText()).all().flatMap(to: Apps.self) { tags in
+                        // Account for the searched tags
+                        var futures: [Future<UsedTag>] = []
+                        for tag in tags {
+                            try futures.append(UsedTagsManager.add(statsFor: tag, on: req))
+                        }
+                        return futures.flatten(on: req).flatMap(to: Apps.self) { _ in
+                            // Make the search query
+                            q.join(\AppTag.appId, to: \App.id).filter(\AppTag.tagId ~~ tags.ids)
+                            return q.all()
+                        }
+                    }
+                } else {
+                    return q.all()
+                }
+            }
+        }
+        
         // Overview for apps in all teams
         secure.get("apps", "overview") { (req) -> Future<[Cluster.Public]> in
             return try req.me.teams().flatMap(to: [Cluster.Public].self) { teams in
@@ -245,7 +272,7 @@ class AppsController: Controller {
             }
         }
         
-        // Delete all apps foir platform and identifier
+        // Delete all apps for platform and identifier
         secure.delete("cluster") { (req) -> Future<Response> in
             guard let identifier = try? req.query.decode(Cluster.Id.self) else {
                 throw ErrorsCore.HTTPError.missingRequestData

@@ -70,12 +70,12 @@ public class AppsManager {
                                     user: user,
                                     on: req
                                 )
-                                return try PasswordRecoveryEmailTemplate.parsed(model: templateModel, on: req).flatMap(to: Response.self) { template in
+                                return try AppNotificationEmailTemplate.parsed(model: templateModel, on: req).flatMap(to: Response.self) { template in
                                     let from = ApiCoreBase.configuration.mail.email
                                     let subject = "Install \(app.name) - \(ApiCoreBase.configuration.server.name)" // TODO: Localize!!!!!!
                                     return try team.users.query(on: req).all().flatMap(to: Response.self) { teamUsers in
                                         let userEmails: [String] = teamUsers.map({ $0.email }) // QUESTION: Do we want name in the email too?
-                                        let mail = Mailer.Message(from: from, to: "", bcc: userEmails, subject: subject, text: template.string, html: template.html)
+                                        let mail = Mailer.Message(from: from, to: from, bcc: userEmails, subject: subject, text: template.string, html: template.html)
                                         return try req.mail.send(mail).flatMap(to: Response.self) { mailResult in
                                             switch mailResult {
                                             case .success:
