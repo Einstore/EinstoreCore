@@ -12,15 +12,15 @@ jobs:
           POSTGRES_PASSWORD: boost
           POSTGRES_DB: boost-test
     environment:
-      apicore.server.name: BoostCore
-      apicore.database.host: postgres
-      apicore.database.user: boost
-      apicore.database.password: boost
-      apicore.database.database: boost # App adds `-test` for test targets
-      apicore.database.port: 5432
-      apicore.jwt_secret: secret
-      apicore.storage.s3.enabled: 0
-      apicore.storage.local.root: /home/BoostCore
+      APICORE_SERVER_NAME: BoostCore
+      APICORE_DATABASE_HOST: postgres
+      APICORE_DATABASE_USER: boost
+      APICORE_DATABASE_PASSWORD: boost
+      APICORE_DATABASE_DATABASE: boost
+      APICORE_DATABASE_PORT: 5432
+      APICORE_JWT_SECRET: secret
+      APICORE_STORAGE_S3_ENABLED: 0
+      APICORE_STORAGE_LOCAL_ROOT: /home/BoostCore
     steps:
       - checkout
       - restore_cache:
