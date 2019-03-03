@@ -45,14 +45,21 @@ jobs:
           docker_layer_caching: true
       - checkout
       - run:
-          command: export BRANCH_SLUG=$(echo ${CIRCLE_BRANCH} | sed -r s/[~\^]+//g | sed -r s/[^a-zA-Z0-9]+/-/g | sed -r s/^-+\|-+$//g | tr A-Z a-z)
+          command: |
+            echo "export BRANCH_SLUG=\"$(echo ${CIRCLE_BRANCH} | sed -r s/[~\^]+//g | sed -r s/[^a-zA-Z0-9]+/-/g | sed -r s/^-+\|-+$//g | tr A-Z a-z)\"" >> $BASH_ENV
       - run:
-          command: docker build -t liveui/boost-core:${CIRCLE_BRANCH} . --pull
+          command: |
+            docker build -t liveui/boost-core:${CIRCLE_SHA1} .
       - run:
           name: docker login
           command: docker login -u $DOCKER_USER -p $DOCKER_PASS
       - run:
-          command: docker push liveui/boost-core:${CIRCLE_BRANCH}
+          command: |
+            source $BASH_ENV
+            docker tag liveui/boost-core:${CIRCLE_SHA1} liveui/boost-core:${BRANCH_SLUG}
+            docker tag liveui/boost-core:${CIRCLE_SHA1} liveui/boost-core:${BRANCH_SLUG}_${CIRCLE_SHA1}
+            docker push liveui/boost-core:${BRANCH_SLUG}
+            docker push liveui/boost-core:${BRANCH_SLUG}_${CIRCLE_SHA1}
 
 
   build-tag:
@@ -64,7 +71,7 @@ jobs:
           docker_layer_caching: true
       - checkout
       - run:
-          command: docker build -t liveui/boost-core:${CIRCLE_TAG} . --pull
+          command: docker build -t liveui/boost-core:${CIRCLE_TAG} .
       - run:
           name: docker login
           command: docker login -u $DOCKER_USER -p $DOCKER_PASS
@@ -72,36 +79,15 @@ jobs:
           command: docker push liveui/boost-core:${CIRCLE_TAG}
 
 
-  test-build:
-    working_directory: /src
-    docker:
-      - image: docker:stable
-    steps:
-      - setup_remote_docker:
-          docker_layer_caching: true
-      - checkout
-      - run:
-          command: docker build -t liveui/boost-core:test . --pull
-
-
 workflows:
   version: 2
   test-build-publish:
     jobs:
       - test
-      - test-build:
-          requires:
-            - test
-          filters:
-            branches:
-              ignore: master
 
       - build-branch:
           requires:
             - test
-          filters:
-            branches:
-              only: master
 
       - build-tag:
           requires:
