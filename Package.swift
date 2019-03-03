@@ -5,7 +5,8 @@ let package = Package(
     name: "BoostCore",
     products: [
         .library(name: "BoostCore", targets: ["BoostCore"]),
-        .library(name: "BoostCoreTestTools", targets: ["BoostCoreTestTools"])
+        .library(name: "BoostCoreTestTools", targets: ["BoostCoreTestTools"]),
+        .executable(name: "BoostRun", targets: ["BoostRun"])
     ],
     dependencies: [
         .package(url: "https://github.com/vapor/vapor.git", from: "3.0.0"),
