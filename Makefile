@@ -1,5 +1,8 @@
 run:
-	docker-compose up --build
+	docker-compose up
+
+build:
+	docker build -t liveui/boost-core:local-dev .
 
 clean:
 	docker-compose stop -t 2

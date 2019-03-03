@@ -2,7 +2,10 @@ version: '2.4'
 
 services:
     api:
-        build: .
+        image: liveui/boost-base:2.0
+        volumes:
+            - .:/app
+        working_dir: /app
         restart: on-failure
         environment:
             APICORE_SERVER_NAME: BoostCore
@@ -16,6 +19,7 @@ services:
             APICORE_STORAGE_LOCAL_ROOT: /home/BoostCore
         depends_on:
             - postgres
+        command: ["swift", "run", "--hostname", "0.0.0.0", "--port", "8080"]
 
     postgres:
         image: postgres:11-alpine
