@@ -218,6 +218,7 @@ final public class App: DbCoreModel {
         
         public var id: DbIdentifier?
         public var teamId: DbIdentifier?
+        public var clusterId: DbIdentifier
         public var name: String
         public var identifier: String
         public var version: String
@@ -232,6 +233,7 @@ final public class App: DbCoreModel {
         enum CodingKeys: String, CodingKey {
             case id
             case teamId = "team_id"
+            case clusterId = "cluster_id"
             case name
             case identifier
             case version
@@ -245,18 +247,19 @@ final public class App: DbCoreModel {
         }
         
         public init(_ app: App) {
-            self.id = app.id
-            self.teamId = app.teamId
-            self.name = app.name
-            self.identifier = app.identifier
-            self.version = app.version
-            self.build = app.build
-            self.platform = app.platform
-            self.created = app.created
-            self.size = app.size
-            self.info = app.info
-            self.minSdk = app.minSdk
-            self.hasIcon = app.hasIcon
+            id = app.id
+            teamId = app.teamId
+            clusterId = app.clusterId
+            name = app.name
+            identifier = app.identifier
+            version = app.version
+            build = app.build
+            platform = app.platform
+            created = app.created
+            size = app.size
+            info = app.info
+            minSdk = app.minSdk
+            hasIcon = app.hasIcon
         }
         
     }

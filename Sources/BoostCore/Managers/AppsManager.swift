@@ -24,6 +24,35 @@ public class AppsManager {
         return q
     }
     
+    static func apps(clusterId: DbIdentifier? = nil, on req: Request) throws -> Future<Apps> {
+        return try req.me.teams().flatMap(to: Apps.self) { teams in
+            let q = try App.query(on: req).filter(\App.teamId ~~ teams.ids).sort(\App.created, .descending).appFilters(on: req).decode(App.Public.self)
+            if let clusterId = clusterId {
+                q.filter(\App.clusterId == clusterId)
+            }
+            let cluster = try req.query.decode(Cluster.Id.self)
+            if let id = cluster.value {
+                q.filter(\App.clusterId == id)
+            }
+            if let tags = req.query.app.tags, !tags.isEmpty {
+                return Tag.query(on: req).filter(\Tag.teamId ~~ teams.ids).filter(\Tag.identifier ~~ tags.safeTagText()).all().flatMap(to: Apps.self) { tags in
+                    // Account for the searched tags
+                    var futures: [Future<UsedTag>] = []
+                    for tag in tags {
+                        try futures.append(UsedTagsManager.add(statsFor: tag, on: req))
+                    }
+                    return futures.flatten(on: req).flatMap(to: Apps.self) { _ in
+                        // Make the search query
+                        q.join(\AppTag.appId, to: \App.id).filter(\AppTag.tagId ~~ tags.ids)
+                        return q.all()
+                    }
+                }
+            } else {
+                return q.all()
+            }
+        }
+    }
+    
     /// Shared upload method
     static func upload(team: Team, on req: Request) throws -> Future<Response> {
         guard let teamId = team.id else {

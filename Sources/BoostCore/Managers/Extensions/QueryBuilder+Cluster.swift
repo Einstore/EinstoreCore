@@ -19,7 +19,7 @@ extension QueryBuilder where Result == Cluster, Database == ApiCoreDatabase {
         var s: QueryBuilder<ApiCoreDatabase, Result> = try paginate(on: req)
         
         // Basic search
-        if let search = req.query.search {
+        if let search = req.query.search, !search.isEmpty {
             s = s.group(.or) { or in
                 or.filter(\Cluster.latestAppName, "~~*", search)
                 or.filter(\Cluster.identifier, "~~*", search)
