@@ -55,7 +55,8 @@ final public class App: DbCoreModel {
         /// - Throws: whatever comes it's way
         public init(link: String? = nil, app: App, user: User, on req: Request) throws {
             self.user = user
-            self.link = link ?? req.serverURL().absoluteString.finished(with: "/") + "build/\(app.id?.uuidString ?? "error")"
+            let serverUrl = ApiCoreBase.configuration.server.interface ?? req.serverURL().absoluteString
+            self.link = link ?? serverUrl.finished(with: "/") + "build/\(app.id?.uuidString ?? "error")"
             system = try FrontendSystemData(req)
             self.app = app
         }
