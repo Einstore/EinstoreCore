@@ -214,7 +214,9 @@ public class AppsManager {
             }
             
             let fm = try req.makeFileCore()
-            let deleteFuture = try fm.delete(file: path, on: req)
+            let deleteFuture = try fm.delete(file: path, on: req).catchMap({ err -> () in
+                return Void()
+            })
             futures.append(deleteFuture)
             return futures.flatten(on: req)
         }
