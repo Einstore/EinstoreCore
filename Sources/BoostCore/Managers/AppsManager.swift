@@ -163,7 +163,9 @@ public class AppsManager {
                     try futures.append(contentsOf: self.delete(app: $0, on: req))
                 })
                 
-                return try futures.flatten(on: req).asResponse(to: req)
+                return futures.flatten(on: req).flatMap(to: Response.self) { _ in
+                    return try cluster.delete(on: req).asResponse(to: req)
+                }
             }
         }
     }
