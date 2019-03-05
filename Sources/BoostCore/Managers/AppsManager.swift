@@ -26,7 +26,7 @@ public class AppsManager {
     
     static func apps(clusterId: DbIdentifier? = nil, on req: Request) throws -> Future<Apps> {
         return try req.me.teams().flatMap(to: Apps.self) { teams in
-            let q = try App.query(on: req).filter(\App.teamId ~~ teams.ids).sort(\App.created, .descending).appFilters(on: req).decode(App.Public.self)
+            let q = try App.query(on: req).filter(\App.teamId ~~ teams.ids).sort(\App.created, .descending).paginate(on: req).appFilters(on: req).decode(App.Public.self)
             if let clusterId = clusterId {
                 q.filter(\App.clusterId == clusterId)
             }
