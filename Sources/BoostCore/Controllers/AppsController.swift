@@ -229,18 +229,8 @@ class AppsController: Controller {
             }
         }
         
-        // Delete all apps for platform and identifier
-        secure.delete("cluster") { (req) -> Future<Response> in
-            guard let identifier = try? req.query.decode(Cluster.Id.self) else {
-                throw ErrorsCore.HTTPError.missingRequestData
-            }
-            return Cluster.query(on: req).filter(\Cluster.id == identifier.value).first().flatMap(to: Response.self) { cluster in
-                return try AppsManager.delete(cluster: cluster, on: req)
-            }
-        }
-        
         // Delete whole cluster of apps
-        secure.delete("cluster", DbIdentifier.parameter) { (req) -> Future<Response> in
+        secure.delete("clusters", DbIdentifier.parameter) { (req) -> Future<Response> in
             let clusterId = try req.parameters.next(DbIdentifier.self)
             return Cluster.query(on: req).filter(\Cluster.id == clusterId).first().flatMap(to: Response.self) { cluster in
                 return try AppsManager.delete(cluster: cluster, on: req)
