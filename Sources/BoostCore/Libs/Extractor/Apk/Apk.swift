@@ -84,7 +84,6 @@ class Apk: BaseExtractor, Extractor {
                 }
             }
         }
-        
         return apkInfo
     }
     
@@ -94,7 +93,12 @@ class Apk: BaseExtractor, Extractor {
             return nil
         }
         
-        let output = run(ThirdpartyUtilities.aaptUrl.path.replacingOccurrences(of: "file://", with: ""),
+        #if os(macOS)
+        let aapt = ThirdpartyUtilities.aaptUrl.path.replacingOccurrences(of: "file://", with: "")
+        #elseif os(Linux)
+        let aapt = "/usr/bin/aapt"
+        #endif
+        let output = run(aapt,
                          "dump",
                          "--values",
                          "resources",
@@ -133,6 +137,13 @@ class Apk: BaseExtractor, Extractor {
         guard let iconPath = path else {
             return
         }
+        
+        #if os(macOS)
+        let unzip = "unzip"
+        #elseif os(Linux)
+        let unzip = "/usr/bin/unzip"
+        #endif
+        try runAndPrint(unzip, "-o", self.file.path, iconPath, "-d", self.archive.path)
         var pathUrl: URL = extractedApkFolder
         pathUrl.appendPathComponent(iconPath)
         if FileManager.default.fileExists(atPath: pathUrl.path) {
@@ -148,12 +159,6 @@ class Apk: BaseExtractor, Extractor {
         let promise = request.eventLoop.newPromise(App.self)
         DispatchQueue.global().async {
             do {
-                #if os(macOS)
-                let unzip = "unzip"
-                #elseif os(Linux)
-                let unzip = "/usr/bin/unzip"
-                #endif
-                run(unzip, "-o", self.file.path, "-d", self.archive.path)
                 var apk = self.fetchApkInfo()
                 self.appName = apk.applicationLabel
                 self.appIdentifier = apk.packageName
