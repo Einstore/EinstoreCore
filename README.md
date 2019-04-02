@@ -1,4 +1,4 @@
-[![CircleCI](https://circleci.com/gh/LiveUI/BoostCore/tree/master.svg?style=svg)](https://circleci.com/gh/LiveUI/BoostCore/tree/master)
+[![CircleCI](https://circleci.com/gh/Einstore/EinstoreCore/tree/master.svg?style=svg)](https://circleci.com/gh/Einstore/EinstoreCore/tree/master)
 
-# BoostCore
-Core functionality for Boost, mobile Enterprise AppStore
+# EinstoreCore
+Core functionality for Einstore, mobile Enterprise AppStore

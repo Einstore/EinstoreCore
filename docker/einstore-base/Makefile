@@ -1,5 +1,5 @@
-REPO = liveui
-IMAGE = boost-base
+REPO = einstore
+IMAGE = einstore-base
 TAG = 2.0
 
 all: build publish

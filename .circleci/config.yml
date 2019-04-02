@@ -4,7 +4,7 @@ jobs:
   test:
     working_directory: /src
     docker:
-      - image: liveui/boost-base:2.0
+      - image: einstore/einstore-base:2.0
       - image: postgres:11-alpine
         name: postgres
         environment:
@@ -49,17 +49,17 @@ jobs:
             echo "export BRANCH_SLUG=\"$(echo ${CIRCLE_BRANCH} | sed -r s/[~\^]+//g | sed -r s/[^a-zA-Z0-9]+/-/g | sed -r s/^-+\|-+$//g | tr A-Z a-z)\"" >> $BASH_ENV
       - run:
           command: |
-            docker build -t liveui/boost-core:${CIRCLE_SHA1} .
+            docker build -t einstore/einstore-core:${CIRCLE_SHA1} .
       - run:
           name: docker login
           command: docker login -u $DOCKER_USER -p $DOCKER_PASS
       - run:
           command: |
             source $BASH_ENV
-            docker tag liveui/boost-core:${CIRCLE_SHA1} liveui/boost-core:${BRANCH_SLUG}
-            docker tag liveui/boost-core:${CIRCLE_SHA1} liveui/boost-core:${BRANCH_SLUG}_${CIRCLE_SHA1}
-            docker push liveui/boost-core:${BRANCH_SLUG}
-            docker push liveui/boost-core:${BRANCH_SLUG}_${CIRCLE_SHA1}
+            docker tag einstore/einstore-core:${CIRCLE_SHA1} einstore/einstore-core:${BRANCH_SLUG}
+            docker tag einstore/einstore-core:${CIRCLE_SHA1} einstore/einstore-core:${BRANCH_SLUG}_${CIRCLE_SHA1}
+            docker push einstore/einstore-core:${BRANCH_SLUG}
+            docker push einstore/einstore-core:${BRANCH_SLUG}_${CIRCLE_SHA1}
 
 
   build-tag:
@@ -71,12 +71,12 @@ jobs:
           docker_layer_caching: true
       - checkout
       - run:
-          command: docker build -t liveui/boost-core:${CIRCLE_TAG} .
+          command: docker build -t einstore/einstore-core:${CIRCLE_TAG} .
       - run:
           name: docker login
           command: docker login -u $DOCKER_USER -p $DOCKER_PASS
       - run:
-          command: docker push liveui/boost-core:${CIRCLE_TAG}
+          command: docker push einstore/einstore-core:${CIRCLE_TAG}
 
 
 workflows:
