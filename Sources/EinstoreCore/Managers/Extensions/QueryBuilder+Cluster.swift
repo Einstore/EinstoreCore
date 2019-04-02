@@ -1,6 +1,6 @@
 //
 //  QueryBuilder+Cluster.swift
-//  BoostCore
+//  EinstoreCore
 //
 //  Created by Ondrej Rafaj on 08/12/2018.
 //

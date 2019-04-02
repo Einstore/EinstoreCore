@@ -1,6 +1,6 @@
 //
 //  TagsManager.swift
-//  BoostCore
+//  EinstoreCore
 //
 //  Created by Ondrej Rafaj on 3/10/2018.
 //

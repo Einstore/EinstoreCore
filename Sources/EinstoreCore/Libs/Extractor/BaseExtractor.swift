@@ -1,6 +1,6 @@
 //
 //  Decoder.swift
-//  BoostCore
+//  EinstoreCore
 //
 //  Created by Ondrej Rafaj on 15/01/2018.
 //
@@ -38,7 +38,7 @@ class BaseExtractor {
             .appendingPathComponent(App.localTempAppFolder(on: req).relativePath)
         
         // TODO: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Following needs to be refactored so the structure 100% exists before we do anything else !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        self.createFolderStructure = try BoostCoreBase.tempFileHandler.createFolderStructure(url: self.archive, on: req)
+        self.createFolderStructure = try EinstoreCoreBase.tempFileHandler.createFolderStructure(url: self.archive, on: req)
     }
     
     static func decoder(file: String, platform: App.Platform, on req: Request) throws -> Extractor {

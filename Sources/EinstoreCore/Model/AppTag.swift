@@ -1,6 +1,6 @@
 //
 //  AppTag.swift
-//  BoostCore
+//  EinstoreCore
 //
 //  Created by Ondrej Rafaj on 13/02/2018.
 //

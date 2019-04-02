@@ -7,7 +7,7 @@ do {
     var env = try Environment.detect()
     var services = Services.default()
     
-    try BoostApp.configure(&config, &env, &services)
+    try EinstoreApp.configure(&config, &env, &services)
     
     let app = try Application(
         config: config,

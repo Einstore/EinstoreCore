@@ -171,7 +171,7 @@ extension Extractor {
     
     /// Clean temp files
     func cleanUp() throws {
-        _ = try BoostCoreBase.tempFileHandler.delete(url: archive, on: request)
+        _ = try EinstoreCoreBase.tempFileHandler.delete(url: archive, on: request)
     }
     
 }

@@ -6,11 +6,11 @@ import MailCore
 
 
 public func configure(_ config: inout Vapor.Config, _ env: inout Vapor.Environment, _ services: inout Vapor.Services) throws {
-    print("Starting Boost")
+    print("Starting Einstore")
     Env.print()
     
-    // Configure BoostCore
-    try BoostCoreBase.configure(&config, &env, &services)
+    // Configure EinstoreCore
+    try EinstoreCoreBase.configure(&config, &env, &services)
     
     // Register routes
     let router = EngineRouter.default()

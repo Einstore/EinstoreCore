@@ -1,6 +1,6 @@
 //
 //  Download.swift
-//  BoostCore
+//  EinstoreCore
 //
 //  Created by Ondrej Rafaj on 21/11/2018.
 //

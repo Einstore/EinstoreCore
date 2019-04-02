@@ -1,6 +1,6 @@
 //
 //  AppTestCaseSetup.swift
-//  BoostCoreTestTools
+//  EinstoreCoreTestTools
 //
 //  Created by Ondrej Rafaj on 05/03/2018.
 //
@@ -44,7 +44,7 @@ extension AppTestCaseSetup {
         app1.testable.addTag(name: "tag for app 1", team: team1, identifier: "tag-for-app-1", on: app)
         
 //        fatalError("Fix with FileCore")
-//        _ = try! BoostCoreBase.storageFileHandler.createFolderStructure(url: app1.targetFolderPath!, on: app.testable.fakeRequest()).wait()
+//        _ = try! EinstoreCoreBase.storageFileHandler.createFolderStructure(url: app1.targetFolderPath!, on: app.testable.fakeRequest()).wait()
         
         app2 = App.testable.create(team: team2, name: "App 2", identifier: "app2", version: "3.2.1", build: "654321", platform: .android, on: app)
         app2.testable.addTag(name: "common tag", team: team1, identifier: "common-tag", on: app)

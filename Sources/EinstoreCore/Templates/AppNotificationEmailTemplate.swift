@@ -1,6 +1,6 @@
 //
 //  AppNotificationEmailTemplate.swift
-//  BoostCore
+//  EinstoreCore
 //
 //  Created by Ondrej Rafaj on 02/03/2019.
 //
@@ -18,7 +18,7 @@ public class AppNotificationEmailTemplate: EmailTemplate {
         
         To download #(app.name), version #(app.version)(#(app.build)) for #(app.platform) click here #(link)
         
-        Boost team
+        Einstore team
         """
     
     public static var html: String? = """
@@ -28,7 +28,7 @@ public class AppNotificationEmailTemplate: EmailTemplate {
         <p>&nbsp;</p>
         <p>Full link is: <strong>#(link)</strong></p>
         <p>&nbsp;</p>
-        <p>Boost team</p>
+        <p>Einstore team</p>
         """
     
 }

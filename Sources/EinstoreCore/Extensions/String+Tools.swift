@@ -1,6 +1,6 @@
 //
 //  String+Tools.swift
-//  BoostCore
+//  EinstoreCore
 //
 //  Created by Ondrej Rafaj on 31/10/2018.
 //

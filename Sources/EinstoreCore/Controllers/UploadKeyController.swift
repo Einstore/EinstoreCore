@@ -1,6 +1,6 @@
 //
 //  UploadKey.swift
-//  BoostCore
+//  EinstoreCore
 //
 //  Created by Ondrej Rafaj on 17/01/2018.
 //

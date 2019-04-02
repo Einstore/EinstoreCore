@@ -1,6 +1,6 @@
 //
-//  BoostCoreBase.swift
-//  BoostCore
+//  EinstoreCoreBase.swift
+//  EinstoreCore
 //
 //  Created by Ondrej Rafaj on 12/12/2017.
 //
@@ -15,12 +15,12 @@ import SettingsCore
 import MailCore
 
 
-/// Base class for BoostCore
-public class BoostCoreBase {
+/// Base class for EinstoreCore
+public class EinstoreCoreBase {
     
     /// Registered controllers
     static var controllers: [Controller.Type] = [
-        BoostController.self,
+        EinstoreController.self,
         TagsController.self,
         AppsController.self,
         UploadKeyController.self,
@@ -46,21 +46,21 @@ public class BoostCoreBase {
     }
     
     /// Configuration cache
-    static var _configuration: BoostCore.Configuration?
+    static var _configuration: EinstoreCore.Configuration?
     
     /// Main system configuration
-    public static var configuration: BoostCore.Configuration {
+    public static var configuration: EinstoreCore.Configuration {
         get {
             if _configuration == nil {
                 // TODO: Fix following!!!!!!!!!!!!!!!!!!
 //                do {
 //                    guard let path = Environment.get("CONFIG_PATH") else {
-//                        let conf = try BoostCore.Configuration.load(fromFile: "config.default.json")
+//                        let conf = try EinstoreCore.Configuration.load(fromFile: "config.default.json")
 //                        conf.loadEnv()
 //                        _configuration = conf
 //                        return conf
 //                    }
-//                    let conf = try BoostCore.Configuration.load(fromFile: path)
+//                    let conf = try EinstoreCore.Configuration.load(fromFile: path)
 //                    // Override any properties with ENV
 //                    conf.loadEnv()
 //                    _configuration = conf
@@ -71,7 +71,7 @@ public class BoostCoreBase {
 //                        fatalError("Invalid configuration file: \(error.reason)")
 //                    } else {
                         // Create default configuration
-                        _configuration = BoostCore.Configuration(
+                        _configuration = EinstoreCore.Configuration(
                             storage: Configuration.Storage(
                                 rootTempPath: "tmp",
                                 appDestinationPath: "apps"
@@ -92,7 +92,7 @@ public class BoostCoreBase {
     
     /// Main Vapor configuration method
     public static func configure(_ config: inout Vapor.Config, _ env: inout Vapor.Environment, _ services: inout Services) throws {        
-        // Add BoostCore models to the migrations
+        // Add EinstoreCore models to the migrations
         ApiCoreBase.add(model: Cluster.self, database: .db)
         ApiCoreBase.add(model: App.self, database: .db)
         ApiCoreBase.add(model: DownloadKey.self, database: .db)
@@ -114,11 +114,11 @@ public class BoostCoreBase {
         // Setup SettingsCore
         try SettingsCoreBase.configure(&config, &env, &services)
         
+        // Custom migrations
+        ApiCoreBase.migrationConfig.add(migration: BaseMigration.self, database: .db)
+        
         // Setup ApiCore
         try ApiCoreBase.configure(&config, &env, &services)
-        ApiCoreBase.installFutures.append({ req in
-            return try Install.make(on: req)
-        })
         
         // Verify all has been setup properly
         

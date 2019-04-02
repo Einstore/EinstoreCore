@@ -1,6 +1,6 @@
 //
 //  AppsControllerTests.swift
-//  BoostCoreTests
+//  EinstoreCoreTests
 //
 //  Created by Ondrej Rafaj on 05/03/2018.
 //

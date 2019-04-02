@@ -1,6 +1,6 @@
 //
 //  UploadKeyTests.swift
-//  BoostCoreTests
+//  EinstoreCoreTests
 //
 //  Created by Ondrej Rafaj on 04/03/2018.
 //

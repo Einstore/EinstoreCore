@@ -63,7 +63,7 @@ public class AppsManager {
             // TODO: Think of a better way of identifying the iOS/Android apps
             let url = URL(fileURLWithPath: ApiCoreBase.configuration.storage.local.root)
                 .appendingPathComponent(App.localTempAppFolder(on: req).relativePath)
-            return try BoostCoreBase.tempFileHandler.createFolderStructure(url: url, on: req).flatMap(to: Response.self) { _ in
+            return try EinstoreCoreBase.tempFileHandler.createFolderStructure(url: url, on: req).flatMap(to: Response.self) { _ in
                 let tempFilePath = URL(fileURLWithPath: ApiCoreBase.configuration.storage.local.root)
                     .appendingPathComponent(App.localTempAppFile(on: req).relativePath)
                 try data.write(to: tempFilePath)

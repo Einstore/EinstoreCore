@@ -1,6 +1,6 @@
 //
 //  Configuration.swift
-//  BoostCore
+//  EinstoreCore
 //
 //  Created by Ondrej Rafaj on 22/05/2018.
 //
@@ -9,11 +9,11 @@ import Foundation
 import ApiCore
 
 
-/// Boost configuration
+/// Einstore configuration
 /// For base config look at ApiCore.Configuration
 public class Configuration: Configurable {
     
-    /// Boost filesystem settings
+    /// Einstore filesystem settings
     public class Storage: Codable {
         
         /// Root temp folder path (default /tmp/Boost)
@@ -48,7 +48,7 @@ public class Configuration: Configurable {
 }
 
 
-extension BoostCore.Configuration {
+extension EinstoreCore.Configuration {
     
     /// Update from environmental variables
     public func loadEnv() {

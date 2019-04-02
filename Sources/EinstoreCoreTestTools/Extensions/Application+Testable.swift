@@ -1,6 +1,6 @@
 //
 //  Application+Testable.swift
-//  BoostCoreTestTools
+//  EinstoreCoreTestTools
 //
 //  Created by Ondrej Rafaj on 27/02/2018.
 //
@@ -18,7 +18,7 @@ extension TestableProperty where TestableType: Application {
     public static func newBoostTestApp() -> Application {
         let app = newApiCoreTestApp({ (config, env, services) in
             Env.print()
-            try! BoostCoreBase.configure(&config, &env, &services)
+            try! EinstoreCoreBase.configure(&config, &env, &services)
         }) { (router) in
             
         }

@@ -1,6 +1,6 @@
 //
 //  UsedTag.swift
-//  BoostCore
+//  EinstoreCore
 //
 //  Created by Ondrej Rafaj on 18/02/2019.
 //

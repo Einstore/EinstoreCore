@@ -1,6 +1,6 @@
 //
 //  Config.swift
-//  BoostCore
+//  EinstoreCore
 //
 //  Created by Ondrej Rafaj on 11/04/2018.
 //

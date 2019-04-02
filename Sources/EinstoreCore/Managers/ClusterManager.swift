@@ -1,6 +1,6 @@
 //
 //  ClusterManager.swift
-//  BoostCore
+//  EinstoreCore
 //
 //  Created by Ondrej Rafaj on 28/12/2018.
 //

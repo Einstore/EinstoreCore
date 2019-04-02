@@ -1,6 +1,6 @@
 //
 //  UploadKeyTestCaseSetup.swift
-//  BoostCoreTestTools
+//  EinstoreCoreTestTools
 //
 //  Created by Ondrej Rafaj on 05/03/2018.
 //

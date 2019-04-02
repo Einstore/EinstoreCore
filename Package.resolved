@@ -6,7 +6,7 @@
         "repositoryURL": "https://github.com/LiveUI/ApiCore.git",
         "state": {
           "branch": "master",
-          "revision": "a13b8817eea20582ca3595e7da3cc969f503244b",
+          "revision": "0a2d474f7380697902de85d1698ba8261f500f15",
           "version": null
         }
       },
@@ -141,8 +141,8 @@
         "repositoryURL": "https://github.com/vapor-community/Imperial.git",
         "state": {
           "branch": null,
-          "revision": "25ec325a75021ae763fe7357aa47b80efd45b4c9",
-          "version": "0.11.2"
+          "revision": "edf50aa3a62465b77cd5c5380ebc32e060bda4b1",
+          "version": "0.11.3"
         }
       },
       {

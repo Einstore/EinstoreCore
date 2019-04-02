@@ -1,6 +1,6 @@
 //
 //  App+Filename.swift
-//  BoostCore
+//  EinstoreCore
 //
 //  Created by Ondrej Rafaj on 21/02/2018.
 //
@@ -29,7 +29,7 @@ extension App {
             return nil
         }
         // TODO: This would probably deserve a little refactor!
-        let path = URL(fileURLWithPath: BoostCoreBase.configuration.storage.appDestinationPath)
+        let path = URL(fileURLWithPath: EinstoreCoreBase.configuration.storage.appDestinationPath)
             .appendingPathComponent(created.dateFolderPath)
             .appendingPathComponent(id.uuidString)
         return path
@@ -49,7 +49,7 @@ extension App {
     
     /// Temporary app folder
     public static func localTempAppFolder(on req: Request) -> URL {
-        let path = URL(fileURLWithPath: BoostCoreBase.configuration.storage.rootTempPath)
+        let path = URL(fileURLWithPath: EinstoreCoreBase.configuration.storage.rootTempPath)
             .appendingPathComponent(req.sessionId.uuidString)
         return path
     }

@@ -1,6 +1,6 @@
 //
 //  Dictionary+Plist.swift
-//  BoostCore
+//  EinstoreCore
 //
 //  Created by Ondrej Rafaj on 15/01/2018.
 //

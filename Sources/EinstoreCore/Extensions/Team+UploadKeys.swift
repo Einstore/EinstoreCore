@@ -1,6 +1,6 @@
 //
 //  Team+UploadKeys.swift
-//  BoostCore
+//  EinstoreCore
 //
 //  Created by Ondrej Rafaj on 05/03/2018.
 //

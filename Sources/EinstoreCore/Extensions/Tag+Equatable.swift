@@ -1,6 +1,6 @@
 //
 //  Tag+Equatable.swift
-//  BoostCore
+//  EinstoreCore
 //
 //  Created by Ondrej Rafaj on 06/03/2018.
 //

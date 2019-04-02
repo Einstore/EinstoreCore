@@ -1,6 +1,6 @@
 //
 //  BoostController.swift
-//  BoostCore
+//  EinstoreCore
 //
 //  Created by Ondrej Rafaj on 01/04/2018.
 //
@@ -12,7 +12,7 @@ import ApiCore
 import ImageCore
 
 
-public class BoostController: Controller {
+public class EinstoreController: Controller {
     
     /// BoostController error
     enum Error: FrontendError {
