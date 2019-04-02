@@ -10,9 +10,9 @@ import Vapor
 import VaporTestTools
 import FluentTestTools
 import ApiCoreTestTools
-import BoostCoreTestTools
+import EinstoreCoreTestTools
 @testable import ApiCore
-@testable import BoostCore
+@testable import EinstoreCore
 
 
 class UploadKeysControllerTests: XCTestCase, UploadKeyTestCaseSetup, LinuxTests {

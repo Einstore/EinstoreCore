@@ -9,7 +9,7 @@ import Foundation
 import ApiCore
 import Vapor
 import Fluent
-@testable import BoostCore
+@testable import EinstoreCore
 import VaporTestTools
 
 

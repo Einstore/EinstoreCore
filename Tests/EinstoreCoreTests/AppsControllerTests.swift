@@ -12,10 +12,10 @@ import XCTest
 import VaporTestTools
 import FluentTestTools
 import ApiCoreTestTools
-import BoostCoreTestTools
+import EinstoreCoreTestTools
 import ErrorsCore
 @testable import ApiCore
-@testable import BoostCore
+@testable import EinstoreCore
 import PostgreSQL
 import FluentPostgreSQL
 

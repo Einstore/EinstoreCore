@@ -13,7 +13,7 @@ import VaporTestTools
 import FluentTestTools
 import ApiCoreTestTools
 @testable import ApiCore
-@testable import BoostCore
+@testable import EinstoreCore
 
 
 public protocol UploadKeyTestCaseSetup: TeamsTestCase {

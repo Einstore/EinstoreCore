@@ -1,4 +1,4 @@
-import BoostApp
+import EinstoreApp
 import Service
 import Vapor
 

@@ -7,7 +7,7 @@
 
 import Foundation
 import VaporTestTools
-import BoostCore
+import EinstoreCore
 
 
 extension UploadKey: Testable { }

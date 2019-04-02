@@ -2,11 +2,11 @@
 import PackageDescription
 
 let package = Package(
-    name: "BoostCore",
+    name: "EinstoreCore",
     products: [
-        .library(name: "BoostCore", targets: ["BoostCore"]),
-        .library(name: "BoostCoreTestTools", targets: ["BoostCoreTestTools"]),
-        .executable(name: "BoostRun", targets: ["BoostRun"])
+        .library(name: "EinstoreCore", targets: ["EinstoreCore"]),
+        .library(name: "EinstoreCoreTestTools", targets: ["EinstoreCoreTestTools"]),
+        .executable(name: "EinstoreRun", targets: ["EinstoreRun"])
     ],
     dependencies: [
         .package(url: "https://github.com/vapor/vapor.git", from: "3.0.0"),
@@ -32,20 +32,20 @@ let package = Package(
             ]
         ),
         .target(
-            name: "BoostApp",
+            name: "EinstoreApp",
             dependencies: [
                 "Vapor",
-                "BoostCore"
+                "EinstoreCore"
             ]
         ),
         .target(
-            name: "BoostRun",
+            name: "EinstoreRun",
             dependencies: [
-                "BoostApp"
+                "EinstoreApp"
             ]
         ),
         .target(
-            name: "BoostCore",
+            name: "EinstoreCore",
             dependencies: [
                 "Vapor",
                 "Fluent",
@@ -61,24 +61,24 @@ let package = Package(
             ]
         ),
         .target(
-            name: "BoostCoreTestTools",
+            name: "EinstoreCoreTestTools",
             dependencies: [
                 "Vapor",
                 "ApiCore",
-                "BoostCore",
+                "EinstoreCore",
                 "VaporTestTools",
                 "ApiCoreTestTools",
                 "MailCoreTestTools"
             ]
         ),
         .testTarget(
-            name: "BoostCoreTests",
+            name: "EinstoreCoreTests",
             dependencies: [
-                "BoostCore",
+                "EinstoreCore",
                 "VaporTestTools",
                 "FluentTestTools",
                 "ApiCoreTestTools",
-                "BoostCoreTestTools"
+                "EinstoreCoreTestTools"
             ]
         )
     ]

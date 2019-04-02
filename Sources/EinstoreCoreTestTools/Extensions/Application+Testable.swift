@@ -7,7 +7,7 @@
 
 import Foundation
 @_exported @testable import ApiCore
-@_exported @testable import BoostCore
+@_exported @testable import EinstoreCore
 import Vapor
 import VaporTestTools
 import ApiCoreTestTools

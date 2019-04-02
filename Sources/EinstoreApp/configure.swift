@@ -1,6 +1,6 @@
 import Foundation
 import Vapor
-import BoostCore
+import EinstoreCore
 import ApiCore
 import MailCore
 
