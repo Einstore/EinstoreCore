@@ -2,7 +2,7 @@ version: '2.4'
 
 services:
     api:
-        image: liveui/boost-base:2.0
+        image: einstore/einstore-base:2.0
         volumes:
             - .:/app
         working_dir: /app

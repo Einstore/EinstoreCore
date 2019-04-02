@@ -4,7 +4,7 @@ jobs:
   test:
     working_directory: /src
     docker:
-      - image: liveui/boost-base:2.0
+      - image: einstore/einstore-base:2.0
       - image: postgres:11-alpine
         name: postgres
         environment:

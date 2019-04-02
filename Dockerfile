@@ -1,4 +1,4 @@
-FROM liveui/boost-base:2.0 as builder
+FROM einstore/einstore-base:2.0 as builder
 
 WORKDIR /app
 COPY . /app
@@ -7,7 +7,7 @@ RUN swift build --configuration release --product BoostRun
 
 # ------------------------------------------------------------------------------
 
-FROM liveui/boost-base:2.0
+FROM einstore/einstore-base:2.0
 
 WORKDIR /app
 COPY --from=builder /app/.build/release/BoostRun /app
