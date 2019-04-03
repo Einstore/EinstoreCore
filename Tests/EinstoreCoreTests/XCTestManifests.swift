@@ -9,6 +9,7 @@ extension AppsControllerTests {
         ("testBadTokenUpload", testBadTokenUpload),
         ("testCantDeleteOtherPeoplesApp", testCantDeleteOtherPeoplesApp),
         ("testDeleteApp", testDeleteApp),
+        ("testDeleteCluster", testDeleteCluster),
         ("testDownloadAndroidApp", testDownloadAndroidApp),
         ("testDownloadIosApp", testDownloadIosApp),
         ("testGetApp", testGetApp),
