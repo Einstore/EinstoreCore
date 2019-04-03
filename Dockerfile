@@ -3,14 +3,14 @@ FROM einstore/einstore-base:2.0 as builder
 WORKDIR /app
 COPY . /app
 
-RUN swift build --configuration release --product BoostRun
+RUN swift build --configuration release --product EinstoreRun
 
 # ------------------------------------------------------------------------------
 
 FROM einstore/einstore-base:2.0
 
 WORKDIR /app
-COPY --from=builder /app/.build/release/BoostRun /app
+COPY --from=builder /app/.build/release/EinstoreRun /app
 
-ENTRYPOINT ["/app/BoostRun"]
+ENTRYPOINT ["/app/EinstoreRun"]
 CMD ["serve", "--hostname", "0.0.0.0", "--port", "8080"]
