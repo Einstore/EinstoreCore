@@ -23,17 +23,8 @@ jobs:
       APICORE_STORAGE_LOCAL_ROOT: /home/BoostCore
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - build-v1-{{ checksum "Package.swift" }}-{{ checksum "Package.resolved" }}
-            - build-v1-{{ checksum "Package.swift" }}-
-            - build-v1-
       - run:
-          command: swift test || exit 0 # TODO remove exit 0
-      - save_cache:
-          key: build-v1-{{ checksum "Package.swift" }}-{{ checksum "Package.resolved" }}
-          paths:
-            - ".build"
+          command: swift test
 
 
   build-branch:
