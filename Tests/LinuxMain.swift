@@ -1,8 +1,8 @@
 import XCTest
 
-import BoostCoreTests
+import EinstoreCoreTests
 
 var tests = [XCTestCaseEntry]()
-tests += BoostCoreTests.__allTests()
+tests += EinstoreCoreTests.__allTests()
 
 XCTMain(tests)
