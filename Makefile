@@ -4,6 +4,9 @@ run:
 build:
 	docker build -t einstore/einstore-core:local-dev .
 
+build-debug:
+	docker build --build-arg CONFIGURATION="debug" -t einstore/einstore-core:local-dev-debug .
+
 clean:
 	docker-compose stop -t 2
 	docker-compose down --volumes
