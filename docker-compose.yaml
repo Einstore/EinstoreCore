@@ -8,18 +8,24 @@ services:
         working_dir: /app
         restart: on-failure
         environment:
-            APICORE_SERVER_NAME: BoostCore
+            APICORE_STORAGE_LOCAL_ROOT: /home/einstore
+
+            APICORE_SERVER_NAME: "EinstoreCore dev"
+            APICORE_SERVER_PATH_PREFIX: ~
+            APICORE_SERVER_MAX_UPLOAD_FILESIZE: 50
+
             APICORE_DATABASE_HOST: postgres
-            APICORE_DATABASE_USER: boost
-            APICORE_DATABASE_PASSWORD: boost
-            APICORE_DATABASE_DATABASE: boost
+            APICORE_DATABASE_USER: einstore
+            APICORE_DATABASE_PASSWORD: einstore
+            APICORE_DATABASE_DATABASE: einstore
             APICORE_DATABASE_PORT: 5432
+            APICORE_DATABASE_LOGGING: 'false'
+
+            APICORE_STORAGE_S3_ENABLED: 'false'
+
             APICORE_JWT_SECRET: secret
-            APICORE_STORAGE_S3_ENABLED: 0
-            APICORE_STORAGE_LOCAL_ROOT: /home/BoostCore
-        depends_on:
-            - postgres
-        command: ["swift", "run", "--hostname", "0.0.0.0", "--port", "8080"]
+
+        command: ["swift", "run", "EinstoreRun", "serve", "--hostname", "0.0.0.0", "--port", "8080"]
 
     postgres:
         image: postgres:11-alpine
@@ -28,6 +34,11 @@ services:
             POSTGRES_USER: boost
             POSTGRES_PASSWORD: boost
             POSTGRES_DB: boost
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 5s
+            timeout: 5s
+            retries: 5
 
     adminer:
         image: michalhosna/adminer:master

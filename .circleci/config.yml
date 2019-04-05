@@ -27,7 +27,43 @@ jobs:
           command: swift test
 
 
-  build-branch:
+  build:
+    working_directory: /src
+    docker:
+      - image: docker:stable
+    steps:
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - checkout
+      - restore_cache:
+          keys:
+            - docker-build-v1
+          paths:
+            - /caches/app.tar
+      - run:
+          name: Load Docker image layer cache
+          command: |
+            set +o pipefail
+            docker load -i /caches/.tar | true
+      - run:
+          command: |
+            docker build --cache-from=einstore/einstore-core -t einstore/einstore-core:${CIRCLE_SHA1} .
+      - run:
+          command: docker login -u $DOCKER_USER -p $DOCKER_PASS
+      - run:
+          command: docker push einstore/einstore-core:${CIRCLE_SHA1}
+      - run:
+          name: Save Docker image layer cache
+          command: |
+            mkdir -p /caches
+            docker save -o /caches/app.tar einstore/einstore-core
+      - save_cache:
+          key: docker-build-v1
+          paths:
+            - /caches/app.tar
+
+
+  tag:
     working_directory: /src
     docker:
       - image: docker:stable
@@ -36,24 +72,51 @@ jobs:
           docker_layer_caching: true
       - checkout
       - run:
-          command: |
-            echo "export BRANCH_SLUG=\"$(echo ${CIRCLE_BRANCH} | sed -r s/[~\^]+//g | sed -r s/[^a-zA-Z0-9]+/-/g | sed -r s/^-+\|-+$//g | tr A-Z a-z)\"" >> $BASH_ENV
+          command: docker pull einstore/einstore-core:${CIRCLE_SHA1}
       - run:
-          command: |
-            docker build -t einstore/einstore-core:${CIRCLE_SHA1} .
-      - run:
-          name: docker login
           command: docker login -u $DOCKER_USER -p $DOCKER_PASS
       - run:
+          name: docker tag and push
+          command: /src/.circleci/tag-and-push.sh ${CIRCLE_SHA1}
+
+
+  build-debug:
+    working_directory: /src
+    docker:
+      - image: docker:stable
+    steps:
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - checkout
+      - restore_cache:
+          keys:
+            - docker-build-debug-v1
+          paths:
+            - /caches/app.tar
+      - run:
+          name: Load Docker image layer cache
           command: |
-            source $BASH_ENV
-            docker tag einstore/einstore-core:${CIRCLE_SHA1} einstore/einstore-core:${BRANCH_SLUG}
-            docker tag einstore/einstore-core:${CIRCLE_SHA1} einstore/einstore-core:${BRANCH_SLUG}_${CIRCLE_SHA1}
-            docker push einstore/einstore-core:${BRANCH_SLUG}
-            docker push einstore/einstore-core:${BRANCH_SLUG}_${CIRCLE_SHA1}
+            set +o pipefail
+            docker load -i /caches/.tar | true
+      - run:
+          command: |
+            docker build --build-arg CONFIGURATION="debug" --cache-from=einstore/einstore-core -t einstore/einstore-core:${CIRCLE_SHA1}.debug .
+      - run:
+          command: docker login -u $DOCKER_USER -p $DOCKER_PASS
+      - run:
+          command: docker push einstore/einstore-core:${CIRCLE_SHA1}.debug
+      - run:
+          name: Save Docker image layer cache
+          command: |
+            mkdir -p /caches
+            docker save -o /caches/app.tar einstore/einstore-core
+      - save_cache:
+          key: docker-build-debug-v1
+          paths:
+            - /caches/app.tar
 
 
-  build-tag:
+  tag-debug:
     working_directory: /src
     docker:
       - image: docker:stable
@@ -62,12 +125,13 @@ jobs:
           docker_layer_caching: true
       - checkout
       - run:
-          command: docker build -t einstore/einstore-core:${CIRCLE_TAG} .
+          command: docker pull einstore/einstore-core:${CIRCLE_SHA1}.debug
       - run:
-          name: docker login
           command: docker login -u $DOCKER_USER -p $DOCKER_PASS
       - run:
-          command: docker push einstore/einstore-core:${CIRCLE_TAG}
+          name: docker tag and push
+          command: /src/.circleci/tag-and-push.sh ${CIRCLE_SHA1}.debug .debug
+
 
 
 workflows:
@@ -75,17 +139,22 @@ workflows:
   test-build-publish:
     jobs:
       - test
-
-      - build-branch:
-          requires:
-            - test
-
-      - build-tag:
-          requires:
-            - test
+      - build:
           filters:
             tags:
               only: /.*/
-            branches:
-              ignore: /.*/
 
+      - build-debug
+
+      - tag:
+          requires:
+            - test
+            - build
+          filters:
+            tags:
+              only: /.*/
+
+      - tag-debug:
+          requires:
+            - test
+            - build-debug
