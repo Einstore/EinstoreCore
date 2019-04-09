@@ -52,36 +52,8 @@ public class EinstoreCoreBase {
     public static var configuration: EinstoreCore.Configuration {
         get {
             if _configuration == nil {
-                // TODO: Fix following!!!!!!!!!!!!!!!!!!
-//                do {
-//                    guard let path = Environment.get("CONFIG_PATH") else {
-//                        let conf = try EinstoreCore.Configuration.load(fromFile: "config.default.json")
-//                        conf.loadEnv()
-//                        _configuration = conf
-//                        return conf
-//                    }
-//                    let conf = try EinstoreCore.Configuration.load(fromFile: path)
-//                    // Override any properties with ENV
-//                    conf.loadEnv()
-//                    _configuration = conf
-//                    return conf
-//                } catch {
-//                    if let error = error as? DecodingError {
-//                        // Should config exist but is invalid, crash
-//                        fatalError("Invalid configuration file: \(error.reason)")
-//                    } else {
-                        // Create default configuration
-                        _configuration = EinstoreCore.Configuration(
-                            storage: Configuration.Storage(
-                                rootTempPath: "tmp",
-                                appDestinationPath: "apps"
-                            )
-                        )
-                
-//                    }
-                        // Override any properties with ENV
-                        _configuration?.loadEnv()
-//                }
+                _configuration = EinstoreCore.Configuration.default
+                _configuration?.loadEnv()
             }
             guard let configuration = _configuration else {
                 fatalError("Configuration couldn't be loaded!")
