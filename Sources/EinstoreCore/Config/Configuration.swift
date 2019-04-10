@@ -50,6 +50,15 @@ public class Configuration: Configurable {
 
 extension EinstoreCore.Configuration {
     
+    public static var `default`: Configuration {
+        return Configuration(
+            storage: Configuration.Storage(
+                rootTempPath: "tmp",
+                appDestinationPath: "apps"
+            )
+        )
+    }
+    
     /// Update from environmental variables
     public func loadEnv() {
         // Root
