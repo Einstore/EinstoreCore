@@ -18,6 +18,8 @@ import ErrorsCore
 @testable import EinstoreCore
 import PostgreSQL
 import FluentPostgreSQL
+import MailCore
+import MailCoreTestTools
 
 
 class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
@@ -463,6 +465,14 @@ extension AppsControllerTests {
         let object = r.response.testable.content(as: App.self)!
         
         // TODO: Test email notification has been received!!!!!!!!
+        let mailer = try! r.request.make(MailerService.self) as! MailerMock
+        XCTAssertTrue(ApiCoreBase.configuration.mail.email.count > 0, "Sender should not be empty")
+        XCTAssertEqual(mailer.receivedMessage!.from, ApiCoreBase.configuration.mail.email, "Email has a wrong sender")
+        XCTAssertEqual(mailer.receivedMessage!.to, "admin@apicore", "Email has a wrong recipient")
+        XCTAssertEqual(mailer.receivedMessage!.subject, "Install \(name) - API Core!", "Email has a wrong subject")
+        
+        XCTAssertTrue(mailer.receivedMessage!.text.count > 50, "Text template should be present")
+        XCTAssertTrue(mailer.receivedMessage!.html!.count > 50, "Text template should be present")
         
         // Check parsed values
         XCTAssertEqual(object.platform, platform, "Wrong platform")

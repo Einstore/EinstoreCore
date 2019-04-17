@@ -7,28 +7,30 @@
 
 import Foundation
 import ApiCore
+import Templator
 
 
-public class AppNotificationEmailTemplate: EmailTemplate {
+public class EmailAppNotificationTemplateHTML: Source {
     
-    public static var name: String = "app-notification-email"
+    public typealias Database = ApiCoreDatabase
     
-    public static var string: String = """
-        Hi #(user.firstname) #(user.lastname)
-        
-        To download #(app.name), version #(app.version)(#(app.build)) for #(app.platform) click here #(link)
-        
-        Einstore team
-        """
+    public static var name: String = "email.app-notification.html"
     
-    public static var html: String? = """
-        <h1>Hi #(user.firstname) #(user.lastname)</h1>
-        <p>&nbsp;</p>
-        <p>To download #(app.name), version #(app.version)(#(app.build)) for #(app.platform) click here <a href="#(link)">link</a></p>
-        <p>&nbsp;</p>
-        <p>Full link is: <strong>#(link)</strong></p>
-        <p>&nbsp;</p>
-        <p>Einstore team</p>
-        """
+    public static var link: String = "https://raw.githubusercontent.com/Einstore/Einstore/master/Resources/Templates/email.app-notification.html.leaf"
+    
+    public static var deletable: Bool = false
+    
+}
+
+
+public class EmailAppNotificationEmailPlain: Source {
+    
+    public typealias Database = ApiCoreDatabase
+    
+    public static var name: String = "email.app-notification.plain"
+    
+    public static var link: String = "https://raw.githubusercontent.com/Einstore/Einstore/master/Resources/Templates/email.app-notification.plain.leaf"
+    
+    public static var deletable: Bool = false
     
 }
