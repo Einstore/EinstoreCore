@@ -469,7 +469,7 @@ extension AppsControllerTests {
         XCTAssertTrue(ApiCoreBase.configuration.mail.email.count > 0, "Sender should not be empty")
         XCTAssertEqual(mailer.receivedMessage!.from, ApiCoreBase.configuration.mail.email, "Email has a wrong sender")
         XCTAssertEqual(mailer.receivedMessage!.to, "admin@apicore", "Email has a wrong recipient")
-        XCTAssertEqual(mailer.receivedMessage!.subject, "Install \(name) - API Core!", "Email has a wrong subject")
+        XCTAssertEqual(mailer.receivedMessage!.subject, "Install \(name) - \(ApiCoreBase.configuration.server.name)", "Email has a wrong subject")
         
         XCTAssertTrue(mailer.receivedMessage!.text.count > 50, "Text template should be present")
         XCTAssertTrue(mailer.receivedMessage!.html!.count > 50, "Text template should be present")
