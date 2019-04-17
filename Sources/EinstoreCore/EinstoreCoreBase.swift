@@ -80,9 +80,6 @@ public class EinstoreCoreBase {
             ApiCoreBase.controllers.append(c)
         }
         
-        // Setup templates
-        Templates.templates.append(AppNotificationEmailTemplate.self) // Add app notification template
-        
         // Setup SettingsCore
         try SettingsCoreBase.configure(&config, &env, &services)
         
@@ -93,7 +90,6 @@ public class EinstoreCoreBase {
         try ApiCoreBase.configure(&config, &env, &services)
         
         // Verify all has been setup properly
-        
         FlightCheck.tick()
     }
     
