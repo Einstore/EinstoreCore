@@ -6,7 +6,7 @@
         "repositoryURL": "https://github.com/LiveUI/ApiCore.git",
         "state": {
           "branch": "master",
-          "revision": "4e63f47404ae8748adff637eed19f1a1f178aa7f",
+          "revision": "e6aeb57ee4c22e6bd79543b61e9894ad3d52db01",
           "version": null
         }
       },
@@ -141,8 +141,8 @@
         "repositoryURL": "https://github.com/vapor-community/Imperial.git",
         "state": {
           "branch": null,
-          "revision": "edf50aa3a62465b77cd5c5380ebc32e060bda4b1",
-          "version": "0.11.3"
+          "revision": "a73e3274032d295b406b4e9700e8a571a5fea041",
+          "version": "0.12.0"
         }
       },
       {
@@ -294,8 +294,8 @@
         "repositoryURL": "https://github.com/IBM-Swift/Swift-SMTP.git",
         "state": {
           "branch": null,
-          "revision": "496f779a073991609cf3745214e49449d9b5db24",
-          "version": "5.1.0"
+          "revision": "23360cff5fcb92fb37041f5dd1ef16d7b8fe5ff0",
+          "version": "5.1.1"
         }
       },
       {
