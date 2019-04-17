@@ -1,0 +1,7 @@
+<h1>Hi #(user.firstname) #(user.lastname)</h1>
+<p>&nbsp;</p>
+<p>To download #(app.name), version #(app.version)(#(app.build)) for #(app.platform) click here <a href="#(link)">link</a></p>
+<p>&nbsp;</p>
+<p>Full link is: <strong>#(link)</strong></p>
+<p>&nbsp;</p>
+<p>Einstore team</p>
