@@ -16,7 +16,7 @@ public class EmailAppNotificationTemplateHTML: Source {
     
     public static var name: String = "email.app-notification.html"
     
-    public static var link: String = ""
+    public static var link: String = "https://raw.githubusercontent.com/Einstore/Einstore/master/Resources/Templates/email.app-notification.html.leaf"
     
     public static var deletable: Bool = false
     
@@ -29,7 +29,7 @@ public class EmailAppNotificationEmailPlain: Source {
     
     public static var name: String = "email.app-notification.plain"
     
-    public static var link: String = ""
+    public static var link: String = "https://raw.githubusercontent.com/Einstore/Einstore/master/Resources/Templates/email.app-notification.plain.leaf"
     
     public static var deletable: Bool = false
     
