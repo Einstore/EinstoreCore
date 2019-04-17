@@ -1,0 +1,5 @@
+Hi #(user.firstname) #(user.lastname)
+
+To download #(app.name), version #(app.version)(#(app.build)) for #(app.platform) click here #(link)
+
+Einstore team
