@@ -13,13 +13,14 @@ import Fluent
 import FluentPostgreSQL
 import SwiftShell
 import MailCore
+import Templator
 
 
 public class AppsManager {
 
     /// Overview app query
     static func overviewQuery(teams: Teams, on req: Request) throws -> QueryBuilder<ApiCoreDatabase, Cluster.Public> {
-        // add sorting
+        // TODO: add sorting!!!!!!!!!! name:asc, date:desc
         let q = try Cluster.query(on: req).filter(\Cluster.teamId ~~ teams.ids).clusterFilters(on: req).sort(\Cluster.latestAppAdded, .descending).decode(Cluster.Public.self)
         return q
     }
@@ -99,18 +100,23 @@ public class AppsManager {
                                     user: user,
                                     on: req
                                 )
-                                return try AppNotificationEmailTemplate.parsed(model: templateModel, on: req).flatMap(to: Response.self) { template in
-                                    let from = ApiCoreBase.configuration.mail.email
-                                    let subject = "Install \(app.name) - \(ApiCoreBase.configuration.server.name)" // TODO: Localize!!!!!!
-                                    return try team.users.query(on: req).all().flatMap(to: Response.self) { teamUsers in
-                                        let userEmails: [String] = teamUsers.map({ $0.email }) // QUESTION: Do we want name in the email too?
-                                        let mail = Mailer.Message(from: from, to: from, bcc: userEmails, subject: subject, text: template.string, html: template.html)
-                                        return try req.mail.send(mail).flatMap(to: Response.self) { mailResult in
-                                            switch mailResult {
-                                            case .success:
-                                                return try app.asResponse(.created, to: req)
-                                            default:
-                                                throw AuthError.emailFailedToSend
+                                let templator = try req.make(Templates<ApiCoreDatabase>.self)
+                                let htmlTemplate = try templator.get(EmailTemplateInvitationHTML.self, data: templateModel, on: req)
+                                return htmlTemplate.flatMap(to: Response.self) { htmlTemplate in
+                                    let plainTemplate = try templator.get(EmailTemplateInvitationPlain.self, data: templateModel, on: req)
+                                    return plainTemplate.flatMap(to: Response.self) { plainTemplate in
+                                        let from = ApiCoreBase.configuration.mail.email
+                                        let subject = "Install \(app.name) - \(ApiCoreBase.configuration.server.name)" // TODO: Localize!!!!!!
+                                        return try team.users.query(on: req).all().flatMap(to: Response.self) { teamUsers in
+                                            let userEmails: [String] = teamUsers.map({ $0.email }) // QUESTION: Do we want name in the email too?
+                                            let mail = Mailer.Message(from: from, to: from, bcc: userEmails, subject: subject, text: plainTemplate, html: htmlTemplate)
+                                            return try req.mail.send(mail).flatMap(to: Response.self) { mailResult in
+                                                switch mailResult {
+                                                case .success:
+                                                    return try app.asResponse(.created, to: req)
+                                                default:
+                                                    throw AuthError.emailFailedToSend
+                                                }
                                             }
                                         }
                                     }
