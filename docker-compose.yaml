@@ -10,9 +10,9 @@ services:
         environment:
             APICORE_STORAGE_LOCAL_ROOT: /home/einstore
 
-            APICORE_SERVER_NAME: "EinstoreCore dev"
+            APICORE_SERVER_NAME: "Einstore"
             APICORE_SERVER_PATH_PREFIX: ~
-            APICORE_SERVER_MAX_UPLOAD_FILESIZE: 50
+            APICORE_SERVER_MAX_UPLOAD_FILESIZE: 800
 
             APICORE_DATABASE_HOST: postgres
             APICORE_DATABASE_USER: einstore
@@ -31,9 +31,9 @@ services:
         image: postgres:11-alpine
         restart: always
         environment:
-            POSTGRES_USER: boost
-            POSTGRES_PASSWORD: boost
-            POSTGRES_DB: boost
+            POSTGRES_USER: einstore
+            POSTGRES_PASSWORD: einstore
+            POSTGRES_DB: einstore
         healthcheck:
             test: ["CMD-SHELL", "pg_isready -U postgres"]
             interval: 5s
@@ -43,12 +43,12 @@ services:
     adminer:
         image: michalhosna/adminer:master
         environment:
-            ADMINER_DB: boost
+            ADMINER_DB: einstore
             ADMINER_DRIVER: pgsql
-            ADMINER_PASSWORD: boost
+            ADMINER_PASSWORD: einstore
             ADMINER_SERVER: postgres
-            ADMINER_USERNAME: boost
+            ADMINER_USERNAME: einstore
             ADMINER_AUTOLOGIN: 1
-            ADMINER_NAME: BoostCore
+            ADMINER_NAME: EinstoreCore
         depends_on:
             - postgres

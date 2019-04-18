@@ -6,4 +6,4 @@ version: '2.4'
 services:
     postgres:
         environment:
-            POSTGRES_DB: boost-test
+            POSTGRES_DB: einstore
