@@ -1,9 +1,0 @@
-version: '2.4'
-
-# EinstoreCore has hardcoded `-test` postfix for tests.
-# See /Makefile
-
-services:
-    postgres:
-        environment:
-            POSTGRES_DB: boost-test
