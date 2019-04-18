@@ -8,15 +8,15 @@ jobs:
       - image: postgres:11-alpine
         name: postgres
         environment:
-          POSTGRES_USER: boost
-          POSTGRES_PASSWORD: boost
-          POSTGRES_DB: boost-test
+          POSTGRES_USER: einstore
+          POSTGRES_PASSWORD: einstore
+          POSTGRES_DB: einstore
     environment:
-      APICORE_SERVER_NAME: BoostCore
+      APICORE_SERVER_NAME: EinstoreCore
       APICORE_DATABASE_HOST: postgres
-      APICORE_DATABASE_USER: boost
-      APICORE_DATABASE_PASSWORD: boost
-      APICORE_DATABASE_DATABASE: boost
+      APICORE_DATABASE_USER: einstore
+      APICORE_DATABASE_PASSWORD: einstore
+      APICORE_DATABASE_DATABASE: einstore
       APICORE_DATABASE_PORT: 5432
       APICORE_JWT_SECRET: secret
       APICORE_STORAGE_S3_ENABLED: 0

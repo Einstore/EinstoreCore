@@ -301,9 +301,9 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         
         // Temporarily disabling flaky tests
         // TODO: FIX!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//        XCTAssertEqual(r.response.http.body.data!.count, postData.count, "Icon needs to be the same")
-//        XCTAssertTrue(r.response.testable.has(statusCode: .ok), "Wrong status code")
-//        XCTAssertTrue(r.response.testable.has(contentType: "image/png"), "Missing or incorrect content type")
+        XCTAssertEqual(r.response.http.body.data!.count, postData.count, "Icon needs to be the same")
+        XCTAssertTrue(r.response.testable.has(statusCode: .ok), "Wrong status code")
+        XCTAssertTrue(r.response.testable.has(contentType: "image/png"), "Missing or incorrect content type")
         
         // Cleaning
         try! fc.delete(file: app1!.iconPath!.relativePath, on: fakeReq).wait()

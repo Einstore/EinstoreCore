@@ -6,7 +6,7 @@
         "repositoryURL": "https://github.com/LiveUI/ApiCore.git",
         "state": {
           "branch": "master",
-          "revision": "e6aeb57ee4c22e6bd79543b61e9894ad3d52db01",
+          "revision": "3533c8190ede17ae7eb1edbf32af927fbe2b238b",
           "version": null
         }
       },
@@ -330,7 +330,7 @@
         "repositoryURL": "https://github.com/Einstore/Templator.git",
         "state": {
           "branch": "master",
-          "revision": "ae8a563f3a15a73631b872d20d0e56849fe2f3de",
+          "revision": "7d87133e4c52d20ab025f2d5c44ffc3a2d0998e1",
           "version": null
         }
       },
