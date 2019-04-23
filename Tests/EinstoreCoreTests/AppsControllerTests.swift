@@ -218,6 +218,8 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         let fc = try! fakeReq.makeFileCore()
         try! fc.save(file: ":)".data(using: .utf8)!, to: app1!.appPath!.relativePath, mime: MediaType(type: "application", subType: "octet-stream"), on: fakeReq).wait()
         
+        let originalCluster: Cluster = try! Cluster.query(on: fakeReq).filter(\Cluster.id == app1.clusterId).first().wait()!
+        
         var count = app.testable.count(allFor: App.self)
         XCTAssertEqual(count, 107, "There should be right amount of apps to begin with")
         
@@ -235,6 +237,10 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
 
         count = app.testable.count(allFor: App.self)
         XCTAssertEqual(count, 106, "There should be right amount of apps to finish with")
+        
+        let modifiedCluster: Cluster = try! Cluster.query(on: fakeReq).filter(\Cluster.id == app1.clusterId).first().wait()!
+        
+        XCTAssertEqual((originalCluster.appCount - 1), modifiedCluster.appCount, "Cluster should have count -1 on the total of apps after deletion")
     }
     
     func testAppTags() {
@@ -309,25 +315,38 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         
         _ = try! team2.users.attach(user1, on: fakeReq).wait()
         
-        // Upload two apps
-        let r1 = doTestJWTUpload(appFileName: "app.ipa", platform: .ios, name: "iDeviant", identifier: "com.fuerteint.iDeviant", version: "4.0", build: "1.0", iconSize: 4776, team: team1)
-        let r2 = doTestJWTUpload(appFileName: "app.ipa", platform: .ios, name: "iDeviant", identifier: "com.fuerteint.iDeviant", version: "4.0", build: "1.0", iconSize: 4776, team: team2, appsTotal: 108)
-        
         // Get and check first app
+        let r1 = doTestJWTUpload(appFileName: "app.ipa", platform: .ios, name: "iDeviant", identifier: "com.fuerteint.iDeviant", version: "4.0", build: "1.0", iconSize: 4776, team: team1)
+        
         let object1 = r1.response.testable.content(as: App.self)!
         let cluster1 = Cluster.testable.cluster(withId: object1.clusterId, on: app)
         XCTAssertNotNil(object1.teamId)
-        XCTAssertEqual(object1.teamId, team1.id)
+        XCTAssertEqual(object1.teamId, team1.id, "Cluster 1 belongs to team 1")
+        XCTAssertEqual(cluster1.appCount, 1, "Cluster has 1 app counted")
         
         // Get and check second app
+        let r2 = doTestJWTUpload(appFileName: "app.ipa", platform: .ios, name: "iDeviant", identifier: "com.fuerteint.iDeviant", version: "4.0", build: "1.0", iconSize: 4776, team: team2, appsTotal: 108)
+        
         let object2 = r2.response.testable.content(as: App.self)!
         let cluster2 = Cluster.testable.cluster(withId: object2.clusterId, on: app)
         XCTAssertNotNil(object2.teamId)
-        XCTAssertEqual(object2.teamId, team2.id)
+        XCTAssertEqual(object2.teamId, team2.id, "Cluster 2 belongs to team 2")
+        XCTAssertEqual(cluster2.appCount, 1, "Cluster has 1 app counted")
         
-        // Check clusters are not the same
+        // Get and check second app
+        let r3 = doTestJWTUpload(appFileName: "app.ipa", platform: .ios, name: "iDeviant", identifier: "com.fuerteint.iDeviant", version: "4.0", build: "1.0", iconSize: 4776, team: team2, appsTotal: 109)
+        
+        let object3 = r3.response.testable.content(as: App.self)!
+        let cluster3 = Cluster.testable.cluster(withId: object3.clusterId, on: app)
+        XCTAssertNotNil(object3.teamId)
+        XCTAssertEqual(object3.teamId, team2.id, "Cluster 2 belongs to team 2")
+        XCTAssertEqual(cluster3.appCount, 2, "Cluster has 2 apps counted")
+        
         XCTAssertNotNil(cluster1.id)
-        XCTAssertNotEqual(cluster1.id, cluster2.id)
+        XCTAssertNotEqual(cluster1.id, cluster2.id, "Check clusters are not the same for the first two apps")
+        
+        XCTAssertNotNil(cluster1.id)
+        XCTAssertEqual(cluster2.id, cluster3.id, "Check clusters are the same for the second two apps")
     }
     
     func testOldIosAppWithInfo() {

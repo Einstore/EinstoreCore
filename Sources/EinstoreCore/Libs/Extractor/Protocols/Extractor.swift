@@ -144,7 +144,7 @@ extension Extractor {
         }
     }
     
-    /// Save app into the DB
+    /// Save app files
     func save(_ app: App, request req: Request) throws -> Future<Void> {
         guard let path = app.appPath?.relativePath else {
             throw ExtractorError.errorSavingFile
