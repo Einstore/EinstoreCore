@@ -21,8 +21,9 @@ extension QueryBuilder where Result == Cluster, Database == ApiCoreDatabase {
         // Basic search
         if let search = req.query.search, !search.isEmpty {
             s = s.group(.or) { or in
-                or.filter(\Cluster.latestAppName, "~~*", search)
-                or.filter(\Cluster.identifier, "~~*", search)
+                let search = "%\(search)%"
+                or.filter(\Cluster.latestAppName, "ILIKE", search)
+                or.filter(\Cluster.identifier, "ILIKE", search)
             }
         }
         
@@ -35,10 +36,28 @@ extension QueryBuilder where Result == Cluster, Database == ApiCoreDatabase {
         
         // Identifier
         if let identifier = query.identifier {
-            s = s.filter(\Cluster.identifier, "~~*", identifier)
+            s = s.filter(\Cluster.identifier, "ILIKE", identifier)
         }
         
         return s
+    }
+    
+    /// Set sorting
+    func clusterSorting(on req: Request) throws -> QueryBuilder<ApiCoreDatabase, Result> {
+        let sort = try req.query.decode(RequestSort.self)
+        if let value = sort.value {
+            switch true {
+            case value == "name":
+                return self.sort(\Cluster.latestAppName, sort.direction)
+            case value == "date":
+                return self.sort(\Cluster.latestAppAdded, sort.direction)
+            case value == "count":
+                return self.sort(\Cluster.appCount, sort.direction)
+            default:
+                return self.sort(\Cluster.latestAppAdded, .ascending)
+            }
+        }
+        return self.sort(\Cluster.latestAppAdded, .ascending)
     }
     
 }

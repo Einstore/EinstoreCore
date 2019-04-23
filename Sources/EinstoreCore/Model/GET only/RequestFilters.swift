@@ -13,3 +13,4 @@ struct RequestFilters: Codable {
     let platform: App.Platform?
     let identifier: String?
 }
+
