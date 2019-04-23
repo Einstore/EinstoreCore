@@ -6,7 +6,7 @@
         "repositoryURL": "https://github.com/LiveUI/ApiCore.git",
         "state": {
           "branch": "master",
-          "revision": "4ac0387bbdb1343b31d29d7d65b1e9903d71b8f1",
+          "revision": "0b6dcfb6195cb168ee6c66665a1401e5d912b6ef",
           "version": null
         }
       },
@@ -69,8 +69,8 @@
         "repositoryURL": "https://github.com/vapor/core.git",
         "state": {
           "branch": null,
-          "revision": "57368d4092f92df3131e5968c8ed24a3c7361ec0",
-          "version": "3.8.1"
+          "revision": "2731f8ba0cf274a61c9bd6ab43550f692ffaf879",
+          "version": "3.9.0"
         }
       },
       {
@@ -78,8 +78,8 @@
         "repositoryURL": "https://github.com/vapor/crypto.git",
         "state": {
           "branch": null,
-          "revision": "45bb12d13cdec80dbd1cc0685ea002e51ab83439",
-          "version": "3.3.2"
+          "revision": "df8eb7d8ae51787b3a0628aa3975e67666da936c",
+          "version": "3.3.3"
         }
       },
       {
@@ -330,7 +330,7 @@
         "repositoryURL": "https://github.com/Einstore/Templator.git",
         "state": {
           "branch": "master",
-          "revision": "9653567817034f1a2af457281c06ab99b0d305f7",
+          "revision": "81d4365f2a85f7802a049463dfb4f47cb14dc1a9",
           "version": null
         }
       },

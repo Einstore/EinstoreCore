@@ -21,10 +21,11 @@ extension QueryBuilder where Result == App, Database == ApiCoreDatabase {
         // Basic search
         if let search = req.query.search {
             s = s.group(.or) { or in
-                or.filter(\App.name, "~~*", search)
-                or.filter(\App.identifier, "~~*", search)
-                or.filter(\App.version, "~~*", search)
-                or.filter(\App.build, "~~*", search)
+                let search = "%\(search)%"
+                or.filter(\App.name, "ILIKE", search)
+                or.filter(\App.identifier, "ILIKE", search)
+                or.filter(\App.version, "ILIKE", search)
+                or.filter(\App.build, "ILIKE", search)
             }
         }
         
@@ -37,7 +38,7 @@ extension QueryBuilder where Result == App, Database == ApiCoreDatabase {
         
         // Identifier
         if let identifier = query.identifier {
-            s = s.filter(\App.identifier, "~~*", identifier)
+            s = s.filter(\App.identifier, "ILIKE", identifier)
         }
         
         return s
