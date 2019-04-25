@@ -6,7 +6,7 @@
         "repositoryURL": "https://github.com/LiveUI/ApiCore.git",
         "state": {
           "branch": "master",
-          "revision": "0b6dcfb6195cb168ee6c66665a1401e5d912b6ef",
+          "revision": "349081f4a6e047cd54b7e1fe9842c98e9292896e",
           "version": null
         }
       },
@@ -141,8 +141,8 @@
         "repositoryURL": "https://github.com/vapor-community/Imperial.git",
         "state": {
           "branch": null,
-          "revision": "a73e3274032d295b406b4e9700e8a571a5fea041",
-          "version": "0.12.0"
+          "revision": "b60f0e7b853290239441410f881ac2aad2f4f136",
+          "version": "0.13.0"
         }
       },
       {
@@ -303,8 +303,8 @@
         "repositoryURL": "https://github.com/twostraws/SwiftGD.git",
         "state": {
           "branch": null,
-          "revision": "b038d13ef40ce6d11aa3599181e45f099814a053",
-          "version": "2.2.0"
+          "revision": "2ff35042750fe581b71ff72a69693ce2a47f7863",
+          "version": "2.3.0"
         }
       },
       {
