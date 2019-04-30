@@ -6,7 +6,7 @@
         "repositoryURL": "https://github.com/LiveUI/ApiCore.git",
         "state": {
           "branch": "master",
-          "revision": "349081f4a6e047cd54b7e1fe9842c98e9292896e",
+          "revision": "1293f02b66ecd60a869fcbc1196165a55192e1d9",
           "version": null
         }
       },
@@ -321,8 +321,8 @@
         "repositoryURL": "https://github.com/vapor/template-kit.git",
         "state": {
           "branch": null,
-          "revision": "4b1073d74be9f5c6a5bc63a07a84e83efec26229",
-          "version": "1.1.2"
+          "revision": "121ae51433df94cf6e15c09e1f1b0f7c77ff8d5c",
+          "version": "1.2.0"
         }
       },
       {
