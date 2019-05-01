@@ -225,6 +225,7 @@ final public class App: DbCoreModel {
         public var build: String
         public var platform: Platform
         public var created: Date
+        public var built: Date?
         public var size: Int
         public var info: Info?
         public var minSdk: String?
@@ -240,6 +241,7 @@ final public class App: DbCoreModel {
             case build
             case platform
             case created
+            case built
             case size
             case info
             case minSdk
@@ -256,6 +258,7 @@ final public class App: DbCoreModel {
             build = app.build
             platform = app.platform
             created = app.created
+            built = app.built
             size = app.size
             info = app.info
             minSdk = app.minSdk
@@ -283,6 +286,7 @@ final public class App: DbCoreModel {
     public var build: String
     public var platform: Platform
     public var created: Date
+    public var built: Date?
     public var size: Int
     public var sizeTotal: Int
     public var info: Info?
@@ -299,6 +303,7 @@ final public class App: DbCoreModel {
         case build
         case platform
         case created
+        case built
         case size
         case sizeTotal = "size_total"
         case info
@@ -306,7 +311,7 @@ final public class App: DbCoreModel {
         case hasIcon = "icon"
     }
 
-    public init(id: DbIdentifier? = nil, teamId: DbIdentifier, clusterId: DbIdentifier, name: String, identifier: String, version: String, build: String, platform: Platform, size: Int, sizeTotal: Int, info: Info? = nil, minSdk: String? = nil, hasIcon: Bool = false) {
+    public init(id: DbIdentifier? = nil, teamId: DbIdentifier, clusterId: DbIdentifier, name: String, identifier: String, version: String, build: String, platform: Platform, built: Date?, size: Int, sizeTotal: Int, info: Info? = nil, minSdk: String? = nil, hasIcon: Bool = false) {
         self.id = id
         self.teamId = teamId
         self.clusterId = clusterId
@@ -316,6 +321,7 @@ final public class App: DbCoreModel {
         self.build = build
         self.platform = platform
         self.created = Date()
+        self.built = built
         self.size = size
         self.sizeTotal = sizeTotal
         self.info = info
@@ -362,6 +368,7 @@ extension App: Migration {
             schema.field(for: \.build, type: .varchar(20))
             schema.field(for: \.platform, type: .varchar(10))
             schema.field(for: \.created)
+            schema.field(for: \.built)
             schema.field(for: \.size)
             schema.field(for: \.sizeTotal)
             

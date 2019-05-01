@@ -20,6 +20,7 @@ class BaseExtractor {
     var versionShort: String?
     var versionLong: String?
     var minSdk: String?
+    var built: Date?
     
     var infoData: [String: Codable] = [:]
     

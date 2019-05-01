@@ -51,7 +51,8 @@ class Apk: BaseExtractor, Extractor {
         #elseif os(Linux)
         let aapt = "/usr/bin/aapt"
         #endif
-        let output = run(aapt, "dump", "--values", "badging", self.file.path).stdout
+        
+        let output = run(aapt, "dump", "--values", "badging", file.path).stdout
         let outputLines = output.lines()
         outputLines.forEach() {
             if $0.contains(":") {
