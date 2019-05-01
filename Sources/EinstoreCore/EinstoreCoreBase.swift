@@ -24,7 +24,8 @@ public class EinstoreCoreBase {
         TagsController.self,
         AppsController.self,
         UploadKeyController.self,
-        ConfigurationController.self
+        ConfigurationController.self,
+        SdkController.self
     ]
     
     /// Private temp file handler

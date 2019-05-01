@@ -27,8 +27,11 @@ final public class UploadKey: DbCoreModel {
         
     }
     
+    public typealias TokenType = Int
+    
     public struct New: Codable {
         public var name: String
+        public var type: TokenType
         public var expires: Date?
     }
     
@@ -37,6 +40,7 @@ final public class UploadKey: DbCoreModel {
         public var id: DbIdentifier?
         public var teamId: DbIdentifier
         public var name: String
+        public var type: TokenType
         public var expires: Date?
         public var created: Date
         
@@ -44,14 +48,16 @@ final public class UploadKey: DbCoreModel {
             case id
             case teamId = "team_id"
             case name
+            case type
             case expires
             case created
         }
         
-        public init(id: DbIdentifier? = nil, teamId: DbIdentifier, name: String, created: Date, expires: Date? = Date()) {
+        public init(id: DbIdentifier? = nil, teamId: DbIdentifier, name: String, type: TokenType, created: Date, expires: Date? = Date()) {
             self.id = id
             self.teamId = teamId
             self.name = name
+            self.type = type
             self.expires = expires
             self.created = created
         }
@@ -60,6 +66,7 @@ final public class UploadKey: DbCoreModel {
             id = key.id
             teamId = key.teamId
             name = key.name
+            type = key.type
             expires = key.expires
             created = key.created
         }
@@ -71,6 +78,7 @@ final public class UploadKey: DbCoreModel {
     public var name: String
     public var expires: Date?
     public var token: String
+    public var type: TokenType
     public var created: Date
     
     enum CodingKeys: String, CodingKey {
@@ -79,15 +87,17 @@ final public class UploadKey: DbCoreModel {
         case name
         case expires
         case token
+        case type
         case created
     }
     
-    public init(id: DbIdentifier? = nil, teamId: DbIdentifier, name: String, expires: Date? = nil, token: String = UUID().uuidString) {
+    public init(id: DbIdentifier? = nil, teamId: DbIdentifier, name: String, expires: Date? = nil, token: String = UUID().uuidString, type: TokenType) {
         self.id = id
         self.teamId = teamId
         self.name = name
         self.expires = expires
         self.token = token
+        self.type = type
         self.created = Date()
     }
     
@@ -96,6 +106,7 @@ final public class UploadKey: DbCoreModel {
         self.name = new.name
         self.expires = new.expires
         self.token = UUID().uuidString
+        self.type = new.type
         self.created = Date()
     }
     
@@ -123,6 +134,7 @@ extension UploadKey: Migration {
             schema.field(for: \.expires)
             schema.field(for: \.created)
             schema.field(for: \.token, type: .varchar(64))
+            schema.field(for: \.type, type: .int)
         }
     }
     
