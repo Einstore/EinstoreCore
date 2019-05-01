@@ -17,7 +17,7 @@ import ApiCoreTestTools
 import NIO
 
 
-public protocol AppTestCaseSetup: UploadKeyTestCaseSetup {
+public protocol AppTestCaseSetup: ApiKeyTestCaseSetup {
     var app1: App! { get set }
     var app2: App! { get set }
 }
@@ -37,7 +37,7 @@ extension AppTestCaseSetup {
         app.testable.delete(allFor: Tag.self)
         app.testable.delete(allFor: AppTag.self)
         
-        setupUploadKeys()
+        setupApiKeys()
         
         app1 = App.testable.create(team: team1, name: "App 1", version: "1.2.3", build: "123456", platform: .ios, on: app)
         app1.testable.addTag(name: "common tag", team: team1, identifier: "common-tag", on: app)

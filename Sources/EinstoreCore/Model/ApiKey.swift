@@ -1,5 +1,5 @@
 //
-//  UploadKey.swift
+//  ApiKey.swift
 //  App
 //
 //  Created by Ondrej Rafaj on 11/12/2017.
@@ -12,10 +12,10 @@ import FluentPostgreSQL
 import ApiCore
 
 
-public typealias UploadKeys = [UploadKey]
+public typealias ApiKeys = [ApiKey]
 
 
-final public class UploadKey: DbCoreModel {
+final public class ApiKey: DbCoreModel {
     
     public struct Token: Codable {
         
@@ -30,9 +30,26 @@ final public class UploadKey: DbCoreModel {
     public typealias TokenType = Int
     
     public struct New: Codable {
+        
         public var name: String
         public var type: TokenType
         public var expires: Date?
+        public var clusterId: DbIdentifier?
+        
+        enum CodingKeys: String, CodingKey {
+            case name
+            case type
+            case expires
+            case clusterId = "cluster_id"
+        }
+        
+        public init(name: String, type: TokenType, expires: Date? = nil, clusterId: DbIdentifier? = nil) {
+            self.name = name
+            self.type = type
+            self.expires = expires
+            self.clusterId = clusterId
+        }
+        
     }
     
     public struct Display: DbCoreModel {
@@ -41,6 +58,7 @@ final public class UploadKey: DbCoreModel {
         public var teamId: DbIdentifier
         public var name: String
         public var type: TokenType
+        public var clusterId: DbIdentifier?
         public var expires: Date?
         public var created: Date
         
@@ -49,6 +67,7 @@ final public class UploadKey: DbCoreModel {
             case teamId = "team_id"
             case name
             case type
+            case clusterId = "cluster_id"
             case expires
             case created
         }
@@ -62,7 +81,7 @@ final public class UploadKey: DbCoreModel {
             self.created = created
         }
         
-        init(key: UploadKey) {
+        init(key: ApiKey) {
             id = key.id
             teamId = key.teamId
             name = key.name
@@ -79,6 +98,7 @@ final public class UploadKey: DbCoreModel {
     public var expires: Date?
     public var token: String
     public var type: TokenType
+    public var clusterId: DbIdentifier?
     public var created: Date
     
     enum CodingKeys: String, CodingKey {
@@ -88,16 +108,18 @@ final public class UploadKey: DbCoreModel {
         case expires
         case token
         case type
+        case clusterId
         case created
     }
     
-    public init(id: DbIdentifier? = nil, teamId: DbIdentifier, name: String, expires: Date? = nil, token: String = UUID().uuidString, type: TokenType) {
+    public init(id: DbIdentifier? = nil, teamId: DbIdentifier, name: String, expires: Date? = nil, token: String = UUID().uuidString, type: TokenType, clusterId: DbIdentifier? = nil) {
         self.id = id
         self.teamId = teamId
         self.name = name
         self.expires = expires
         self.token = token
         self.type = type
+        self.clusterId = clusterId
         self.created = Date()
     }
     
@@ -114,9 +136,9 @@ final public class UploadKey: DbCoreModel {
 
 // MARK: - Relations
 
-extension UploadKey {
+extension ApiKey {
     
-    public var team: Parent<UploadKey, Team> {
+    public var team: Parent<ApiKey, Team> {
         return parent(\.teamId)
     }
     
@@ -124,7 +146,7 @@ extension UploadKey {
 
 // MARK: - Migrations
 
-extension UploadKey: Migration {
+extension ApiKey: Migration {
     
     public static func prepare(on connection: ApiCoreConnection) -> Future<Void> {
         return Database.create(self, on: connection) { (schema) in
@@ -135,21 +157,22 @@ extension UploadKey: Migration {
             schema.field(for: \.created)
             schema.field(for: \.token, type: .varchar(64))
             schema.field(for: \.type, type: .int)
+            schema.field(for: \.clusterId, type: .uuid)
         }
     }
     
     public static func revert(on connection: ApiCoreConnection) -> Future<Void> {
-        return Database.delete(UploadKey.self, on: connection)
+        return Database.delete(ApiKey.self, on: connection)
     }
     
 }
 
 // MARK: - Helpers
 
-extension UploadKey {
+extension ApiKey {
     
-    public func asDisplay() -> UploadKey.Display {
-        return UploadKey.Display(key: self)
+    public func asDisplay() -> ApiKey.Display {
+        return ApiKey.Display(key: self)
     }
     
 }

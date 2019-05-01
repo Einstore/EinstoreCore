@@ -23,7 +23,7 @@ public class EinstoreCoreBase {
         EinstoreController.self,
         TagsController.self,
         AppsController.self,
-        UploadKeyController.self,
+        ApiKeyController.self,
         ConfigurationController.self,
         SdkController.self
     ]
@@ -72,7 +72,7 @@ public class EinstoreCoreBase {
         ApiCoreBase.add(model: Tag.self, database: .db)
         ApiCoreBase.add(model: AppTag.self, database: .db)
         ApiCoreBase.add(model: UsedTag.self, database: .db)
-        ApiCoreBase.add(model: UploadKey.self, database: .db)
+        ApiCoreBase.add(model: ApiKey.self, database: .db)
         ApiCoreBase.add(model: Config.self, database: .db)
         ApiCoreBase.add(model: Download.self, database: .db)
         

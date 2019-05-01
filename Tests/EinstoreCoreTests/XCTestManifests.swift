@@ -26,14 +26,14 @@ extension AppsControllerTests {
     ]
 }
 
-extension UploadKeysControllerTests {
+extension ApiKeysControllerTests {
     static let __allTests = [
-        ("testChangeUploadKeyName", testChangeUploadKeyName),
-        ("testCreateUploadKey", testCreateUploadKey),
-        ("testDeleteUploadKey", testDeleteUploadKey),
-        ("testGetOneUploadKey", testGetOneUploadKey),
-        ("testGetUploadKeysForTeam", testGetUploadKeysForTeam),
-        ("testGetUploadKeysForUser", testGetUploadKeysForUser),
+        ("testChangeApiKeyName", testChangeApiKeyName),
+        ("testCreateApiKey", testCreateApiKey),
+        ("testDeleteApiKey", testDeleteApiKey),
+        ("testGetOneApiKey", testGetOneApiKey),
+        ("testGetApiKeysForTeam", testGetApiKeysForTeam),
+        ("testGetApiKeysForUser", testGetApiKeysForUser),
         ("testLinuxTests", testLinuxTests),
     ]
 }
@@ -42,7 +42,7 @@ extension UploadKeysControllerTests {
 public func __allTests() -> [XCTestCaseEntry] {
     return [
         testCase(AppsControllerTests.__allTests),
-        testCase(UploadKeysControllerTests.__allTests),
+        testCase(ApiKeysControllerTests.__allTests),
     ]
 }
 #endif

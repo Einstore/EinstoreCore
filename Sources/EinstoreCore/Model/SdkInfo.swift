@@ -17,7 +17,7 @@ struct SdkInfo: Content {
     let created: Date
     let sdk: String
     let language: String?
-    let os: String
+    let platform: App.Platform
     let osVersion: String
     
     enum CodingKeys: String, CodingKey {
@@ -27,7 +27,7 @@ struct SdkInfo: Content {
         case created
         case sdk
         case language
-        case os
+        case platform
         case osVersion = "os_version"
     }
     
