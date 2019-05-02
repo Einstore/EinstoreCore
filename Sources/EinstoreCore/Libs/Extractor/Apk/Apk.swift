@@ -51,7 +51,34 @@ class Apk: BaseExtractor, Extractor {
         #elseif os(Linux)
         let aapt = "/usr/bin/aapt"
         #endif
-        let output = run(aapt, "dump", "--values", "badging", self.file.path).stdout
+        
+        // Following code will be only used if gradle date stamp is enabled
+        func setBuiltFromZip() {
+            let archivedLines = run("/usr/bin/unzip", "-l", file.path).stdout.lines()
+            
+            var manifestInfo: [String] = []
+            for line in archivedLines {
+                if line.contains("AndroidManifest.xml") {
+                    manifestInfo = line.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines).condenseWhitespace().split(separator: " ").map({ String($0) })
+                    break
+                }
+            }
+            
+            if manifestInfo.count >= 4 {
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "mm-dd-yyyy HH:mm"
+                if let date = dateFormatter.date(from: ("\(manifestInfo[1]) \(manifestInfo[2])")) {
+                    built = date
+                }
+            }
+        }
+        setBuiltFromZip()
+        
+        if built == nil {
+            built = Date()
+        }
+        
+        let output = run(aapt, "dump", "--values", "badging", file.path).stdout
         let outputLines = output.lines()
         outputLines.forEach() {
             if $0.contains(":") {

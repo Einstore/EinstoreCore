@@ -1,5 +1,5 @@
 //
-//  Team+UploadKeys.swift
+//  Team+ApiKeys.swift
 //  EinstoreCore
 //
 //  Created by Ondrej Rafaj on 05/03/2018.
@@ -14,7 +14,7 @@ import Fluent
 
 extension Team {
     
-    public var uploadKeys: Children<Team, UploadKey> {
+    public var apiKeys: Children<Team, ApiKey> {
         return children(\.teamId)
     }
     

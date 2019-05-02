@@ -258,10 +258,10 @@ class AppsController: Controller {
         
         // Upload app from CI with Upload API key
         router.post("apps") { (req) -> Future<Response> in
-            guard let token = try? req.query.decode(UploadKey.Token.self) else {
+            guard let token = try? req.query.decode(ApiKey.Token.self) else {
                 throw ErrorsCore.HTTPError.missingAuthorizationData
             }
-            return try UploadKey.query(on: req).filter(\UploadKey.token == token.value.sha()).first().flatMap(to: Response.self) { uploadToken in
+            return try ApiKey.query(on: req).filter(\ApiKey.token == token.value.sha()).filter(\ApiKey.type == 0).first().flatMap(to: Response.self) { uploadToken in
                 guard let uploadToken = uploadToken else {
                     throw AuthError.authenticationFailed
                 }

@@ -147,6 +147,11 @@ extension Ipa {
         var embeddedFile: URL = payload
         embeddedFile.appendPathComponent("Info.plist")
         
+        if let attributes = try? FileManager.default.attributesOfItem(atPath: embeddedFile.path) as [FileAttributeKey: Any],
+            let modified = attributes[FileAttributeKey.modificationDate] as? Date {
+            built = modified
+        }
+        
         guard let plist: [String: Any] = try [String: Any].fill(fromPlist: embeddedFile) else {
             throw ExtractorError.invalidAppContent
         }

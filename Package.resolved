@@ -6,7 +6,7 @@
         "repositoryURL": "https://github.com/LiveUI/ApiCore.git",
         "state": {
           "branch": "master",
-          "revision": "1293f02b66ecd60a869fcbc1196165a55192e1d9",
+          "revision": "1b0e52132ec28f208c74b946de9c98b2cf936831",
           "version": null
         }
       },
@@ -240,7 +240,7 @@
         "repositoryURL": "https://github.com/LiveUI/SettingsCore.git",
         "state": {
           "branch": "master",
-          "revision": "561387f416cc5779d731bb04b677e5e56ee3df37",
+          "revision": "8dde150be2070773c8e045647e7ea40956a7110e",
           "version": null
         }
       },
@@ -330,7 +330,7 @@
         "repositoryURL": "https://github.com/Einstore/Templator.git",
         "state": {
           "branch": "master",
-          "revision": "81d4365f2a85f7802a049463dfb4f47cb14dc1a9",
+          "revision": "4f4fdc5cdccd1860d9da91da4975a4f6fb81a581",
           "version": null
         }
       },

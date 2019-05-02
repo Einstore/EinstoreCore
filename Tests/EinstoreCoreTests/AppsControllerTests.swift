@@ -33,10 +33,10 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
     var team1: Team!
     var team2: Team!
     
-    var key1: UploadKey!
-    var key2: UploadKey!
-    var key3: UploadKey!
-    var key4: UploadKey!
+    var key1: ApiKey!
+    var key2: ApiKey!
+    var key3: ApiKey!
+    var key4: ApiKey!
     
     var team4: Team!
     

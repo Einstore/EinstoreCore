@@ -1,5 +1,5 @@
 //
-//  UploadKeyTests.swift
+//  ApiKeyTests.swift
 //  EinstoreCoreTests
 //
 //  Created by Ondrej Rafaj on 04/03/2018.
@@ -15,7 +15,7 @@ import EinstoreCoreTestTools
 @testable import EinstoreCore
 
 
-class UploadKeysControllerTests: XCTestCase, UploadKeyTestCaseSetup, LinuxTests {
+class ApiKeysControllerTests: XCTestCase, ApiKeyTestCaseSetup, LinuxTests {
     
     var app: Application!
     
@@ -26,10 +26,10 @@ class UploadKeysControllerTests: XCTestCase, UploadKeyTestCaseSetup, LinuxTests 
     var team1: Team!
     var team2: Team!
     
-    var key1: UploadKey!
-    var key2: UploadKey!
-    var key3: UploadKey!
-    var key4: UploadKey!
+    var key1: ApiKey!
+    var key2: ApiKey!
+    var key3: ApiKey!
+    var key4: ApiKey!
     
     var team4: Team!
     
@@ -37,12 +37,12 @@ class UploadKeysControllerTests: XCTestCase, UploadKeyTestCaseSetup, LinuxTests 
     // MARK: Linux
     
     static let allTests: [(String, Any)] = [
-        ("testGetUploadKeysForUser", testGetUploadKeysForUser),
-        ("testGetUploadKeysForTeam", testGetUploadKeysForTeam),
-        ("testCreateUploadKey", testCreateUploadKey),
-        ("testChangeUploadKeyName", testChangeUploadKeyName),
-        ("testDeleteUploadKey", testDeleteUploadKey),
-        ("testGetOneUploadKey", testGetOneUploadKey),
+        ("testGetApiKeysForUser", testGetApiKeysForUser),
+        ("testGetApiKeysForTeam", testGetApiKeysForTeam),
+        ("testCreateApiKey", testCreateApiKey),
+        ("testChangeApiKeyName", testChangeApiKeyName),
+        ("testDeleteApiKey", testDeleteApiKey),
+        ("testGetOneApiKey", testGetOneApiKey),
         ("testLinuxTests", testLinuxTests)
     ]
     
@@ -59,18 +59,18 @@ class UploadKeysControllerTests: XCTestCase, UploadKeyTestCaseSetup, LinuxTests 
         
         app.testable.delete(allFor: Token.self)
         
-        setupUploadKeys()
+        setupApiKeys()
     }
     
     // MARK: Tests
     
-    func testGetUploadKeysForUser() {
+    func testGetApiKeysForUser() {
         let req = HTTPRequest.testable.get(uri: "/keys", authorizedUser: user1, on: app)
         let r = app.testable.response(to: req)
         
         r.response.testable.debug()
         
-        let keys = r.response.testable.content(as: [UploadKey.Display].self)!
+        let keys = r.response.testable.content(as: [ApiKey.Display].self)!
         
         XCTAssertEqual(keys.count, 3, "There should be right amount of keys for the user")
         
@@ -78,13 +78,13 @@ class UploadKeysControllerTests: XCTestCase, UploadKeyTestCaseSetup, LinuxTests 
         XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing or invalid content type")
     }
     
-    func testGetUploadKeysForTeam() {
+    func testGetApiKeysForTeam() {
         let req = HTTPRequest.testable.get(uri: "/teams/\(team1.id!.uuidString)/keys", authorizedUser: user1, on: app)
         let r = app.testable.response(to: req)
         
         r.response.testable.debug()
         
-        let keys = r.response.testable.content(as: [UploadKey.Display].self)!
+        let keys = r.response.testable.content(as: [ApiKey.Display].self)!
         
         XCTAssertEqual(keys.count, 2, "There should be right amount of keys for the team")
         
@@ -96,14 +96,14 @@ class UploadKeysControllerTests: XCTestCase, UploadKeyTestCaseSetup, LinuxTests 
         XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing or invalid content type")
     }
     
-    func testCreateUploadKey() {
+    func testCreateApiKey() {
         // Test setup
-        var count = app.testable.count(allFor: UploadKey.self)
+        var count = app.testable.count(allFor: ApiKey.self)
         XCTAssertEqual(count, 4, "There should be two team entries in the db at the beginning")
         
         // Execute request
         let expiryDate = Date(timeIntervalSince1970: 23412342342)
-        let post = UploadKey.New(name: "new key", expires: expiryDate)
+        let post = ApiKey.New(name: "new key", type: 0, expires: expiryDate)
         let postData = try! post.asJson()
         let req = HTTPRequest.testable.post(uri: "/teams/\(team1.id!.uuidString)/keys", data: postData, headers: [
             "Content-Type": "application/json; charset=utf-8"
@@ -113,7 +113,7 @@ class UploadKeysControllerTests: XCTestCase, UploadKeyTestCaseSetup, LinuxTests 
         
         r.response.testable.debug()
         
-        let key = r.response.testable.content(as: UploadKey.self)!
+        let key = r.response.testable.content(as: ApiKey.self)!
         let privateKey = UUID(uuidString: key.token)
         
         XCTAssertNotNil(privateKey, "Token should have been created properly")
@@ -123,13 +123,13 @@ class UploadKeysControllerTests: XCTestCase, UploadKeyTestCaseSetup, LinuxTests 
         XCTAssertTrue(r.response.testable.has(statusCode: .created), "Wrong status code")
         XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing or invalid content type")
         
-        count = app.testable.count(allFor: UploadKey.self)
+        count = app.testable.count(allFor: ApiKey.self)
         XCTAssertEqual(count, 5, "There should be two team entries in the db at the beginning")
     }
     
-    func testChangeUploadKeyName() {
+    func testChangeApiKeyName() {
         let expiryDate = Date(timeIntervalSince1970: 20000042342)
-        let post = UploadKey.New(name: "updated key", expires: expiryDate)
+        let post = ApiKey.New(name: "updated key", type: 0, expires: expiryDate)
         let postData = try! post.asJson()
         let req = HTTPRequest.testable.put(uri: "/keys/\(key1.id!.uuidString)", data: postData, headers: [
             "Content-Type": "application/json; charset=utf-8"
@@ -139,7 +139,7 @@ class UploadKeysControllerTests: XCTestCase, UploadKeyTestCaseSetup, LinuxTests 
         
         r.response.testable.debug()
         
-        let key = app.testable.one(for: UploadKey.self, id: key1.id!)!
+        let key = app.testable.one(for: ApiKey.self, id: key1.id!)!
         
         XCTAssertEqual(key.name, post.name, "Name hasn't been updated")
         
@@ -151,8 +151,8 @@ class UploadKeysControllerTests: XCTestCase, UploadKeyTestCaseSetup, LinuxTests 
         XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing or invalid content type")
     }
     
-    func testDeleteUploadKey() {
-        var count = app.testable.count(allFor: UploadKey.self)
+    func testDeleteApiKey() {
+        var count = app.testable.count(allFor: ApiKey.self)
         XCTAssertEqual(count, 4, "There should be two team entries in the db at the beginning")
         
         let req = HTTPRequest.testable.delete(uri: "/keys/\(key2.id!.uuidString)", authorizedUser: user1, on: app)
@@ -162,21 +162,21 @@ class UploadKeysControllerTests: XCTestCase, UploadKeyTestCaseSetup, LinuxTests 
         
         XCTAssertTrue(r.response.testable.has(statusCode: .noContent), "Wrong status code")
         
-        app.testable.all(for: UploadKey.self).forEach { (key) in
+        app.testable.all(for: ApiKey.self).forEach { (key) in
             XCTAssertNotEqual(key.id!, key2.id!, "Key has not been deleted")
         }
         
-        count = app.testable.count(allFor: UploadKey.self)
+        count = app.testable.count(allFor: ApiKey.self)
         XCTAssertEqual(count, 3, "There should be two team entries in the db at the end")
     }
     
-    func testGetOneUploadKey() {
+    func testGetOneApiKey() {
         let req = HTTPRequest.testable.get(uri: "/keys/\(key4.id!.uuidString)", authorizedUser: user1, on: app)
         let r = app.testable.response(to: req)
         
         r.response.testable.debug()
         
-        let key = r.response.testable.content(as: UploadKey.Display.self)!
+        let key = r.response.testable.content(as: ApiKey.Display.self)!
         
         XCTAssertEqual(key.id!, key4.id!, "Key has not been retrieved")
         

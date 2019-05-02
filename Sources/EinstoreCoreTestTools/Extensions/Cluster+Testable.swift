@@ -20,7 +20,7 @@ extension TestableProperty where TestableType == Cluster {
         if let cluster = try! Cluster.query(on: req).filter(\Cluster.identifier == identifier).first().wait() {
             return cluster
         } else {
-            let app = App(teamId: UUID(),clusterId: UUID(), name: identifier, identifier: identifier, version: "", build: "", platform: platform, size: 0, sizeTotal: 0)
+            let app = App(teamId: UUID(),clusterId: UUID(), name: identifier, identifier: identifier, version: "", build: "", platform: platform, built: Date(), size: 0, sizeTotal: 0)
             let object = Cluster(latestApp: app, appCount: 0)
             return try! object.save(on: req).wait()
         }

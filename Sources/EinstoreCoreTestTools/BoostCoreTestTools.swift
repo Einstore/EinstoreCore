@@ -10,7 +10,7 @@ import VaporTestTools
 import EinstoreCore
 
 
-extension UploadKey: Testable { }
+extension ApiKey: Testable { }
 extension DownloadKey: Testable { }
 extension App: Testable { }
 extension Cluster: Testable { }

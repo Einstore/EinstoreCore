@@ -1,5 +1,5 @@
 //
-//  UploadKey.swift
+//  ApiKeyController.swift
 //  EinstoreCore
 //
 //  Created by Ondrej Rafaj on 17/01/2018.
@@ -13,32 +13,32 @@ import FluentPostgreSQL
 import ErrorsCore
 
 
-class UploadKeyController: Controller {
+class ApiKeyController: Controller {
     
     static func boot(router: Router, secure: Router, debug: Router) throws {
-        secure.get("keys") { (req) -> Future<[UploadKey.Display]> in
-            return try req.me.teams().flatMap(to: [UploadKey.Display].self) { teams in
-                return UploadKey.query(on: req).filter(\UploadKey.teamId ~~ teams.ids).decode(UploadKey.Display.self).all()
+        secure.get("keys") { (req) -> Future<[ApiKey.Display]> in
+            return try req.me.teams().flatMap(to: [ApiKey.Display].self) { teams in
+                return ApiKey.query(on: req).filter(\ApiKey.teamId ~~ teams.ids).decode(ApiKey.Display.self).all()
             }
         }
         
-        secure.get("teams", DbIdentifier.parameter, "keys") { (req) -> Future<[UploadKey.Display]> in
+        secure.get("teams", DbIdentifier.parameter, "keys") { (req) -> Future<[ApiKey.Display]> in
             let teamId = try req.parameters.next(DbIdentifier.self)
-            return try req.me.verifiedTeam(id: teamId).flatMap(to: [UploadKey.Display].self) { team in
+            return try req.me.verifiedTeam(id: teamId).flatMap(to: [ApiKey.Display].self) { team in
                 guard let teamId = team.id else {
                     throw ErrorsCore.HTTPError.notFound
                 }
-                return UploadKey.query(on: req).filter(\UploadKey.teamId == teamId).decode(UploadKey.Display.self).all()
+                return ApiKey.query(on: req).filter(\ApiKey.teamId == teamId).decode(ApiKey.Display.self).all()
             }
         }
         
-        secure.get("keys", DbIdentifier.parameter) { (req) -> Future<UploadKey.Display> in
+        secure.get("keys", DbIdentifier.parameter) { (req) -> Future<ApiKey.Display> in
             let keyId = try req.parameters.next(DbIdentifier.self)
-            return UploadKey.find(keyId, on: req).flatMap(to: UploadKey.Display.self) { key in
+            return ApiKey.find(keyId, on: req).flatMap(to: ApiKey.Display.self) { key in
                 guard let key = key else {
                     throw ErrorsCore.HTTPError.notFound
                 }
-                return try req.me.verifiedTeam(id: key.teamId).map(to: UploadKey.Display.self) { team in
+                return try req.me.verifiedTeam(id: key.teamId).map(to: ApiKey.Display.self) { team in
                     return key.asDisplay()
                 }
             }
@@ -50,8 +50,8 @@ class UploadKeyController: Controller {
                 guard let teamId = team.id else {
                     throw ErrorsCore.HTTPError.notFound
                 }
-                return try req.content.decode(UploadKey.New.self).flatMap(to: Response.self) { newKey in
-                    let key = UploadKey(new: newKey, teamId: teamId)
+                return try req.content.decode(ApiKey.New.self).flatMap(to: Response.self) { newKey in
+                    let key = ApiKey(new: newKey, teamId: teamId)
                     let tokenCache = key.token
                     key.token = try tokenCache.sha()
                     return key.save(on: req).flatMap(to: Response.self) { key in
@@ -62,17 +62,17 @@ class UploadKeyController: Controller {
             }
         }
         
-        secure.put("keys", DbIdentifier.parameter) { (req) -> Future<UploadKey.Display> in
+        secure.put("keys", DbIdentifier.parameter) { (req) -> Future<ApiKey.Display> in
             let keyId = try req.parameters.next(DbIdentifier.self)
-            return UploadKey.find(keyId, on: req).flatMap(to: UploadKey.Display.self) { key in
+            return ApiKey.find(keyId, on: req).flatMap(to: ApiKey.Display.self) { key in
                 guard let key = key else {
                     throw ErrorsCore.HTTPError.notFound
                 }
-                return try req.me.verifiedTeam(id: key.teamId).flatMap(to: UploadKey.Display.self) { team in
-                    return try req.content.decode(UploadKey.New.self).flatMap(to: UploadKey.Display.self) { newKey in
+                return try req.me.verifiedTeam(id: key.teamId).flatMap(to: ApiKey.Display.self) { team in
+                    return try req.content.decode(ApiKey.New.self).flatMap(to: ApiKey.Display.self) { newKey in
                         key.name = newKey.name
                         key.expires = newKey.expires
-                        return key.save(on: req).map(to: UploadKey.Display.self) { key in
+                        return key.save(on: req).map(to: ApiKey.Display.self) { key in
                             return key.asDisplay()
                         }
                     }
@@ -82,7 +82,7 @@ class UploadKeyController: Controller {
         
         secure.delete("keys", DbIdentifier.parameter) { (req) -> Future<Response> in
             let keyId = try req.parameters.next(DbIdentifier.self)
-            return UploadKey.find(keyId, on: req).flatMap(to: Response.self) { key in
+            return ApiKey.find(keyId, on: req).flatMap(to: Response.self) { key in
                 guard let key = key else {
                     throw ErrorsCore.HTTPError.notFound
                 }

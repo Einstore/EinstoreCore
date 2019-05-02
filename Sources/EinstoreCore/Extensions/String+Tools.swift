@@ -31,6 +31,11 @@ extension String {
         return text
     }
     
+    func condenseWhitespace() -> String {
+        let components = self.components(separatedBy: .whitespacesAndNewlines)
+        return components.filter { !$0.isEmpty }.joined(separator: " ")
+    }
+    
 }
 
 
