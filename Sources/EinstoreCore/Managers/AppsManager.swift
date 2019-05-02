@@ -101,9 +101,9 @@ public class AppsManager {
                                     on: req
                                 )
                                 let templator = try req.make(Templates<ApiCoreDatabase>.self)
-                                let htmlTemplate = try templator.get(EmailTemplateInvitationHTML.self, data: templateModel, on: req)
+                                let htmlTemplate = try templator.get(EmailAppNotificationTemplateHTML.self, data: templateModel, on: req)
                                 return htmlTemplate.flatMap(to: Response.self) { htmlTemplate in
-                                    let plainTemplate = try templator.get(EmailTemplateInvitationPlain.self, data: templateModel, on: req)
+                                    let plainTemplate = try templator.get(EmailAppNotificationEmailPlain.self, data: templateModel, on: req)
                                     return plainTemplate.flatMap(to: Response.self) { plainTemplate in
                                         let from = ApiCoreBase.configuration.mail.email
                                         let subject = "Install \(app.name) - \(ApiCoreBase.configuration.server.name)" // TODO: Localize!!!!!!
