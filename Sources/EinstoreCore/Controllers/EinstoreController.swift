@@ -38,6 +38,14 @@ public class EinstoreController: Controller {
     
     /// Boot controller
     public static func boot(router: Router, secure: Router, debug: Router) throws {
+        struct Mode: Content {
+            let demo: Bool
+        }
+        
+        router.get("mode") { req -> Mode in
+            return Mode(demo: EinstoreCoreBase.configuration.demo)
+        }
+        
         // Install demo data
         debug.get("demo") { (req)->Future<Response> in
             return Team.query(on: req).first().flatMap(to: Response.self) { team in

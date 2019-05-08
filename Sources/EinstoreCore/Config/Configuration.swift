@@ -40,9 +40,13 @@ public class Configuration: Configurable {
     /// Filesystem
     public internal(set) var storage: Storage
     
+    /// Demo mode
+    public internal(set) var demo: Bool
+    
     /// Initializer
-    init(storage: Storage) {
+    init(storage: Storage, demo: Bool) {
         self.storage = storage
+        self.demo = demo
     }
     
 }
@@ -55,15 +59,18 @@ extension EinstoreCore.Configuration {
             storage: Configuration.Storage(
                 rootTempPath: "tmp",
                 appDestinationPath: "apps"
-            )
+            ),
+            demo: false
         )
     }
     
     /// Update from environmental variables
     public func loadEnv() {
         // Root
-        load("boostcore.storage.root_temp_path", to: &storage.rootTempPath)
-        load("boostcore.storage.app_destination_path", to: &storage.appDestinationPath)
+        load("BOOSTCORE_STORAGE_ROOT_TEMP_PATH", to: &storage.rootTempPath)
+        load("BOOSTCORE_STORAGE_APP_DESTINATION_PATH", to: &storage.appDestinationPath)
+        
+        load("BOOSTCORE_DEMO", to: &demo)
     }
     
 }
