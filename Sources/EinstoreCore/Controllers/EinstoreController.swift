@@ -144,7 +144,7 @@ public class EinstoreController: Controller {
                                             cluster.teamId = app.teamId
                                             cluster.appCount += 1
                                             return cluster.add(app: app, on: req).flatMap() { cluster in
-                                                guard icon.http.status == .ok, let iconData = icon.http.body.data, let path = app.appPath?.relativePath else {
+                                                guard icon.http.status == .ok, let iconData = icon.http.body.data, let path = app.iconPath?.relativePath else {
                                                     print("Demo app icon has not been generated")
                                                     return saveTags()
                                                 }
