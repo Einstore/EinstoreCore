@@ -78,7 +78,7 @@ public class EinstoreController: Controller {
                         )
                         let future = cluster.save(on: req).flatMap(to: Void.self) { cluster in
                             let client = try req.make(Client.self)
-                            return client.get("https://api.adorable.io/avatars/500/\(name.lowercased())@\(name.lowercased()).io.png").flatMap(to: Void.self) { icon in
+                            return client.get("https://api.adorable.io/avatars/256/\(name.lowercased())@\(name.lowercased()).io.png").flatMap(to: Void.self) { icon in
                                 let hasIcon = (icon.http.status == .ok && icon.http.body.data != nil)
                                 let identifier = "io.liveui.\(name.lowercased())"
                                 var build = Int(Color.randomInt(max: 5000) + 1)
@@ -114,7 +114,8 @@ public class EinstoreController: Controller {
                                                         id: prId.uuidString,
                                                         url: "https://github.example.com/team/project/pr/\(prId.uuidString)",
                                                         message: "Lorem ipsum dolor sit amet has been implemented"
-                                                )),
+                                                    )
+                                                ),
                                                 projectManagement: App.Info.ProjectManagement(
                                                     ticket: App.Info.URLMessagePair(
                                                         id: pmId.uuidString,
@@ -143,10 +144,12 @@ public class EinstoreController: Controller {
                                             cluster.teamId = app.teamId
                                             cluster.appCount += 1
                                             return cluster.add(app: app, on: req).flatMap() { cluster in
-                                                guard icon.http.status == .ok, let iconData = icon.http.body.data, let path = app.appPath?.relativePath else {
+                                                guard icon.http.status == .ok, let iconData = icon.http.body.data, let path = app.iconPath?.relativePath else {
+                                                    print("Demo app icon has not been generated")
                                                     return saveTags()
                                                 }
                                                 return try fm.save(file: iconData, to: path, mime: .png, on: req).flatMap() { _ in
+                                                    print("Demo app icon has been generated to \(path)")
                                                     return saveTags()
                                                 }
                                             }
