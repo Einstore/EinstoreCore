@@ -52,57 +52,113 @@ public class EinstoreController: Controller {
                 guard let team = team else {
                     throw Error.installMissing
                 }
+                let fm = try req.makeFileCore()
                 var futures: [Future<Void>] = []
                 // Install apps
                 let appNames = ["RiverCity", "Superhero", "Goodlok", "Junior", "Road", "Shots", "Reflect", "Shack", "Muscle", "Army", "FirstStep", "Team", "Speak", "Shopping", "Sync", "Artist", "GoldCoast", "View", "Ponder", "Saver", "Americana", "Metro", "Lasso", "Fabric", "Experience", "Mates", "Trifecta", "SolidRock", "Upward", "Savers", "Vita", "North", "Renovation", "Anti", "Performance", "Boost", "Echelon", "HighPerformance", "Guild", "RedHot", "Rumble", "CarpeDiem", "Sapient", "Clone", "League", "Masters", "BlueSky", "Convergent", "Elite", "Upper", "Allied", "Bullseye", "Fixer", "Nano", "BestValue", "Wildlife", "Small", "River", "Doomsday", "Premiere", "Precision", "Mobi", "Under", "Rekola", "Supernova", "FirstCoast", "Department", "Copper", "Glory", "Player", "Friend", "FarEast", "Ambassador"]
                 let platforms: [App.Platform] = [.ios, .android]
                 for platform in platforms {
                     for name in appNames {
-                        let identifier = "io.liveui.\(name.lowercased())"
-                        var build = Int(Color.randomInt(max: 5000) + 1)
-                        var cluster: Cluster? = nil
-                        for i1 in 0...5 {
-                            for i2 in 0...5 {
-                                let version = "1.\(i1).\(i2)"
-                                let sdk = "\(name)SDK_\(version)"
-                                let sdk2 = "AnotherSDK_1.\(i2)"
-                                let app = App(teamId: team.id!, clusterId: (cluster?.id ?? UUID()), name: name, identifier: identifier, version: version, build: String(build), platform: platform, built: Date(), size: 5000, sizeTotal: 5678, info: nil, minSdk: "19", hasIcon: false)
-                                let save = app.save(on: req).flatMap(to: Void.self) { app in
-                                    func saveTags() -> Future<Void> {
-                                        let tags: [Future<Void>] = [
-                                            Tag(teamId: team.id!, identifier: sdk.lowercased()).save(on: req).flatMap(to: Void.self) { tag in
-                                                return app.tags.attach(tag, on: req).flatten()
-                                            },
-                                            Tag(teamId: team.id!, identifier: sdk2.lowercased()).save(on: req).flatMap(to: Void.self) { tag in
-                                                return app.tags.attach(tag, on: req).flatten()
+                        let cluster = Cluster(
+                            id: nil,
+                            latestApp: App(
+                                id: UUID(),
+                                teamId: UUID(),
+                                clusterId: UUID(),
+                                name: "",
+                                identifier: "",
+                                version: "",
+                                build: "",
+                                platform: .ios,
+                                built: nil,
+                                size: 0,
+                                sizeTotal: 0
+                            ),
+                            appCount: 0
+                        )
+                        let future = cluster.save(on: req).flatMap(to: Void.self) { cluster in
+                            let client = try req.make(Client.self)
+                            return client.get("https://api.adorable.io/avatars/500/\(name.lowercased())@\(name.lowercased()).io.png").flatMap(to: Void.self) { icon in
+                                let hasIcon = (icon.http.status == .ok && icon.http.body.data != nil)
+                                let identifier = "io.liveui.\(name.lowercased())"
+                                var build = Int(Color.randomInt(max: 5000) + 1)
+                                for i1 in 0...4 {
+                                    for i2 in 0...4 {
+                                        let version = "1.\(i1).\(i2)"
+                                        let sdk = "\(name)SDK_\(version)"
+                                        let sdk2 = "AnotherSDK_1.\(i2)"
+                                        
+                                        let commitId = UUID()
+                                        let prId = UUID()
+                                        let pmId = UUID()
+                                        
+                                        let app = App(
+                                            teamId: team.id!,
+                                            clusterId: cluster.id!,
+                                            name: name,
+                                            identifier: identifier,
+                                            version: version,
+                                            build: String(build),
+                                            platform: platform,
+                                            built: Date(),
+                                            size: 5000,
+                                            sizeTotal: 5678,
+                                            info: App.Info(
+                                                sourceControl: App.Info.SourceControl(
+                                                    commit: App.Info.URLMessagePair(
+                                                        id: commitId.uuidString,
+                                                        url: "https://github.example.com/team/project/commit/\(commitId.uuidString)",
+                                                        message: "Lorem implemented"
+                                                    ),
+                                                    pr: App.Info.URLMessagePair(
+                                                        id: prId.uuidString,
+                                                        url: "https://github.example.com/team/project/pr/\(prId.uuidString)",
+                                                        message: "Lorem ipsum dolor sit amet has been implemented"
+                                                )),
+                                                projectManagement: App.Info.ProjectManagement(
+                                                    ticket: App.Info.URLMessagePair(
+                                                        id: pmId.uuidString,
+                                                        url: "https://project.example.com/ticket/\(pmId.uuidString)",
+                                                        message: "Lorem ipsum dolor sit amet needs to be implemented properly in order for the system to work.\n\nLook at lipsum.org for details!"
+                                                    )
+                                                )
+                                            ),
+                                            minSdk: "19",
+                                            hasIcon: hasIcon
+                                        )
+                                        let save = app.save(on: req).flatMap(to: Void.self) { app in
+                                            func saveTags() -> Future<Void> {
+                                                let tags: [Future<Void>] = [
+                                                    Tag(teamId: team.id!, identifier: sdk.lowercased()).save(on: req).flatMap(to: Void.self) { tag in
+                                                        return app.tags.attach(tag, on: req).flatten()
+                                                    },
+                                                    Tag(teamId: team.id!, identifier: sdk2.lowercased()).save(on: req).flatMap(to: Void.self) { tag in
+                                                        return app.tags.attach(tag, on: req).flatten()
+                                                    }
+                                                ]
+                                                return tags.flatten(on: req)
                                             }
-                                        ]
-                                        return tags.flatten(on: req)
-                                    }
-                                    guard let c = cluster else {
-                                        let c = Cluster(latestApp: app, appCount: 1)
-                                        cluster = c
-                                        return c.save(on: req).flatMap({ c -> Future<Void> in
-                                            guard let clusterId = c.id else {
-                                                fatalError("Cluster didn't save")
+                                            cluster.identifier = app.identifier
+                                            cluster.platform = app.platform
+                                            cluster.teamId = app.teamId
+                                            cluster.appCount += 1
+                                            return cluster.add(app: app, on: req).flatMap() { cluster in
+                                                guard icon.http.status == .ok, let iconData = icon.http.body.data, let path = app.appPath?.relativePath else {
+                                                    return saveTags()
+                                                }
+                                                return try fm.save(file: iconData, to: path, mime: .png, on: req).flatMap() { _ in
+                                                    return saveTags()
+                                                }
                                             }
-                                            cluster = c
-                                            app.clusterId = clusterId
-                                            return app.save(on: req).flatMap({ app -> Future<Void> in
-                                                return saveTags()
-                                            })
-                                        })
-                                    }
-                                    c.appCount += 1
-                                    return c.save(on: req).flatMap() { c in
-                                        cluster = c
-                                        return saveTags()
+                                        }
+                                        futures.append(save)
+                                        build += 1
                                     }
                                 }
-                                futures.append(save)
-                                build += 1
+                                return futures.flatten(on: req)
                             }
                         }
+                        futures.append(future)
                     }
                 }
                 return futures.flatten(on: req).map(to: Response.self) { _ in
