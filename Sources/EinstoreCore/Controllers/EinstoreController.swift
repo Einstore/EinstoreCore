@@ -114,7 +114,8 @@ public class EinstoreController: Controller {
                                                         id: prId.uuidString,
                                                         url: "https://github.example.com/team/project/pr/\(prId.uuidString)",
                                                         message: "Lorem ipsum dolor sit amet has been implemented"
-                                                )),
+                                                    )
+                                                ),
                                                 projectManagement: App.Info.ProjectManagement(
                                                     ticket: App.Info.URLMessagePair(
                                                         id: pmId.uuidString,
