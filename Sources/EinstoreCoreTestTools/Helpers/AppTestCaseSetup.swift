@@ -33,10 +33,7 @@ extension AppTestCaseSetup {
     }
     
     public func setupApps() {
-        app.testable.delete(allFor: App.self)
-        app.testable.delete(allFor: Tag.self)
-        app.testable.delete(allFor: AppTag.self)
-        
+        clearApps()
         setupApiKeys()
         
         app1 = App.testable.create(team: team1, name: "App 1", version: "1.2.3", build: "123456", platform: .ios, on: app)
@@ -50,7 +47,7 @@ extension AppTestCaseSetup {
         app2.testable.addTag(name: "common tag", team: team1, identifier: "common-tag", on: app)
         app2.testable.addTag(name: "tag for app 2", team: team1, identifier: "tag-for-app-2", on: app)
         
-        for x in 0...6 {
+        for x in 0...3 {
             for i in 0...6 {
                 App.testable.create(team: team1, name: "App ios \(i)", version: "1.\(x).\(i)", build: "\((1000 + i))", platform: .ios, on: app)
             }
@@ -61,13 +58,22 @@ extension AppTestCaseSetup {
         }
         
         for i in 0...6 {
-            App.testable.create(team: team2, name: "App android \(i)", version: "2.0.\(i)", build: "\((1000 + i))", platform: .android, on: app)
+            let a = App.testable.create(team: team2, name: "App android \(i)", identifier: "android-app-on-team-2", version: "2.0.\(i)", build: "\((1000 + i))", platform: .android, on: app)
+            a.testable.addTag(name: "common tag", team: team1, identifier: "common-tag", on: app)
+            a.testable.addTag(name: "tag for app 2", team: team1, identifier: "tag-for-app-2", on: app)
         }
     }
     
     public func deleteAllFiles() {
 //        try! Boost.storageFileHandler.delete(path: Boost.config.storageFileConfig.mainFolderPath)
 //        try! Boost.storageFileHandler.delete(path: Boost.config.tempFileConfig.mainFolderPath)
+    }
+    
+    public func clearApps() {
+        app.testable.delete(allFor: Cluster.self)
+        app.testable.delete(allFor: App.self)
+        app.testable.delete(allFor: Tag.self)
+        app.testable.delete(allFor: AppTag.self)
     }
     
 }
