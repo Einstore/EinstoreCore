@@ -78,7 +78,7 @@ public class EinstoreController: Controller {
                         )
                         let future = cluster.save(on: req).flatMap(to: Void.self) { cluster in
                             let client = try req.make(Client.self)
-                            return client.get("https://api.adorable.io/avatars/500/\(name.lowercased())@\(name.lowercased()).io.png").flatMap(to: Void.self) { icon in
+                            return client.get("https://api.adorable.io/avatars/256/\(name.lowercased())@\(name.lowercased()).io.png").flatMap(to: Void.self) { icon in
                                 let hasIcon = (icon.http.status == .ok && icon.http.body.data != nil)
                                 let identifier = "io.liveui.\(name.lowercased())"
                                 var build = Int(Color.randomInt(max: 5000) + 1)
