@@ -164,6 +164,7 @@ extension Cluster {
         latestAppVersion = app.version
         latestAppBuild = app.build
         latestAppAdded = app.created
+        latestAppHasIcon = app.hasIcon
         return save(on: req)
     }
     
