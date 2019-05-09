@@ -92,6 +92,8 @@ public class EinstoreController: Controller {
                                         let prId = UUID()
                                         let pmId = UUID()
                                         
+                                        let iconDataMD5 = icon.http.body.data?.md5.asUTF8String()
+                                        
                                         let build = Build(
                                             teamId: team.id!,
                                             clusterId: cluster.id!,
@@ -125,7 +127,7 @@ public class EinstoreController: Controller {
                                                 )
                                             ),
                                             minSdk: "19",
-                                            hasIcon: hasIcon
+                                            iconHash: iconDataMD5
                                         )
                                         let save = build.save(on: req).flatMap(to: Void.self) { build in
                                             func saveTags() -> Future<Void> {

@@ -229,7 +229,7 @@ final public class Build: DbCoreModel {
         public var size: Int
         public var info: Info?
         public var minSdk: String?
-        public var hasIcon: Bool
+        public var iconHash: String?
         
         enum CodingKeys: String, CodingKey {
             case id
@@ -245,7 +245,7 @@ final public class Build: DbCoreModel {
             case size
             case info
             case minSdk
-            case hasIcon = "icon"
+            case iconHash = "icon"
         }
         
         public init(_ build: Build) {
@@ -262,7 +262,11 @@ final public class Build: DbCoreModel {
             size = build.size
             info = build.info
             minSdk = build.minSdk
-            hasIcon = build.hasIcon
+            iconHash = build.iconHash
+        }
+        
+        public var hasIcon: Bool {
+            return iconHash != nil
         }
         
     }
@@ -291,7 +295,7 @@ final public class Build: DbCoreModel {
     public var sizeTotal: Int
     public var info: Info?
     public var minSdk: String?
-    public var hasIcon: Bool
+    public var iconHash: String?
     
     enum CodingKeys: String, CodingKey {
         case id
@@ -308,10 +312,10 @@ final public class Build: DbCoreModel {
         case sizeTotal = "size_total"
         case info
         case minSdk = "min_sdk"
-        case hasIcon = "icon"
+        case iconHash = "icon"
     }
 
-    public init(id: DbIdentifier? = nil, teamId: DbIdentifier, clusterId: DbIdentifier, name: String, identifier: String, version: String, build: String, platform: Platform, built: Date?, size: Int, sizeTotal: Int, info: Info? = nil, minSdk: String? = nil, hasIcon: Bool = false) {
+    public init(id: DbIdentifier? = nil, teamId: DbIdentifier, clusterId: DbIdentifier, name: String, identifier: String, version: String, build: String, platform: Platform, built: Date?, size: Int, sizeTotal: Int, info: Info? = nil, minSdk: String? = nil, iconHash: String? = nil) {
         self.id = id
         self.teamId = teamId
         self.clusterId = clusterId
@@ -326,7 +330,11 @@ final public class Build: DbCoreModel {
         self.sizeTotal = sizeTotal
         self.info = info
         self.minSdk = minSdk
-        self.hasIcon = hasIcon
+        self.iconHash = iconHash
+    }
+    
+    public var hasIcon: Bool {
+        return iconHash != nil
     }
     
 }
@@ -376,7 +384,7 @@ extension Build: Migration {
             let col = PostgreSQLColumnDefinition.columnDefinition(.column(nil, "info"), .jsonb, [])
             schema.field(col)
             
-            schema.field(for: \.hasIcon, type: .boolean)
+            schema.field(for: \.iconHash, type: .boolean)
             schema.field(for: \.minSdk, type: .varchar(20))
         }
     }
