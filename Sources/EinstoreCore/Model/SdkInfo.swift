@@ -17,7 +17,7 @@ struct SdkInfo: Content {
     let created: Date
     let sdk: String
     let language: String?
-    let platform: App.Platform
+    let platform: Build.Platform
     let osVersion: String
     
     enum CodingKeys: String, CodingKey {

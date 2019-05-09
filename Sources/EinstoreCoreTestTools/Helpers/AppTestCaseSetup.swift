@@ -18,8 +18,8 @@ import NIO
 
 
 public protocol AppTestCaseSetup: ApiKeyTestCaseSetup {
-    var app1: App! { get set }
-    var app2: App! { get set }
+    var app1: Build! { get set }
+    var app2: Build! { get set }
 }
 
 
@@ -36,29 +36,29 @@ extension AppTestCaseSetup {
         clearApps()
         setupApiKeys()
         
-        app1 = App.testable.create(team: team1, name: "App 1", version: "1.2.3", build: "123456", platform: .ios, on: app)
+        app1 = Build.testable.create(team: team1, name: "App 1", version: "1.2.3", build: "123456", platform: .ios, on: app)
         app1.testable.addTag(name: "common tag", team: team1, identifier: "common-tag", on: app)
         app1.testable.addTag(name: "tag for app 1", team: team1, identifier: "tag-for-app-1", on: app)
         
 //        fatalError("Fix with FileCore")
 //        _ = try! EinstoreCoreBase.storageFileHandler.createFolderStructure(url: app1.targetFolderPath!, on: app.testable.fakeRequest()).wait()
         
-        app2 = App.testable.create(team: team2, name: "App 2", identifier: "app2", version: "3.2.1", build: "654321", platform: .android, on: app)
+        app2 = Build.testable.create(team: team2, name: "App 2", identifier: "app2", version: "3.2.1", build: "654321", platform: .android, on: app)
         app2.testable.addTag(name: "common tag", team: team1, identifier: "common-tag", on: app)
         app2.testable.addTag(name: "tag for app 2", team: team1, identifier: "tag-for-app-2", on: app)
         
         for x in 0...3 {
             for i in 0...6 {
-                App.testable.create(team: team1, name: "App ios \(i)", version: "1.\(x).\(i)", build: "\((1000 + i))", platform: .ios, on: app)
+                Build.testable.create(team: team1, name: "App ios \(i)", version: "1.\(x).\(i)", build: "\((1000 + i))", platform: .ios, on: app)
             }
             
             for i in 0...6 {
-                App.testable.create(team: team1, name: "App android \(i)", version: "1.\(x).\(i)", build: "\((1000 + i))", platform: .android, on: app)
+                Build.testable.create(team: team1, name: "App android \(i)", version: "1.\(x).\(i)", build: "\((1000 + i))", platform: .android, on: app)
             }
         }
         
         for i in 0...6 {
-            let a = App.testable.create(team: team2, name: "App android \(i)", identifier: "android-app-on-team-2", version: "2.0.\(i)", build: "\((1000 + i))", platform: .android, on: app)
+            let a = Build.testable.create(team: team2, name: "App android \(i)", identifier: "android-app-on-team-2", version: "2.0.\(i)", build: "\((1000 + i))", platform: .android, on: app)
             a.testable.addTag(name: "common tag", team: team1, identifier: "common-tag", on: app)
             a.testable.addTag(name: "tag for app 2", team: team1, identifier: "tag-for-app-2", on: app)
         }
@@ -71,9 +71,9 @@ extension AppTestCaseSetup {
     
     public func clearApps() {
         app.testable.delete(allFor: Cluster.self)
-        app.testable.delete(allFor: App.self)
+        app.testable.delete(allFor: Build.self)
         app.testable.delete(allFor: Tag.self)
-        app.testable.delete(allFor: AppTag.self)
+        app.testable.delete(allFor: BuildTag.self)
     }
     
 }

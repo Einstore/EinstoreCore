@@ -18,11 +18,11 @@ import SQL
 public class TagsManager {
     
     /// Save an array of tags on an app
-    public static func save(tags: [String], for app: App, team: Team, on req: Request) throws -> Future<Tags> {
+    public static func save(tags: [String], for build: Build, team: Team, on req: Request) throws -> Future<Tags> {
         guard let teamId = team.id else {
             throw ErrorsCore.HTTPError.missingId
         }
-        return try app.tags.query(on: req).all().flatMap(to: Tags.self) { appTags in
+        return try build.tags.query(on: req).all().flatMap(to: Tags.self) { appTags in
             var futures: [Future<Tag>] = []
             tags.forEach { tagSubstring in
                 let tag = String(tagSubstring).safeTagText
@@ -33,12 +33,12 @@ public class TagsManager {
                     guard let tagObject = tagObject else {
                         let t = Tag(id: nil, teamId: teamId, identifier: tag)
                         return t.save(on: req).flatMap(to: Tag.self) { tag in
-                            return app.tags.attach(tag, on: req).map(to: Tag.self) { _ in
+                            return build.tags.attach(tag, on: req).map(to: Tag.self) { _ in
                                 return tag
                             }
                         }
                     }
-                    return app.tags.attach(tagObject, on: req).map(to: Tag.self) { _ in
+                    return build.tags.attach(tagObject, on: req).map(to: Tag.self) { _ in
                         return tagObject
                     }
                 }
@@ -49,25 +49,25 @@ public class TagsManager {
     }
     
     /// Unsecured tags for an app
-    public static func tags(app: App, on req: Request) throws -> Future<Tags> {
-        return try app.tags.query(on: req).all()
+    public static func tags(build: Build, on req: Request) throws -> Future<Tags> {
+        return try build.tags.query(on: req).all()
     }
     
     /// Secured apps for a tag
-    public static func tags(appId: DbIdentifier, on req: Request) throws -> Future<Tags> {
+    public static func tags(buildId: DbIdentifier, on req: Request) throws -> Future<Tags> {
         return try req.me.teams().flatMap(to: Tags.self) { teams in
-            return try App.query(on: req).safeApp(appId: appId, teamIds: teams.ids).first().flatMap(to: Tags.self) { app in
-                guard let app = app else {
+            return try Build.query(on: req).safeBuild(id: buildId, teamIds: teams.ids).first().flatMap(to: Tags.self) { build in
+                guard let build = build else {
                     throw ErrorsCore.HTTPError.notFound
                 }
-                return try tags(app: app, on: req)
+                return try tags(build: build, on: req)
             }
         }
     }
     
     public static func delete(tag: Tag, on req: Request) throws -> Future<Void> {
-        return try tag.apps.query(on: req).count().flatMap(to: Void.self) { count in
-            let delete = AppTag.query(on: req).filter(\AppTag.tagId == tag.id!).delete()
+        return try tag.builds.query(on: req).count().flatMap(to: Void.self) { count in
+            let delete = BuildTag.query(on: req).filter(\BuildTag.tagId == tag.id!).delete()
             guard count == 1 else {
                 return delete
             }
@@ -85,8 +85,8 @@ public class TagsManager {
                 throw ErrorsCore.HTTPError.notFound
             }
             return try req.me.teams().flatMap(to: Void.self) { teams in
-                return try App.query(on: req).safeApp(appId: appId, teamIds: teams.ids).first().flatMap(to: Void.self) { app in
-                    guard let _ = app else {
+                return try Build.query(on: req).safeBuild(id: appId, teamIds: teams.ids).first().flatMap(to: Void.self) { build in
+                    guard let _ = build else {
                         throw ErrorsCore.HTTPError.notFound
                     }
                     return try delete(tag: tag, on: req)

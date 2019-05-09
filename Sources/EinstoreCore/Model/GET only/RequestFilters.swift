@@ -10,7 +10,7 @@ import Foundation
 
 /// Object holding main filters
 struct RequestFilters: Codable {
-    let platform: App.Platform?
+    let platform: Build.Platform?
     let identifier: String?
 }
 

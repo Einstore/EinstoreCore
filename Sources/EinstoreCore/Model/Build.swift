@@ -1,5 +1,5 @@
 //
-//  App.swift
+//  Build.swift
 //  App
 //
 //  Created by Ondrej Rafaj on 09/12/2017.
@@ -12,10 +12,10 @@ import FluentPostgreSQL
 import ApiCore
 
 
-public typealias Apps = [App.Public]
+public typealias Builds = [Build.Public]
 
 
-final public class App: DbCoreModel {
+final public class Build: DbCoreModel {
     
     /// Detail link template
     public struct DetailTemplate: Content {
@@ -35,30 +35,30 @@ final public class App: DbCoreModel {
         /// User
         public var user: User
         
-        /// App detail link
+        /// Build detail link
         public var link: String
         
         /// System wide template data
         public var system: FrontendSystemData
         
-        /// App info
-        public var app: App
+        /// Build info
+        public var build: Build
         
         /// Initializer
         ///
         /// - Parameters:
         ///   - verification: Verification token
-        ///   - link: App detail link value (optional)
-        ///   - app: App model
+        ///   - link: Build detail link value (optional)
+        ///   - build: Build model
         ///   - user: User model
         ///   - req: Request
         /// - Throws: whatever comes it's way
-        public init(link: String? = nil, app: App, user: User, on req: Request) throws {
+        public init(link: String? = nil, build: Build, user: User, on req: Request) throws {
             self.user = user
             let serverUrl = ApiCoreBase.configuration.server.interface ?? req.serverURL().absoluteString
-            self.link = link ?? serverUrl.finished(with: "/") + "build/\(app.id?.uuidString ?? "error")"
+            self.link = link ?? serverUrl.finished(with: "/") + "build/\(build.id?.uuidString ?? "error")"
             system = try FrontendSystemData(req)
-            self.app = app
+            self.build = build
         }
         
     }
@@ -248,21 +248,21 @@ final public class App: DbCoreModel {
             case hasIcon = "icon"
         }
         
-        public init(_ app: App) {
-            id = app.id
-            teamId = app.teamId
-            clusterId = app.clusterId
-            name = app.name
-            identifier = app.identifier
-            version = app.version
-            build = app.build
-            platform = app.platform
-            created = app.created
-            built = app.built
-            size = app.size
-            info = app.info
-            minSdk = app.minSdk
-            hasIcon = app.hasIcon
+        public init(_ build: Build) {
+            id = build.id
+            teamId = build.teamId
+            clusterId = build.clusterId
+            name = build.name
+            identifier = build.identifier
+            version = build.version
+            self.build = build.build
+            platform = build.platform
+            created = build.created
+            built = build.built
+            size = build.size
+            info = build.info
+            minSdk = build.minSdk
+            hasIcon = build.hasIcon
         }
         
     }
@@ -275,7 +275,7 @@ final public class App: DbCoreModel {
         
     }
     
-    public static var idKey: WritableKeyPath<App, DbIdentifier?> = \App.id
+    public static var idKey: WritableKeyPath<Build, DbIdentifier?> = \Build.id
     
     public var id: DbIdentifier?
     public var teamId: DbIdentifier
@@ -333,29 +333,29 @@ final public class App: DbCoreModel {
 
 // MARK: - Relationships
 
-extension App {
+extension Build {
     
-    var team: Parent<App, Team> {
-        return parent(\App.teamId)
+    var team: Parent<Build, Team> {
+        return parent(\Build.teamId)
     }
     
-    var tags: Siblings<App, Tag, AppTag> {
+    var tags: Siblings<Build, Tag, BuildTag> {
         return siblings()
     }
     
-    var downloadKeys: Children<App, DownloadKey> {
-        return children(\.appId)
+    var downloadKeys: Children<Build, DownloadKey> {
+        return children(\.buildId)
     }
     
-    var cluster: Parent<App, Cluster> {
-        return parent(\App.clusterId)
+    var cluster: Parent<Build, Cluster> {
+        return parent(\Build.clusterId)
     }
     
 }
 
 // MARK: - Migrations
 
-extension App: Migration {
+extension Build: Migration {
     
     public static func prepare(on connection: ApiCoreConnection) -> Future<Void> {
         return Database.create(self, on: connection) { (schema) in
@@ -382,7 +382,7 @@ extension App: Migration {
     }
     
     public static func revert(on connection: ApiCoreConnection) -> Future<Void> {
-        return Database.delete(App.self, on: connection)
+        return Database.delete(Build.self, on: connection)
     }
     
 }

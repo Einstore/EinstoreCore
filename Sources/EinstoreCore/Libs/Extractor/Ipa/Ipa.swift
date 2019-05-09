@@ -18,20 +18,20 @@ class Ipa: BaseExtractor, Extractor {
         var url = self.archive
         url.appendPathComponent("Payload")
         // TODO: Secure this a bit more?
-        if let appName: String = try! FileManager.default.contentsOfDirectory(atPath: url.path).first {
-            url.appendPathComponent(appName)
+        if let buildName: String = try! FileManager.default.contentsOfDirectory(atPath: url.path).first {
+            url.appendPathComponent(buildName)
         }
         return url
     }
     
     // MARK: Processing
     
-    func process(teamId: DbIdentifier, on req: Request) throws -> Future<App> {
+    func process(teamId: DbIdentifier, on req: Request) throws -> Future<Build> {
         run("unzip", "-o", file.path, "-d", archive.path)
         try parse()
         
-        let appFuture = try app(platform: .ios, teamId: teamId, on: req)
-        return appFuture
+        let buildFuture = try app(platform: .ios, teamId: teamId, on: req)
+        return buildFuture
     }
     
 }

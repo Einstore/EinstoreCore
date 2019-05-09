@@ -37,26 +37,26 @@ final public class Cluster: DbCoreModel {
         
         public var id: DbIdentifier?
         public var teamId: DbIdentifier?
-        public var latestAppName: String
-        public var latestAppVersion: String
-        public var latestAppBuild: String
-        public var latestAppAdded: Date?
-        public var latestAppId: DbIdentifier?
-        public var latestAppHasIcon: Bool
-        public var appCount: Int
-        public var platform: App.Platform
+        public var latestBuildName: String
+        public var latestBuildVersion: String
+        public var latestBuildBuildNo: String
+        public var latestBuildAdded: Date?
+        public var latestBuildId: DbIdentifier?
+        public var latestBuildHasIcon: Bool
+        public var buildCount: Int
+        public var platform: Build.Platform
         public var identifier: String
         
         enum CodingKeys: String, CodingKey {
             case id
             case teamId = "team_id"
-            case latestAppName = "latest_build_name"
-            case latestAppVersion = "latest_build_version"
-            case latestAppBuild = "latest_build_buildno"
-            case latestAppAdded = "latest_build_added"
-            case latestAppId = "latest_build_id"
-            case latestAppHasIcon = "latest_build_icon"
-            case appCount = "build_count"
+            case latestBuildName = "latest_build_name"
+            case latestBuildVersion = "latest_build_version"
+            case latestBuildBuildNo = "latest_build_buildno"
+            case latestBuildAdded = "latest_build_added"
+            case latestBuildId = "latest_build_id"
+            case latestBuildHasIcon = "latest_build_icon"
+            case buildCount = "build_count"
             case platform
             case identifier
         }
@@ -64,13 +64,13 @@ final public class Cluster: DbCoreModel {
         public init(_ cluster: Cluster) {
             self.id = cluster.id
             self.teamId = cluster.teamId
-            self.latestAppName = cluster.latestAppName
-            self.latestAppVersion = cluster.latestAppVersion
-            self.latestAppBuild = cluster.latestAppBuild
-            self.latestAppAdded = cluster.latestAppAdded
-            self.latestAppId = cluster.latestAppId
-            self.latestAppHasIcon = cluster.latestAppHasIcon
-            self.appCount = cluster.appCount
+            self.latestBuildName = cluster.latestBuildName
+            self.latestBuildVersion = cluster.latestBuildVersion
+            self.latestBuildBuildNo = cluster.latestBuildBuildNo
+            self.latestBuildAdded = cluster.latestBuildAdded
+            self.latestBuildId = cluster.latestBuildId
+            self.latestBuildHasIcon = cluster.latestBuildHasIcon
+            self.buildCount = cluster.buildCount
             self.platform = cluster.platform
             self.identifier = cluster.identifier
         }
@@ -79,42 +79,42 @@ final public class Cluster: DbCoreModel {
     
     public var id: DbIdentifier?
     public var teamId: DbIdentifier?
-    public var latestAppName: String
-    public var latestAppVersion: String
-    public var latestAppBuild: String
-    public var latestAppAdded: Date
-    public var latestAppId: DbIdentifier?
-    public var latestAppHasIcon: Bool
-    public var appCount: Int
-    public var platform: App.Platform
+    public var latestBuildName: String
+    public var latestBuildVersion: String
+    public var latestBuildBuildNo: String
+    public var latestBuildAdded: Date
+    public var latestBuildId: DbIdentifier?
+    public var latestBuildHasIcon: Bool
+    public var buildCount: Int
+    public var platform: Build.Platform
     public var identifier: String
     
     enum CodingKeys: String, CodingKey {
         case id
         case teamId = "team_id"
-        case latestAppName = "latest_build_name"
-        case latestAppVersion = "latest_build_version"
-        case latestAppBuild = "latest_build_buildno"
-        case latestAppAdded = "latest_build_added"
-        case latestAppId = "latest_build_id"
-        case latestAppHasIcon = "latest_build_icon"
-        case appCount = "build_count"
+        case latestBuildName = "latest_build_name"
+        case latestBuildVersion = "latest_build_version"
+        case latestBuildBuildNo = "latest_build_buildno"
+        case latestBuildAdded = "latest_build_added"
+        case latestBuildId = "latest_build_id"
+        case latestBuildHasIcon = "latest_build_icon"
+        case buildCount = "build_count"
         case platform
         case identifier
     }
     
-    public init(id: DbIdentifier? = nil, latestApp: App, appCount: Int = 1) {
+    public init(id: DbIdentifier? = nil, latestBuild: Build, appCount: Int = 1) {
         self.id = id
-        self.teamId = latestApp.teamId
-        self.latestAppName = latestApp.name
-        self.latestAppVersion = latestApp.version
-        self.latestAppBuild = latestApp.build
-        self.latestAppAdded = latestApp.created
-        self.latestAppId = latestApp.id
-        self.latestAppHasIcon = latestApp.hasIcon
-        self.appCount = appCount
-        self.platform = latestApp.platform
-        self.identifier = latestApp.identifier
+        self.teamId = latestBuild.teamId
+        self.latestBuildName = latestBuild.name
+        self.latestBuildVersion = latestBuild.version
+        self.latestBuildBuildNo = latestBuild.build
+        self.latestBuildAdded = latestBuild.created
+        self.latestBuildId = latestBuild.id
+        self.latestBuildHasIcon = latestBuild.hasIcon
+        self.buildCount = appCount
+        self.platform = latestBuild.platform
+        self.identifier = latestBuild.identifier
     }
     
 }
@@ -123,8 +123,8 @@ final public class Cluster: DbCoreModel {
 
 extension Cluster {
     
-    var apps: Children<Cluster, App> {
-        return children(\App.clusterId)
+    var builds: Children<Cluster, Build> {
+        return children(\Build.clusterId)
     }
     
 }
@@ -137,13 +137,13 @@ extension Cluster: Migration {
         return Database.create(self, on: connection) { (schema) in
             schema.field(for: \.id, isIdentifier: true)
             schema.field(for: \.teamId)
-            schema.field(for: \.latestAppName, type: .varchar(140))
-            schema.field(for: \.latestAppVersion, type: .varchar(20))
-            schema.field(for: \.latestAppBuild, type: .varchar(20))
-            schema.field(for: \.latestAppId)
-            schema.field(for: \.latestAppAdded)
-            schema.field(for: \.latestAppHasIcon)
-            schema.field(for: \.appCount)
+            schema.field(for: \.latestBuildName, type: .varchar(140))
+            schema.field(for: \.latestBuildVersion, type: .varchar(20))
+            schema.field(for: \.latestBuildBuildNo, type: .varchar(20))
+            schema.field(for: \.latestBuildId)
+            schema.field(for: \.latestBuildAdded)
+            schema.field(for: \.latestBuildHasIcon)
+            schema.field(for: \.buildCount)
             schema.field(for: \.platform, type: .varchar(10))
             schema.field(for: \.identifier, type: .varchar(140))
         }
@@ -159,12 +159,12 @@ extension Cluster: Migration {
 
 extension Cluster {
     
-    func add(app: App, on req: Request) -> Future<Cluster> {
-        latestAppName = app.name
-        latestAppVersion = app.version
-        latestAppBuild = app.build
-        latestAppAdded = app.created
-        latestAppHasIcon = app.hasIcon
+    func add(build: Build, on req: Request) -> Future<Cluster> {
+        latestBuildName = build.name
+        latestBuildVersion = build.version
+        latestBuildBuildNo = build.build
+        latestBuildAdded = build.created
+        latestBuildHasIcon = build.hasIcon
         return save(on: req)
     }
     

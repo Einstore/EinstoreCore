@@ -56,12 +56,12 @@ public class EinstoreController: Controller {
                 var futures: [Future<Void>] = []
                 // Install apps
                 let appNames = ["RiverCity", "Superhero", "Goodlok", "Junior", "Road", "Shots", "Reflect", "Shack", "Muscle", "Army", "FirstStep", "Team", "Speak", "Shopping", "Sync", "Artist", "GoldCoast", "View", "Ponder", "Saver", "Americana", "Metro", "Lasso", "Fabric", "Experience", "Mates", "Trifecta", "SolidRock", "Upward", "Savers", "Vita", "North", "Renovation", "Anti", "Performance", "Boost", "Echelon", "HighPerformance", "Guild", "RedHot", "Rumble", "CarpeDiem", "Sapient", "Clone", "League", "Masters", "BlueSky", "Convergent", "Elite", "Upper", "Allied", "Bullseye", "Fixer", "Nano", "BestValue", "Wildlife", "Small", "River", "Doomsday", "Premiere", "Precision", "Mobi", "Under", "Rekola", "Supernova", "FirstCoast", "Department", "Copper", "Glory", "Player", "Friend", "FarEast", "Ambassador"]
-                let platforms: [App.Platform] = [.ios, .android]
+                let platforms: [Build.Platform] = [.ios, .android]
                 for platform in platforms {
                     for name in appNames {
                         let cluster = Cluster(
                             id: nil,
-                            latestApp: App(
+                            latestBuild: Build(
                                 id: UUID(),
                                 teamId: UUID(),
                                 clusterId: UUID(),
@@ -81,7 +81,7 @@ public class EinstoreController: Controller {
                             return client.get("https://api.adorable.io/avatars/256/\(name.lowercased())@\(name.lowercased()).io.png").flatMap(to: Void.self) { icon in
                                 let hasIcon = (icon.http.status == .ok && icon.http.body.data != nil)
                                 let identifier = "io.liveui.\(name.lowercased())"
-                                var build = Int(Color.randomInt(max: 5000) + 1)
+                                var buildNumber = Int(Color.randomInt(max: 5000) + 1)
                                 for i1 in 0...4 {
                                     for i2 in 0...4 {
                                         let version = "1.\(i1).\(i2)"
@@ -92,32 +92,32 @@ public class EinstoreController: Controller {
                                         let prId = UUID()
                                         let pmId = UUID()
                                         
-                                        let app = App(
+                                        let build = Build(
                                             teamId: team.id!,
                                             clusterId: cluster.id!,
                                             name: name,
                                             identifier: identifier,
                                             version: version,
-                                            build: String(build),
+                                            build: String(buildNumber),
                                             platform: platform,
                                             built: Date(),
                                             size: 5000,
                                             sizeTotal: 5678,
-                                            info: App.Info(
-                                                sourceControl: App.Info.SourceControl(
-                                                    commit: App.Info.URLMessagePair(
+                                            info: Build.Info(
+                                                sourceControl: Build.Info.SourceControl(
+                                                    commit: Build.Info.URLMessagePair(
                                                         id: commitId.uuidString,
                                                         url: "https://github.example.com/team/project/commit/\(commitId.uuidString)",
                                                         message: "Lorem implemented"
                                                     ),
-                                                    pr: App.Info.URLMessagePair(
+                                                    pr: Build.Info.URLMessagePair(
                                                         id: prId.uuidString,
                                                         url: "https://github.example.com/team/project/pr/\(prId.uuidString)",
                                                         message: "Lorem ipsum dolor sit amet has been implemented"
                                                     )
                                                 ),
-                                                projectManagement: App.Info.ProjectManagement(
-                                                    ticket: App.Info.URLMessagePair(
+                                                projectManagement: Build.Info.ProjectManagement(
+                                                    ticket: Build.Info.URLMessagePair(
                                                         id: pmId.uuidString,
                                                         url: "https://project.example.com/ticket/\(pmId.uuidString)",
                                                         message: "Lorem ipsum dolor sit amet needs to be implemented properly in order for the system to work.\n\nLook at lipsum.org for details!"
@@ -127,24 +127,24 @@ public class EinstoreController: Controller {
                                             minSdk: "19",
                                             hasIcon: hasIcon
                                         )
-                                        let save = app.save(on: req).flatMap(to: Void.self) { app in
+                                        let save = build.save(on: req).flatMap(to: Void.self) { build in
                                             func saveTags() -> Future<Void> {
                                                 let tags: [Future<Void>] = [
                                                     Tag(teamId: team.id!, identifier: sdk.lowercased()).save(on: req).flatMap(to: Void.self) { tag in
-                                                        return app.tags.attach(tag, on: req).flatten()
+                                                        return build.tags.attach(tag, on: req).flatten()
                                                     },
                                                     Tag(teamId: team.id!, identifier: sdk2.lowercased()).save(on: req).flatMap(to: Void.self) { tag in
-                                                        return app.tags.attach(tag, on: req).flatten()
+                                                        return build.tags.attach(tag, on: req).flatten()
                                                     }
                                                 ]
                                                 return tags.flatten(on: req)
                                             }
-                                            cluster.identifier = app.identifier
-                                            cluster.platform = app.platform
-                                            cluster.teamId = app.teamId
-                                            cluster.appCount += 1
-                                            return cluster.add(app: app, on: req).flatMap() { cluster in
-                                                guard icon.http.status == .ok, let iconData = icon.http.body.data, let path = app.iconPath?.relativePath else {
+                                            cluster.identifier = build.identifier
+                                            cluster.platform = build.platform
+                                            cluster.teamId = build.teamId
+                                            cluster.buildCount += 1
+                                            return cluster.add(build: build, on: req).flatMap() { cluster in
+                                                guard icon.http.status == .ok, let iconData = icon.http.body.data, let path = build.iconPath?.relativePath else {
                                                     print("Demo app icon has not been generated")
                                                     return saveTags()
                                                 }
@@ -155,7 +155,7 @@ public class EinstoreController: Controller {
                                             }
                                         }
                                         futures.append(save)
-                                        build += 1
+                                        buildNumber += 1
                                     }
                                 }
                                 return futures.flatten(on: req)

@@ -36,13 +36,13 @@ class BaseExtractor {
         self.file = file
         
         self.archive = URL(fileURLWithPath: ApiCoreBase.configuration.storage.local.root)
-            .appendingPathComponent(App.localTempAppFolder(on: req).relativePath)
+            .appendingPathComponent(Build.localTempAppFolder(on: req).relativePath)
         
         // TODO: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Following needs to be refactored so the structure 100% exists before we do anything else !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         self.createFolderStructure = try EinstoreCoreBase.tempFileHandler.createFolderStructure(url: self.archive, on: req)
     }
     
-    static func decoder(file: String, platform: App.Platform, on req: Request) throws -> Extractor {
+    static func decoder(file: String, platform: Build.Platform, on req: Request) throws -> Extractor {
         let url = URL(fileURLWithPath: file)
         switch platform {
         case .ios:

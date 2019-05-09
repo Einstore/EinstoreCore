@@ -22,7 +22,7 @@ extension QueryBuilder where Result == Cluster, Database == ApiCoreDatabase {
         if let search = req.query.search, !search.isEmpty {
             s = s.group(.or) { or in
                 let search = "%\(search)%"
-                or.filter(\Cluster.latestAppName, "ILIKE", search)
+                or.filter(\Cluster.latestBuildName, "ILIKE", search)
                 or.filter(\Cluster.identifier, "ILIKE", search)
             }
         }
@@ -48,16 +48,16 @@ extension QueryBuilder where Result == Cluster, Database == ApiCoreDatabase {
         if let value = sort.value {
             switch true {
             case value == "name":
-                return self.sort(\Cluster.latestAppName, sort.direction)
+                return self.sort(\Cluster.latestBuildName, sort.direction)
             case value == "date":
-                return self.sort(\Cluster.latestAppAdded, sort.direction)
+                return self.sort(\Cluster.latestBuildAdded, sort.direction)
             case value == "count":
-                return self.sort(\Cluster.appCount, sort.direction)
+                return self.sort(\Cluster.buildCount, sort.direction)
             default:
-                return self.sort(\Cluster.latestAppAdded, .ascending)
+                return self.sort(\Cluster.latestBuildAdded, .ascending)
             }
         }
-        return self.sort(\Cluster.latestAppAdded, .ascending)
+        return self.sort(\Cluster.latestBuildAdded, .ascending)
     }
     
 }

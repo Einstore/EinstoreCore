@@ -17,7 +17,7 @@ import SQL
 
 public class ClusterManager {
     
-    public static func cluster(for appIdentifier: String, platform: App.Platform, teamId: DbIdentifier, on req: Request) -> EventLoopFuture<Cluster?> {
+    public static func cluster(for appIdentifier: String, platform: Build.Platform, teamId: DbIdentifier, on req: Request) -> EventLoopFuture<Cluster?> {
         return Cluster.query(on: req)
             .filter(\Cluster.identifier == appIdentifier)
             .filter(\Cluster.platform == platform)
