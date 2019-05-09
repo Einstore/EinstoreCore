@@ -50,12 +50,12 @@ final public class Cluster: DbCoreModel {
         enum CodingKeys: String, CodingKey {
             case id
             case teamId = "team_id"
-            case latestAppName = "latest_app_name"
-            case latestAppVersion = "latest_app_version"
-            case latestAppBuild = "latest_app_build"
-            case latestAppAdded = "latest_app_added"
-            case latestAppId = "latest_app_id"
-            case latestAppHasIcon = "latest_app_icon"
+            case latestAppName = "latest_build_name"
+            case latestAppVersion = "latest_build_version"
+            case latestAppBuild = "latest_build_buildno"
+            case latestAppAdded = "latest_build_added"
+            case latestAppId = "latest_build_id"
+            case latestAppHasIcon = "latest_build_icon"
             case appCount = "build_count"
             case platform
             case identifier
@@ -92,12 +92,12 @@ final public class Cluster: DbCoreModel {
     enum CodingKeys: String, CodingKey {
         case id
         case teamId = "team_id"
-        case latestAppName = "latest_app_name"
-        case latestAppVersion = "latest_app_version"
-        case latestAppBuild = "latest_app_build"
-        case latestAppAdded = "latest_app_added"
-        case latestAppId = "latest_app_id"
-        case latestAppHasIcon = "latest_app_icon"
+        case latestAppName = "latest_build_name"
+        case latestAppVersion = "latest_build_version"
+        case latestAppBuild = "latest_build_buildno"
+        case latestAppAdded = "latest_build_added"
+        case latestAppId = "latest_build_id"
+        case latestAppHasIcon = "latest_build_icon"
         case appCount = "build_count"
         case platform
         case identifier
