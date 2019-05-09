@@ -19,7 +19,6 @@ extension TestableProperty where TestableType == App {
         let req = app.testable.fakeRequest()
         let identifier = (identifier ?? name.safeText)
         let cluster = Cluster.testable.guaranteedCluster(identifier: identifier, platform: platform, on: app)
-        print("\(cluster.id!): \(cluster.appCount) - \(cluster.platform) - \(cluster.identifier)")
         cluster.teamId = team.id!
         let object = App(teamId: team.id!, clusterId: cluster.id!, name: name, identifier: identifier, version: version, build: build, platform: platform, built: Date(), size: 5000, sizeTotal: 5678)
         cluster.appCount += 1
