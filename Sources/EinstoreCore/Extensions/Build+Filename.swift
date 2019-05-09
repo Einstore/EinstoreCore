@@ -1,5 +1,5 @@
 //
-//  App+Filename.swift
+//  Build+Filename.swift
 //  EinstoreCore
 //
 //  Created by Ondrej Rafaj on 21/02/2018.
@@ -10,8 +10,31 @@ import Vapor
 import ApiCore
 
 
-/// Helpers for App
+/// Helpers for Build
 extension Build {
+    
+    /// Full download URL for file data
+    public func fileUrl(token: String, on req: Request) -> URL {
+        let serverUrl = req.serverURL()
+        let url = serverUrl
+            .appendingPathComponent("apps")
+            .appendingPathComponent(id!.uuidString)
+            .appendingPathComponent("file")
+            .appendingPathComponent(token)
+            .appendingPathComponent(fileName.safeText)
+            .appendingPathExtension(platform.fileExtension)
+        return url
+    }
+    
+    /// Full icon url if exists
+    public func iconUrl(on req: Request) -> URL? {
+        guard hasIcon, let path = iconPath else {
+            return nil
+        }
+        let serverUrl = req.serverURL()
+        let url = serverUrl.appendingPathComponent(path.relativePath)
+        return url
+    }
     
     /// Default icon name
     public var iconName: String {
@@ -35,9 +58,19 @@ extension Build {
         return path
     }
     
+    /// Target folder path (destination for the icons)
+    public var iconsFolderPath: URL? {
+        let path = URL(fileURLWithPath: EinstoreCoreBase.configuration.storage.appDestinationPath)
+            .appendingPathComponent("icons")
+        return path
+    }
+    
     /// Icon server path
     public var iconPath: URL? {
-        let path = targetFolderPath?.appendingPathComponent(iconName)
+        guard let hash = iconHash else {
+            return nil
+        }
+        let path = iconsFolderPath?.appendingPathComponent(hash).appendingPathExtension("png")
         return path
     }
     

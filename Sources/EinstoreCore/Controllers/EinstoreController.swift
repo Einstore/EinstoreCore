@@ -52,7 +52,6 @@ public class EinstoreController: Controller {
                 guard let team = team else {
                     throw Error.installMissing
                 }
-                let fm = try req.makeFileCore()
                 var futures: [Future<Void>] = []
                 // Install apps
                 let appNames = ["RiverCity", "Superhero", "Goodlok", "Junior", "Road", "Shots", "Reflect", "Shack", "Muscle", "Army", "FirstStep", "Team", "Speak", "Shopping", "Sync", "Artist", "GoldCoast", "View", "Ponder", "Saver", "Americana", "Metro", "Lasso", "Fabric", "Experience", "Mates", "Trifecta", "SolidRock", "Upward", "Savers", "Vita", "North", "Renovation", "Anti", "Performance", "Boost", "Echelon", "HighPerformance", "Guild", "RedHot", "Rumble", "CarpeDiem", "Sapient", "Clone", "League", "Masters", "BlueSky", "Convergent", "Elite", "Upper", "Allied", "Bullseye", "Fixer", "Nano", "BestValue", "Wildlife", "Small", "River", "Doomsday", "Premiere", "Precision", "Mobi", "Under", "Rekola", "Supernova", "FirstCoast", "Department", "Copper", "Glory", "Player", "Friend", "FarEast", "Ambassador"]
@@ -150,7 +149,7 @@ public class EinstoreController: Controller {
                                                     print("Demo app icon has not been generated")
                                                     return saveTags()
                                                 }
-                                                return try fm.save(file: iconData, to: path, mime: .png, on: req).flatMap() { _ in
+                                                return try build.save(iconData: iconData, on: req).flatMap() { _ in
                                                     print("Demo app icon has been generated to \(path)")
                                                     return saveTags()
                                                 }

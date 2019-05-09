@@ -124,15 +124,19 @@ class AppsController: Controller {
             let buildId = try req.parameters.next(DbIdentifier.self)
             return try req.me.teams().flatMap(to: Response.self) { teams in
                 return try Build.query(on: req).safeBuild(id: buildId, teamIds: teams.ids).first().flatMap(to: Response.self) { build in
-                    guard let build = build, let path = build.iconPath?.relativePath else {
+                    guard let build = build, let path = build.iconPath?.relativePath, build.hasIcon else {
                         throw ErrorsCore.HTTPError.notFound
                     }
-                    let fm = try req.makeFileCore()
-                    
-                    let image = try fm.get(file: path, on: req)
-                    return image.flatMap({ data in
-                        return try data.asResponse(.ok, contentType: "image/png", to: req)
-                    })
+                    if false, let url = build.iconUrl(on: req) { // External file service
+                        print(url)
+                        fatalError()
+                    } else { // Local file store
+                        let fm = try req.makeFileCore()
+                        let image = try fm.get(file: path, on: req)
+                        return image.flatMap() { data in
+                            return try data.asResponse(.ok, contentType: "image/png", to: req)
+                        }
+                    }
                 }
             }
         }

@@ -139,9 +139,6 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         
         let sortedObjects = objects.sorted { $0.latestBuildName < $1.latestBuildName }
         
-        print(objects)
-        print(sortedObjects)
-        
         var x = 0
         for original in objects {
             let sorted = sortedObjects[x]
@@ -430,9 +427,8 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         let resourcesIconUrl = Application.testable.paths.resourcesUrl.appendingPathComponent("icons").appendingPathComponent("liveui.png")
         
         let fakeReq = app.testable.fakeRequest()
-        let fc = try! fakeReq.makeFileCore()
         let postData = try! Data(contentsOf: resourcesIconUrl)
-        try! fc.save(file: postData, to: app1!.iconPath!.relativePath, mime: MediaType.png, on: fakeReq).wait()
+        try! app1.save(iconData: postData, on: fakeReq).wait()
         
         // Test
         let req = HTTPRequest.testable.get(uri: "/builds/\(app1.id!.uuidString)/icon", authorizedUser: user1, on: app)
@@ -447,7 +443,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
 //        XCTAssertTrue(r.response.testable.has(contentType: "image/png"), "Missing or incorrect content type")
         
         // Cleaning
-        try! fc.delete(file: app1!.iconPath!.relativePath, on: fakeReq).wait()
+        try! app1.deleteIcon(on: fakeReq).wait()
     }
     
     func testBadTokenUpload() {
@@ -500,8 +496,6 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         XCTAssertTrue(plistString.contains(link))
         #elseif os(macOS)
         let plist = try! PropertyListDecoder().decode(BuildPlist.self, from: plistData)
-        
-        print(plist)
         
         XCTAssertEqual(plist.items[0].assets[0].kind, "software-package")
         XCTAssertEqual(plist.items[0].assets[0].url, link)
