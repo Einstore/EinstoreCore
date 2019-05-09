@@ -102,7 +102,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         let count = app.testable.count(allFor: App.self)
         XCTAssertEqual(count, 65, "There should be right amount of apps to begin with")
         
-        let req = HTTPRequest.testable.get(uri: "/apps", authorizedUser: user1, on: app)
+        let req = HTTPRequest.testable.get(uri: "/builds", authorizedUser: user1, on: app)
         let r = app.testable.response(to: req)
         
         r.response.testable.debug()
@@ -116,7 +116,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
     }
     
     func testGetAppsOverview() {
-        let req = HTTPRequest.testable.get(uri: "/apps/overview", authorizedUser: user1, on: app)
+        let req = HTTPRequest.testable.get(uri: "/apps", authorizedUser: user1, on: app)
         let r = app.testable.response(to: req)
         
         r.response.testable.debug()
@@ -130,7 +130,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
     }
     
     func testGetAppsOverviewSortedByNameAsc() {
-        let req = HTTPRequest.testable.get(uri: "/apps/overview?sort=name", authorizedUser: user1, on: app)
+        let req = HTTPRequest.testable.get(uri: "/apps?sort=name", authorizedUser: user1, on: app)
         let r = app.testable.response(to: req)
         
         r.response.testable.debug()
@@ -159,7 +159,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
     }
     
     func testAppSearch() {
-        let req = HTTPRequest.testable.get(uri: "/apps/overview?search=App%201", authorizedUser: user1, on: app)
+        let req = HTTPRequest.testable.get(uri: "/apps?search=App%201", authorizedUser: user1, on: app)
         let r = app.testable.response(to: req)
         
         r.response.testable.debug()
@@ -173,7 +173,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
     }
     
     func testPartialAppSearch() {
-        let req = HTTPRequest.testable.get(uri: "/apps/overview?search=ios", authorizedUser: user1, on: app)
+        let req = HTTPRequest.testable.get(uri: "/apps?search=ios", authorizedUser: user1, on: app)
         let r = app.testable.response(to: req)
         
         r.response.testable.debug()
@@ -187,7 +187,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
     }
     
     func testPartialInsensitiveAppSearch() {
-        let req = HTTPRequest.testable.get(uri: "/apps/overview?search=iOS", authorizedUser: user1, on: app)
+        let req = HTTPRequest.testable.get(uri: "/apps?search=iOS", authorizedUser: user1, on: app)
         let r = app.testable.response(to: req)
         
         r.response.testable.debug()
@@ -201,7 +201,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
     }
     
     func testGetApp() {
-        let req = HTTPRequest.testable.get(uri: "/apps/\(app1.id!.uuidString)", authorizedUser: user1, on: app)
+        let req = HTTPRequest.testable.get(uri: "/builds/\(app1.id!.uuidString)", authorizedUser: user1, on: app)
         let r = app.testable.response(to: req)
         
         r.response.testable.debug()
@@ -238,7 +238,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         
         let apps = try! App.query(on: fakeReq).filter(\App.identifier == appIdentifier).all().wait()
         for a in apps {
-            let req = HTTPRequest.testable.delete(uri: "/apps/\(a.id!.uuidString)", authorizedUser: user2, on: app)
+            let req = HTTPRequest.testable.delete(uri: "/builds/\(a.id!.uuidString)", authorizedUser: user2, on: app)
             let r = app.testable.response(to: req)
             
             r.response.testable.debug()
@@ -272,7 +272,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
     }
     
     func testAppTags() {
-        let req = HTTPRequest.testable.get(uri: "/apps/\(app1.id!.uuidString)/tags", authorizedUser: user1, on: app)
+        let req = HTTPRequest.testable.get(uri: "/builds/\(app1.id!.uuidString)/tags", authorizedUser: user1, on: app)
         let r = app.testable.response(to: req)
         
         r.response.testable.debug()
@@ -289,7 +289,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         var count = app.testable.count(allFor: App.self)
         XCTAssertEqual(count, 65, "There should be right amount of apps to begin with")
         
-        let req = HTTPRequest.testable.delete(uri: "/apps/\(app2.id!.uuidString)", authorizedUser: user1, on: app)
+        let req = HTTPRequest.testable.delete(uri: "/builds/\(app2.id!.uuidString)", authorizedUser: user1, on: app)
         let r = app.testable.response(to: req)
         
         r.response.testable.debug()
@@ -327,7 +327,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         count = try! Cluster.query(on: fakeReq).filter(\Cluster.id == clustered.clusterId).count().wait()
         XCTAssertEqual(count, 1, "The right cluster should be there")
         
-        let req = HTTPRequest.testable.delete(uri: "/clusters/\(clustered.clusterId.uuidString)", authorizedUser: user1, on: app)
+        let req = HTTPRequest.testable.delete(uri: "/apps/\(clustered.clusterId.uuidString)", authorizedUser: user1, on: app)
         let r = app.testable.response(to: req)
         
         r.response.testable.debug()
@@ -435,7 +435,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         try! fc.save(file: postData, to: app1!.iconPath!.relativePath, mime: MediaType.png, on: fakeReq).wait()
         
         // Test
-        let req = HTTPRequest.testable.get(uri: "/apps/\(app1.id!.uuidString)/icon", authorizedUser: user1, on: app)
+        let req = HTTPRequest.testable.get(uri: "/builds/\(app1.id!.uuidString)/icon", authorizedUser: user1, on: app)
         let r = app.testable.response(to: req)
         
         r.response.testable.debug()
@@ -487,7 +487,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         
         let token = DownloadKey.testable.create(forAppId: realApp.id!, user: user1, on: app)
         
-        let r = app.testable.response(to: HTTPRequest.testable.get(uri: "/apps/\(realApp.id!)/plist/\(token.token)/\(realApp.fileName).plist", authorizedUser: user1, on: app))
+        let r = app.testable.response(to: HTTPRequest.testable.get(uri: "/builds/\(realApp.id!)/plist/\(token.token)/\(realApp.fileName).plist", authorizedUser: user1, on: app))
         r.response.testable.debug()
         
         let plistData = r.response.testable.contentString!.data(using: .utf8)!
@@ -518,7 +518,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         
         let token = DownloadKey.testable.create(forAppId: realApp.id!, user: user1, on: app)
         
-        let r = app.testable.response(to: HTTPRequest.testable.get(uri: "/apps/\(realApp.id!)/file/\(token.token)/\(realApp.fileName).ipa", authorizedUser: user1, on: app))
+        let r = app.testable.response(to: HTTPRequest.testable.get(uri: "/builds/\(realApp.id!)/file/\(token.token)/\(realApp.fileName).ipa", authorizedUser: user1, on: app))
         r.response.testable.debug()
         
         let data: Data = try! r.response.http.body.consumeData(on: app.testable.fakeRequest()).wait()
@@ -537,7 +537,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         
         let token = DownloadKey.testable.create(forAppId: realApp.id!, user: user1, on: app)
         
-        let r = app.testable.response(to: HTTPRequest.testable.get(uri: "/apps/\(realApp.id!)/file/\(token.token)/\(realApp.fileName).apk", authorizedUser: user1, on: app))
+        let r = app.testable.response(to: HTTPRequest.testable.get(uri: "/builds/\(realApp.id!)/file/\(token.token)/\(realApp.fileName).apk", authorizedUser: user1, on: app))
         r.response.testable.debug()
         
         let data: Data = try! r.response.http.body.consumeData(on: app.testable.fakeRequest()).wait()
