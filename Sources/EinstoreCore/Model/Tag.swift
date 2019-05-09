@@ -54,7 +54,7 @@ final public class Tag: DbCoreModel {
 
 extension Tag {
     
-    var apps: Siblings<Tag, App, AppTag> {
+    var builds: Siblings<Tag, Build, BuildTag> {
         return siblings()
     }
     

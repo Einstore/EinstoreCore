@@ -18,20 +18,20 @@ public typealias Downloads = [Download]
 final public class Download: DbCoreModel {
     
     public var id: DbIdentifier?
-    public var appId: DbIdentifier
+    public var buildId: DbIdentifier
     public var userId: DbIdentifier
     public var created: Date
     
     enum CodingKeys: String, CodingKey {
         case id
-        case appId = "app_id"
+        case buildId = "build_id"
         case userId = "user_id"
         case created
     }
     
-    public init(id: DbIdentifier? = nil, appId: DbIdentifier, userId: DbIdentifier) {
+    public init(id: DbIdentifier? = nil, buildId: DbIdentifier, userId: DbIdentifier) {
         self.id = id
-        self.appId = appId
+        self.buildId = buildId
         self.userId = userId
         self.created = Date()
     }
@@ -42,8 +42,8 @@ final public class Download: DbCoreModel {
 
 extension Download {
     
-    var app: Parent<Download, App> {
-        return parent(\Download.appId)
+    var app: Parent<Download, Build> {
+        return parent(\Download.buildId)
     }
     
     var user: Parent<Download, User> {

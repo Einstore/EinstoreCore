@@ -182,8 +182,8 @@ class Apk: BaseExtractor, Extractor {
     }
     
     /// Process app
-    func process(teamId: DbIdentifier, on req: Request) throws -> Future<App> {
-        let promise = request.eventLoop.newPromise(App.self)
+    func process(teamId: DbIdentifier, on req: Request) throws -> Future<Build> {
+        let promise = request.eventLoop.newPromise(Build.self)
         DispatchQueue.global().async {
             do {
                 var apk = self.fetchApkInfo()
@@ -195,8 +195,8 @@ class Apk: BaseExtractor, Extractor {
                 apk.setIconPath(path: self.findAppIconPath(iconName: apk.getIconName()))
                 try self.getApplicationIcon(path: apk.getIconPath())
                 
-                try self.app(platform: .android, teamId: teamId, on: req).do({ app in
-                    promise.succeed(result: app)
+                try self.app(platform: .android, teamId: teamId, on: req).do({ build in
+                    promise.succeed(result: build)
                 }).catch({ error in
                     promise.fail(error: error)
                 })

@@ -60,8 +60,8 @@ class AppsController: Controller {
         }
         
         // Get list of builds based on input parameters
-        secure.get("builds") { (req) -> Future<Apps> in
-            return try AppsManager.apps(on: req)
+        secure.get("builds") { (req) -> Future<Builds> in
+            return try AppsManager.builds(on: req)
         }
         
         // Get a cluster
@@ -71,9 +71,9 @@ class AppsController: Controller {
         }
         
         // Get list of builds for a cluster
-        secure.get("apps", DbIdentifier.parameter, "builds") { (req) -> Future<Apps> in
+        secure.get("apps", DbIdentifier.parameter, "builds") { (req) -> Future<Builds> in
             let clusterId = try req.parameters.next(DbIdentifier.self)
-            return try AppsManager.apps(clusterId: clusterId, on: req)
+            return try AppsManager.builds(clusterId: clusterId, on: req)
         }
         
         // Overview for apps in all teams
@@ -92,39 +92,39 @@ class AppsController: Controller {
         }
         
         // Team apps info
-        secure.get("teams", DbIdentifier.parameter, "apps", "info") { (req) -> Future<App.Overview> in
+        secure.get("teams", DbIdentifier.parameter, "apps", "info") { (req) -> Future<Build.Overview> in
             let teamId = try req.parameters.next(DbIdentifier.self)
-            return try req.me.teams().flatMap(to: App.Overview.self) { teams in
-                return try AppsManager.overviewQuery(teams: teams, on: req).filter(\Cluster.teamId == teamId).all().map(to: App.Overview.self) { apps in
+            return try req.me.teams().flatMap(to: Build.Overview.self) { teams in
+                return try AppsManager.overviewQuery(teams: teams, on: req).filter(\Cluster.teamId == teamId).all().map(to: Build.Overview.self) { apps in
                     var builds: Int = 0
                     apps.forEach({ item in
-                        builds += item.appCount
+                        builds += item.buildCount
                     })
-                    let info = App.Overview(teamId: teamId, apps: apps.count, builds: builds)
+                    let info = Build.Overview(teamId: teamId, apps: apps.count, builds: builds)
                     return info
                 }
             }
         }
         
         // Build detail
-        secure.get("builds", DbIdentifier.parameter) { (req) -> Future<App.Public> in
-            let appId = try req.parameters.next(DbIdentifier.self)
-            return try req.me.teams().flatMap(to: App.Public.self) { teams in
-                return try App.query(on: req).safeApp(appId: appId, teamIds: teams.ids).decode(App.Public.self).first().map(to: App.Public.self) { app in
-                    guard let app = app else {
+        secure.get("builds", DbIdentifier.parameter) { (req) -> Future<Build.Public> in
+            let buildId = try req.parameters.next(DbIdentifier.self)
+            return try req.me.teams().flatMap(to: Build.Public.self) { teams in
+                return try Build.query(on: req).safeBuild(id: buildId, teamIds: teams.ids).decode(Build.Public.self).first().map(to: Build.Public.self) { build in
+                    guard let build = build else {
                         throw ErrorsCore.HTTPError.notFound
                     }
-                    return app
+                    return build
                 }
             }
         }
         
         // Build icon
         secure.get("builds", DbIdentifier.parameter, "icon") { (req) -> Future<Response> in
-            let appId = try req.parameters.next(DbIdentifier.self)
+            let buildId = try req.parameters.next(DbIdentifier.self)
             return try req.me.teams().flatMap(to: Response.self) { teams in
-                return try App.query(on: req).safeApp(appId: appId, teamIds: teams.ids).first().flatMap(to: Response.self) { app in
-                    guard let app = app, let path = app.iconPath?.relativePath else {
+                return try Build.query(on: req).safeBuild(id: buildId, teamIds: teams.ids).first().flatMap(to: Response.self) { build in
+                    guard let build = build, let path = build.iconPath?.relativePath else {
                         throw ErrorsCore.HTTPError.notFound
                     }
                     let fm = try req.makeFileCore()
@@ -139,14 +139,14 @@ class AppsController: Controller {
         
         // Build download history
         secure.get("builds", DbIdentifier.parameter, "history") { (req) -> Future<[Download]> in
-            let appId = try req.parameters.next(DbIdentifier.self)
+            let buildId = try req.parameters.next(DbIdentifier.self)
             return try req.me.teams().flatMap(to: [Download].self) { teams in
-                return try App.query(on: req).safeApp(appId: appId, teamIds: teams.ids).first().flatMap(to: [Download].self) { app in
-                    guard let _ = app, let userId = try req.me.user().id else {
+                return try Build.query(on: req).safeBuild(id: buildId, teamIds: teams.ids).first().flatMap(to: [Download].self) { build in
+                    guard let _ = build, let userId = try req.me.user().id else {
                         throw ErrorsCore.HTTPError.notFound
                     }
                     
-                    return Download.query(on: req).filter(\Download.appId == appId).filter(\Download.userId == userId).sort(\Download.created, .descending).all()
+                    return Download.query(on: req).filter(\Download.buildId == buildId).filter(\Download.userId == userId).sort(\Download.created, .descending).all()
                 }
             }
         }
@@ -156,19 +156,19 @@ class AppsController: Controller {
             guard let userId = try req.me.user().id else {
                 throw ErrorsCore.HTTPError.notAuthorized
             }
-            let appId = try req.parameters.next(DbIdentifier.self)
+            let buildId = try req.parameters.next(DbIdentifier.self)
             return try req.me.teams().flatMap(to: Response.self) { teams in
-                return try App.query(on: req).safeApp(appId: appId, teamIds: teams.ids).first().flatMap(to: Response.self) { app in
-                    guard let app = app else {
+                return try Build.query(on: req).safeBuild(id: buildId, teamIds: teams.ids).first().flatMap(to: Response.self) { build in
+                    guard let build = build else {
                         throw ErrorsCore.HTTPError.notFound
                     }
-                    let key = DownloadKey(appId: appId, userId: userId)
+                    let key = DownloadKey(buildId: buildId, userId: userId)
                     let originalToken: String = key.token
                     key.token = try key.token.sha()
                     return key.save(on: req).flatMap(to: Response.self) { key in
                         return DownloadKey.query(on: req).filter(\DownloadKey.added < Date().addMinute(n: -15)).delete().flatMap(to: Response.self) { _ in
                             key.token = originalToken
-                            return try DownloadKey.Public(app: app, downloadKey: key, request: req).asResponse(.ok, to: req)
+                            return try DownloadKey.Public(build: build, downloadKey: key, request: req).asResponse(.ok, to: req)
                         }
                     }
                 }
@@ -186,16 +186,16 @@ class AppsController: Controller {
                         throw ErrorsCore.HTTPError.notAuthorized
                     }
                 }
-                return App.query(on: req).filter(\App.id == key.appId).first().map(to: Response.self) { app in
-                    guard let app = app else {
+                return Build.query(on: req).filter(\Build.id == key.buildId).first().map(to: Response.self) { build in
+                    guard let build = build else {
                         throw ErrorsCore.HTTPError.notFound
                     }
-                    guard app.platform == .ios else {
+                    guard build.platform == .ios else {
                         throw Error.invalidPlatform
                     }
                     let response = try req.response.basic(status: .ok)
                     response.http.headers = HTTPHeaders([("Content-Type", "text/xml; charset=utf-8")]) // text/xml (not application/xml) is neccessary for the iOS deployment to work
-                    response.http.body = try HTTPBody(data: AppPlist(app: app, token: token, request: req).asPropertyList())
+                    response.http.body = try HTTPBody(data: BuildPlist(build: build, token: token, request: req).asPropertyList())
                     return response
                 }
             }
@@ -211,18 +211,18 @@ class AppsController: Controller {
                         throw ErrorsCore.HTTPError.notAuthorized
                     }
                 }
-                return App.query(on: req).filter(\App.id == key.appId).first().flatMap(to: Response.self) { app in
-                    guard let app = app, let path = app.appPath?.relativePath else {
+                return Build.query(on: req).filter(\Build.id == key.buildId).first().flatMap(to: Response.self) { build in
+                    guard let build = build, let path = build.appPath?.relativePath else {
                         throw ErrorsCore.HTTPError.notFound
                     }
-                    guard App.Platform.is(supported: app.platform) else {
+                    guard Build.Platform.is(supported: build.platform) else {
                         throw Error.invalidPlatform
                     }
                     let response = try req.response.basic(status: .ok)
-                    response.http.headers = HTTPHeaders([("Content-Type", "\(app.platform.mime)"), ("Content-Disposition", "attachment; filename=\"\(app.name.safeText).\(app.platform.fileExtension)\"")])
+                    response.http.headers = HTTPHeaders([("Content-Type", "\(build.platform.mime)"), ("Content-Disposition", "attachment; filename=\"\(build.name.safeText).\(build.platform.fileExtension)\"")])
                     
                     // Save an info about the download
-                    let download = Download(appId: key.appId, userId: key.userId)
+                    let download = Download(buildId: key.buildId, userId: key.userId)
                     return download.save(on: req).flatMap(to: Response.self) { download in
                         // Serve the file
                         let fm = try req.makeFileCore()
@@ -245,18 +245,18 @@ class AppsController: Controller {
         
         // Delete a build
         secure.delete("builds", DbIdentifier.parameter) { (req) -> Future<Response> in
-            let appId = try req.parameters.next(DbIdentifier.self)
+            let buildId = try req.parameters.next(DbIdentifier.self)
             return try req.me.teams().flatMap(to: Response.self) { teams in
-                return try App.query(on: req).safeApp(appId: appId, teamIds: teams.ids).first().flatMap(to: Response.self) { app in
-                    guard let app = app else {
+                return try Build.query(on: req).safeBuild(id: buildId, teamIds: teams.ids).first().flatMap(to: Response.self) { build in
+                    guard let build = build else {
                         throw ErrorsCore.HTTPError.notFound
                     }
-                    return Cluster.query(on: req).filter(\Cluster.identifier == app.identifier).filter(\Cluster.platform == app.platform).first().flatMap(to: Response.self) { cluster in
+                    return Cluster.query(on: req).filter(\Cluster.identifier == build.identifier).filter(\Cluster.platform == build.platform).first().flatMap(to: Response.self) { cluster in
                         guard let cluster = cluster else {
                             throw Error.clusterInconsistency
                         }
                         
-                        return try AppsManager.delete(app: app, countCluster: cluster, on: req).flatten(on: req).asResponse(to: req)
+                        return try AppsManager.delete(build: build, countCluster: cluster, on: req).flatten(on: req).asResponse(to: req)
                     }
                 }
             }

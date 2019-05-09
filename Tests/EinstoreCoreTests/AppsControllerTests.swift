@@ -40,8 +40,8 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
     
     var team4: Team!
     
-    var app1: App!
-    var app2: App!
+    var app1: Build!
+    var app2: Build!
     
     
     // MARK: Linux
@@ -99,7 +99,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
     // MARK: Tests
     
     func testGetApps() {
-        let count = app.testable.count(allFor: App.self)
+        let count = app.testable.count(allFor: Build.self)
         XCTAssertEqual(count, 65, "There should be right amount of apps to begin with")
         
         let req = HTTPRequest.testable.get(uri: "/builds", authorizedUser: user1, on: app)
@@ -107,7 +107,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         
         r.response.testable.debug()
         
-        let objects = r.response.testable.content(as: Apps.self)!
+        let objects = r.response.testable.content(as: Builds.self)!
         
         XCTAssertEqual(objects.count, 57, "There should be right amount of apps")
         
@@ -137,7 +137,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         
         let objects = r.response.testable.content(as: [Cluster.Public].self)!
         
-        let sortedObjects = objects.sorted { $0.latestAppName < $1.latestAppName }
+        let sortedObjects = objects.sorted { $0.latestBuildName < $1.latestBuildName }
         
         print(objects)
         print(sortedObjects)
@@ -207,38 +207,38 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         r.response.testable.debug()
         
         // By getting the content we make sure we got the right model
-        _ = r.response.testable.content(as: App.Public.self)!
+        _ = r.response.testable.content(as: Build.Public.self)!
         
         XCTAssertTrue(r.response.testable.has(statusCode: .ok), "Wrong status code")
         XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing or invalid content type")
     }
     
     func testDeleteApp() {
-        let appIdentifier = "android-app-on-team-2"
+        let buildIdentifier = "android-app-on-team-2"
         
         let fakeReq = app.testable.fakeRequest()
         let fc = try! fakeReq.makeFileCore()
         try! fc.save(file: ":)".data(using: .utf8)!, to: app2!.appPath!.relativePath, mime: MediaType(type: "application", subType: "octet-stream"), on: fakeReq).wait()
         
-        var originalNumberOfAppsInCluster = 7
+        var originalNumberOfBuildsInCluster = 7
         
-        let originalCluster: Cluster = try! Cluster.query(on: fakeReq).filter(\Cluster.identifier == appIdentifier).first().wait()!
-        XCTAssertEqual(originalNumberOfAppsInCluster, originalCluster.appCount, "Cluster should have a correct count")
+        let originalCluster: Cluster = try! Cluster.query(on: fakeReq).filter(\Cluster.identifier == buildIdentifier).first().wait()!
+        XCTAssertEqual(originalNumberOfBuildsInCluster, originalCluster.buildCount, "Cluster should have a correct count")
         
-        var appsCountForCluster = try! App.query(on: fakeReq).filter(\App.identifier == appIdentifier).count().wait()
-        XCTAssertEqual(originalNumberOfAppsInCluster, appsCountForCluster, "Number of cluster apps should correspond the cluster count")
+        var appsCountForCluster = try! Build.query(on: fakeReq).filter(\Build.identifier == buildIdentifier).count().wait()
+        XCTAssertEqual(originalNumberOfBuildsInCluster, appsCountForCluster, "Number of cluster apps should correspond the cluster count")
         
         var numberOfApps = 65
         
-        var count = app.testable.count(allFor: App.self)
+        var count = app.testable.count(allFor: Build.self)
         XCTAssertEqual(count, numberOfApps, "There should be right amount of apps to begin with")
         
         count = app.testable.count(allFor: Tag.self)
         XCTAssertEqual(count, 18, "There should be right amount of tags to begin with")
         
-        let apps = try! App.query(on: fakeReq).filter(\App.identifier == appIdentifier).all().wait()
-        for a in apps {
-            let req = HTTPRequest.testable.delete(uri: "/builds/\(a.id!.uuidString)", authorizedUser: user2, on: app)
+        let builds = try! Build.query(on: fakeReq).filter(\Build.identifier == buildIdentifier).all().wait()
+        for b in builds {
+            let req = HTTPRequest.testable.delete(uri: "/builds/\(b.id!.uuidString)", authorizedUser: user2, on: app)
             let r = app.testable.response(to: req)
             
             r.response.testable.debug()
@@ -246,28 +246,28 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
             // TODO: Test only tags shared with nothing else were deleted!!!!
             // TODO: Test all files were deleted!!!!
             
-            originalNumberOfAppsInCluster -= 1
-            let originalCluster: Cluster? = try! Cluster.query(on: fakeReq).filter(\Cluster.identifier == appIdentifier).first().wait()
-            XCTAssertEqual(originalNumberOfAppsInCluster, originalCluster?.appCount ?? 0, "Cluster should have a correct count")
+            originalNumberOfBuildsInCluster -= 1
+            let originalCluster: Cluster? = try! Cluster.query(on: fakeReq).filter(\Cluster.identifier == buildIdentifier).first().wait()
+            XCTAssertEqual(originalNumberOfBuildsInCluster, originalCluster?.buildCount ?? 0, "Cluster should have a correct count")
             
-            let appsCountForCluster = try! App.query(on: fakeReq).filter(\App.identifier == appIdentifier).count().wait()
-            XCTAssertEqual(originalNumberOfAppsInCluster, appsCountForCluster, "Number of cluster apps should correspond the cluster count")
+            let buildsCountForCluster = try! Build.query(on: fakeReq).filter(\Build.identifier == buildIdentifier).count().wait()
+            XCTAssertEqual(originalNumberOfBuildsInCluster, buildsCountForCluster, "Number of cluster apps should correspond the cluster count")
             
             XCTAssertTrue(r.response.testable.has(statusCode: .noContent), "Wrong status code")
             XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing or invalid content type")
             
             numberOfApps -= 1
-            count = app.testable.count(allFor: App.self)
+            count = app.testable.count(allFor: Build.self)
             XCTAssertEqual(count, numberOfApps, "There should be right amount of apps to finish with")
         }
         
         count = app.testable.count(allFor: Tag.self)
         XCTAssertEqual(count, 4, "There should be right amount of tags to finish with")
         
-        count = try! Cluster.query(on: fakeReq).filter(\Cluster.identifier == appIdentifier).count().wait()
+        count = try! Cluster.query(on: fakeReq).filter(\Cluster.identifier == buildIdentifier).count().wait()
         XCTAssertEqual(0, count, "Cluster should have been deleted")
         
-        appsCountForCluster = try! App.query(on: fakeReq).filter(\App.identifier == appIdentifier).count().wait()
+        appsCountForCluster = try! Build.query(on: fakeReq).filter(\Build.identifier == buildIdentifier).count().wait()
         XCTAssertEqual(appsCountForCluster, 0, "There should be no apps for the cluster")
     }
     
@@ -286,7 +286,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
     }
     
     func testCantDeleteOtherPeoplesApp() {
-        var count = app.testable.count(allFor: App.self)
+        var count = app.testable.count(allFor: Build.self)
         XCTAssertEqual(count, 65, "There should be right amount of apps to begin with")
         
         let req = HTTPRequest.testable.delete(uri: "/builds/\(app2.id!.uuidString)", authorizedUser: user1, on: app)
@@ -294,7 +294,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         
         r.response.testable.debug()
         
-        let object = app.testable.one(for: App.self, id: app2!.id!)
+        let object = app.testable.one(for: Build.self, id: app2!.id!)
         let tagsCount = try! object!.tags.query(on: r.request).count().wait()
         XCTAssertEqual(tagsCount, 2)
         
@@ -303,19 +303,19 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         XCTAssertTrue(r.response.testable.has(statusCode: .notFound), "Wrong status code")
         XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing or invalid content type")
         
-        count = app.testable.count(allFor: App.self)
+        count = app.testable.count(allFor: Build.self)
         XCTAssertEqual(count, 65, "There should be right amount of apps to finish with")
     }
     
     func testDeleteCluster() {
         let fakeReq = app.testable.fakeRequest()
         
-        App.testable.create(team: team1, name: "App 2", identifier: "app2", version: "3.2.1", build: "654322", platform: .android, on: app)
-        App.testable.create(team: team1, name: "App 2", identifier: "app2", version: "3.2.1", build: "654323", platform: .android, on: app)
-        App.testable.create(team: team1, name: "App 2", identifier: "app2", version: "3.2.1", build: "654324", platform: .android, on: app)
-        let clustered = App.testable.create(team: team1, name: "App 2", identifier: "app2", version: "3.2.2", build: "1", platform: .android, on: app)
+        Build.testable.create(team: team1, name: "App 2", identifier: "app2", version: "3.2.1", build: "654322", platform: .android, on: app)
+        Build.testable.create(team: team1, name: "App 2", identifier: "app2", version: "3.2.1", build: "654323", platform: .android, on: app)
+        Build.testable.create(team: team1, name: "App 2", identifier: "app2", version: "3.2.1", build: "654324", platform: .android, on: app)
+        let clustered = Build.testable.create(team: team1, name: "App 2", identifier: "app2", version: "3.2.2", build: "1", platform: .android, on: app)
         
-        var count = app.testable.count(allFor: App.self)
+        var count = app.testable.count(allFor: Build.self)
         XCTAssertEqual(count, 69, "There should be right amount of apps to begin with")
         
         count = app.testable.count(allFor: Cluster.self)
@@ -335,7 +335,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         XCTAssertTrue(r.response.testable.has(statusCode: .noContent), "Wrong status code")
         XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing or invalid content type")
         
-        count = app.testable.count(allFor: App.self)
+        count = app.testable.count(allFor: Build.self)
         XCTAssertEqual(count, 64, "There should be right amount of apps to finish with")
         
         count = app.testable.count(allFor: Cluster.self)
@@ -365,29 +365,29 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         // Get and check first app
         let r1 = doTestJWTUpload(appFileName: "app.ipa", platform: .ios, name: "iDeviant", identifier: "com.fuerteint.iDeviant", version: "4.0", build: "1.0", iconSize: 4776, team: team1)
         
-        let object1 = r1.response.testable.content(as: App.self)!
+        let object1 = r1.response.testable.content(as: Build.self)!
         let cluster1 = Cluster.testable.cluster(withId: object1.clusterId, on: app)
         XCTAssertNotNil(object1.teamId)
         XCTAssertEqual(object1.teamId, team1.id, "Cluster 1 belongs to team 1")
-        XCTAssertEqual(cluster1.appCount, 1, "Cluster has 1 app counted")
+        XCTAssertEqual(cluster1.buildCount, 1, "Cluster has 1 app counted")
         
         // Get and check second app
         let r2 = doTestJWTUpload(appFileName: "app.ipa", platform: .ios, name: "iDeviant", identifier: "com.fuerteint.iDeviant", version: "4.0", build: "1.0", iconSize: 4776, team: team2, appsTotal: 66)
         
-        let object2 = r2.response.testable.content(as: App.self)!
+        let object2 = r2.response.testable.content(as: Build.self)!
         let cluster2 = Cluster.testable.cluster(withId: object2.clusterId, on: app)
         XCTAssertNotNil(object2.teamId)
         XCTAssertEqual(object2.teamId, team2.id, "Cluster 2 belongs to team 2")
-        XCTAssertEqual(cluster2.appCount, 1, "Cluster has 1 app counted")
+        XCTAssertEqual(cluster2.buildCount, 1, "Cluster has 1 app counted")
         
         // Get and check second app
         let r3 = doTestJWTUpload(appFileName: "app.ipa", platform: .ios, name: "iDeviant", identifier: "com.fuerteint.iDeviant", version: "4.0", build: "1.0", iconSize: 4776, team: team2, appsTotal: 67)
         
-        let object3 = r3.response.testable.content(as: App.self)!
+        let object3 = r3.response.testable.content(as: Build.self)!
         let cluster3 = Cluster.testable.cluster(withId: object3.clusterId, on: app)
         XCTAssertNotNil(object3.teamId)
         XCTAssertEqual(object3.teamId, team2.id, "Cluster 2 belongs to team 2")
-        XCTAssertEqual(cluster3.appCount, 2, "Cluster has 2 apps counted")
+        XCTAssertEqual(cluster3.buildCount, 2, "Cluster has 2 apps counted")
         
         XCTAssertNotNil(cluster1.id)
         XCTAssertNotEqual(cluster1.id, cluster2.id, "Check clusters are not the same for the first two apps")
@@ -407,7 +407,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         
         let r = doTestJWTUpload(appFileName: "app.ipa", platform: .ios, name: "iDeviant", identifier: "com.fuerteint.iDeviant", version: "4.0", build: "1.0", iconSize: 4776, info: "&pm[ticket][url]=\(jira)&pm[ticket][message]=\(jiraMessage)&sc[commit][url]=\(commit)&sc[commit][message]=\(commitMessage)&sc[pr][url]=\(pr)&sc[pr][message]=\(prMessage)&sc[commit][id]=ig84rtx1984r9h2837yrx28")
         
-        let object = r.response.testable.content(as: App.self)!
+        let object = r.response.testable.content(as: Build.self)!
         XCTAssertNil(object.info!.projectManagement!.ticket!.id, "We are not sending an Id")
         XCTAssertEqual(object.info!.projectManagement!.ticket!.url, jira.removingPercentEncoding)
         XCTAssertEqual(object.info!.projectManagement!.ticket!.message, jiraMessage.removingPercentEncoding)
@@ -483,23 +483,23 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
     }
     
     func testPlistForApp() {
-        let realApp = createRealApp()
+        let realBuild = createRealBuild()
         
-        let token = DownloadKey.testable.create(forAppId: realApp.id!, user: user1, on: app)
+        let token = DownloadKey.testable.create(forBuildId: realBuild.id!, user: user1, on: app)
         
-        let r = app.testable.response(to: HTTPRequest.testable.get(uri: "/builds/\(realApp.id!)/plist/\(token.token)/\(realApp.fileName).plist", authorizedUser: user1, on: app))
+        let r = app.testable.response(to: HTTPRequest.testable.get(uri: "/builds/\(realBuild.id!)/plist/\(token.token)/\(realBuild.fileName).plist", authorizedUser: user1, on: app))
         r.response.testable.debug()
         
         let plistData = r.response.testable.contentString!.data(using: .utf8)!
         
-        let link = "http://localhost:8080/apps/\(realApp.id!)/file/\(token.token)/app-ipa.ipa"
+        let link = "http://localhost:8080/apps/\(realBuild.id!)/file/\(token.token)/app-ipa.ipa"
         
         // Temporary hack before PropertyListDecoder becomes available on linux (https://bugs.swift.org/browse/SR-8259)
         #if os(Linux)
         let plistString = String(data: plistData, encoding: .utf8)!
         XCTAssertTrue(plistString.contains(link))
         #elseif os(macOS)
-        let plist = try! PropertyListDecoder().decode(AppPlist.self, from: plistData)
+        let plist = try! PropertyListDecoder().decode(BuildPlist.self, from: plistData)
         
         print(plist)
         
@@ -514,38 +514,38 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
     }
     
     func testDownloadIosApp() {
-        let realApp = createRealApp()
+        let realBuild = createRealBuild()
         
-        let token = DownloadKey.testable.create(forAppId: realApp.id!, user: user1, on: app)
+        let token = DownloadKey.testable.create(forBuildId: realBuild.id!, user: user1, on: app)
         
-        let r = app.testable.response(to: HTTPRequest.testable.get(uri: "/builds/\(realApp.id!)/file/\(token.token)/\(realApp.fileName).ipa", authorizedUser: user1, on: app))
+        let r = app.testable.response(to: HTTPRequest.testable.get(uri: "/builds/\(realBuild.id!)/file/\(token.token)/\(realBuild.fileName).ipa", authorizedUser: user1, on: app))
         r.response.testable.debug()
         
         let data: Data = try! r.response.http.body.consumeData(on: app.testable.fakeRequest()).wait()
         
-        let appUrl = Application.testable.paths.resourcesUrl.appendingPathComponent("apps").appendingPathComponent("app.ipa")
-        let appData = try! Data(contentsOf: appUrl)
+        let buildUrl = Application.testable.paths.resourcesUrl.appendingPathComponent("apps").appendingPathComponent("app.ipa")
+        let buildData = try! Data(contentsOf: buildUrl)
         
-        XCTAssertEqual(data, appData, "Downloaded app doesn't match the one uploaded")
+        XCTAssertEqual(data, buildData, "Downloaded app doesn't match the one uploaded")
         
         XCTAssertTrue(r.response.testable.has(statusCode: .ok), "Wrong status code")
         XCTAssertTrue(r.response.testable.has(contentType: "application/octet-stream"), "Missing or incorrect content type")
     }
     
     func testDownloadAndroidApp() {
-        let realApp = createRealApp(.android)
+        let realBuild = createRealBuild(.android)
         
-        let token = DownloadKey.testable.create(forAppId: realApp.id!, user: user1, on: app)
+        let token = DownloadKey.testable.create(forBuildId: realBuild.id!, user: user1, on: app)
         
-        let r = app.testable.response(to: HTTPRequest.testable.get(uri: "/builds/\(realApp.id!)/file/\(token.token)/\(realApp.fileName).apk", authorizedUser: user1, on: app))
+        let r = app.testable.response(to: HTTPRequest.testable.get(uri: "/builds/\(realBuild.id!)/file/\(token.token)/\(realBuild.fileName).apk", authorizedUser: user1, on: app))
         r.response.testable.debug()
         
         let data: Data = try! r.response.http.body.consumeData(on: app.testable.fakeRequest()).wait()
         
-        let appUrl = Application.testable.paths.resourcesUrl.appendingPathComponent("apps").appendingPathComponent("app.apk")
-        let appData = try! Data(contentsOf: appUrl)
+        let buildUrl = Application.testable.paths.resourcesUrl.appendingPathComponent("apps").appendingPathComponent("app.apk")
+        let buildData = try! Data(contentsOf: buildUrl)
         
-        XCTAssertEqual(data, appData, "Downloaded app doesn't match the one uploaded")
+        XCTAssertEqual(data, buildData, "Downloaded app doesn't match the one uploaded")
         
         XCTAssertTrue(r.response.testable.has(statusCode: .ok), "Wrong status code")
         XCTAssertTrue(r.response.testable.has(contentType: "application/vnd.android.package-archive"), "Missing or incorrect content type")
@@ -556,21 +556,21 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
 
 extension AppsControllerTests {
     
-    private func createRealApp(_ platform: App.Platform = .ios) -> App {
+    private func createRealBuild(_ platform: Build.Platform = .ios) -> Build {
         if platform == .ios {
             let r = doTestTokenUpload(appFileName: "app.ipa", platform: .ios, name: "iDeviant", identifier: "com.fuerteint.iDeviant", version: "4.0", build: "1.0", iconSize: 4776)
-            let app = r.response.testable.content(as: App.self)!
+            let app = r.response.testable.content(as: Build.self)!
             return app
         } else {
             let r = doTestJWTUpload(appFileName: "app.apk", platform: .android, name: "Bytecheck", identifier: "cz.vhrdina.bytecheck", version: "0.1", build: "1", iconSize: 2018)
-            let app = r.response.testable.content(as: App.self)!
+            let app = r.response.testable.content(as: Build.self)!
             return app
         }
     }
     
-    @discardableResult private func doTestTokenUpload(appFileName fileName: String, platform: App.Platform, name: String, identifier: String, version: String? = nil, build: String? = nil, tags: [String] = ["tagging_like_crazy", "All Year Round"], iconSize: Int? = nil) -> TestResponse {
-        let appUrl = Application.testable.paths.resourcesUrl.appendingPathComponent("apps").appendingPathComponent(fileName)
-        let postData = try! Data(contentsOf: appUrl)
+    @discardableResult private func doTestTokenUpload(appFileName fileName: String, platform: Build.Platform, name: String, identifier: String, version: String? = nil, build: String? = nil, tags: [String] = ["tagging_like_crazy", "All Year Round"], iconSize: Int? = nil) -> TestResponse {
+        let buildUrl = Application.testable.paths.resourcesUrl.appendingPathComponent("apps").appendingPathComponent(fileName)
+        let postData = try! Data(contentsOf: buildUrl)
         let encodedTags: String = tags.joined(separator: "|").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
         let req = HTTPRequest.testable.post(uri: "/apps?tags=\(encodedTags)&token=\(key1.token)", data: postData, headers: [
             "Content-Type": (platform == .ios ? "application/octet-stream" : "application/vnd.android.package-archive")
@@ -580,9 +580,9 @@ extension AppsControllerTests {
         return doTest(request: req, platform: platform, name: name, identifier: identifier, version: version, build: build, tags: tags, iconSize: iconSize)
     }
     
-    @discardableResult private func doTestJWTUpload(appFileName fileName: String, platform: App.Platform, name: String, identifier: String, version: String? = nil, build: String? = nil, tags: [String] = ["tagging_like_crazy", "All Year Round"], iconSize: Int? = nil, info: String? = nil, team: Team? = nil, appsTotal: Int = 65) -> TestResponse {
-        let appUrl = Application.testable.paths.resourcesUrl.appendingPathComponent("apps").appendingPathComponent(fileName)
-        let postData = try! Data(contentsOf: appUrl)
+    @discardableResult private func doTestJWTUpload(appFileName fileName: String, platform: Build.Platform, name: String, identifier: String, version: String? = nil, build: String? = nil, tags: [String] = ["tagging_like_crazy", "All Year Round"], iconSize: Int? = nil, info: String? = nil, team: Team? = nil, appsTotal: Int = 65) -> TestResponse {
+        let buildUrl = Application.testable.paths.resourcesUrl.appendingPathComponent("apps").appendingPathComponent(fileName)
+        let postData = try! Data(contentsOf: buildUrl)
         let encodedTags: String = tags.joined(separator: "|").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
         let safeInfo = (info ?? "")
         let uri = "/teams/\((team ?? team1).id!.uuidString)/apps?tags=\(encodedTags)\(safeInfo)"
@@ -594,16 +594,16 @@ extension AppsControllerTests {
         return doTest(request: req, platform: platform, name: name, identifier: identifier, version: version, build: build, tags: tags, iconSize: iconSize, appsTotal: appsTotal)
     }
     
-    @discardableResult private func doTest(request req: HTTPRequest, platform: App.Platform, name: String, identifier: String, version: String?, build: String?, tags: [String], iconSize: Int?, appsTotal: Int = 65) -> TestResponse {
+    @discardableResult private func doTest(request req: HTTPRequest, platform: Build.Platform, name: String, identifier: String, version: String?, build: String?, tags: [String], iconSize: Int?, appsTotal: Int = 65) -> TestResponse {
         // Check initial app count
-        var count = app.testable.count(allFor: App.self)
+        var count = app.testable.count(allFor: Build.self)
         XCTAssertEqual(count, appsTotal, "There should be right amount of apps to begin with")
         
         let r = app.testable.response(to: req)
         
         r.response.testable.debug()
         
-        let object = r.response.testable.content(as: App.self)!
+        let object = r.response.testable.content(as: Build.self)!
         
         // TODO: Test email notification has been received!!!!!!!!
         let mailer = try! r.request.make(MailerService.self) as! MailerMock
@@ -623,7 +623,7 @@ extension AppsControllerTests {
         XCTAssertEqual(object.build, build ?? "0", "Wrong build")
         
         // Temp file should have been deleted
-        var pathUrl = App.localTempAppFile(on: r.request)
+        var pathUrl = Build.localTempAppFile(on: r.request)
         XCTAssertFalse(FileManager.default.fileExists(atPath: pathUrl.path), "Temporary file should have been deleted")
         
         // App should be saved in the persistent storage
@@ -654,7 +654,7 @@ extension AppsControllerTests {
         }
         
         // Check final app count after the upload
-        count = app.testable.count(allFor: App.self)
+        count = app.testable.count(allFor: Build.self)
         XCTAssertEqual(count, (appsTotal + 1), "There should be right amount of apps to begin with")
         
         return r

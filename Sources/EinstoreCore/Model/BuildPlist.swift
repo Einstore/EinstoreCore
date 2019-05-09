@@ -1,5 +1,5 @@
 //
-//  AppPlist.swift
+//  BuildPlist.swift
 //  ApiCore
 //
 //  Created by Ondrej Rafaj on 22/02/2018.
@@ -11,7 +11,7 @@ import ErrorsCore
 
 
 /// Applications Info.plist data struct
-public struct AppPlist: Codable {
+public struct BuildPlist: Codable {
     
     public struct Item: Codable {
         
@@ -20,15 +20,15 @@ public struct AppPlist: Codable {
             let kind: String = "software-package"
             let url: String
             
-            public init(app: App, token: String, request req: Request) throws {
+            public init(build: Build, token: String, request req: Request) throws {
                 let serverUrl = req.serverURL()
                 self.url = serverUrl
                     .appendingPathComponent("apps")
-                    .appendingPathComponent(app.id!.uuidString)
+                    .appendingPathComponent(build.id!.uuidString)
                     .appendingPathComponent("file")
                     .appendingPathComponent(token)
-                    .appendingPathComponent(app.fileName.safeText)
-                    .appendingPathExtension(app.platform.fileExtension)
+                    .appendingPathComponent(build.fileName.safeText)
+                    .appendingPathExtension(build.platform.fileExtension)
                     .absoluteString
             }
             
@@ -48,10 +48,10 @@ public struct AppPlist: Codable {
                 case title
             }
             
-            public init(app: App) {
-                self.bundleIdentifier = app.identifier
-                self.bundleVersion = app.version
-                self.title = app.name
+            public init(build: Build) {
+                self.bundleIdentifier = build.identifier
+                self.bundleVersion = build.version
+                self.title = build.name
             }
             
         }
@@ -59,20 +59,20 @@ public struct AppPlist: Codable {
         let assets: [Asset]
         let metadata: Metadata
         
-        public init(app: App, token: String, request req: Request) throws {
+        public init(build: Build, token: String, request req: Request) throws {
             self.assets = [
-                try Asset(app: app, token: token, request: req)
+                try Asset(build: build, token: token, request: req)
             ]
-            self.metadata = Metadata(app: app)
+            self.metadata = Metadata(build: build)
         }
         
     }
     
     let items: [Item]
     
-    public init(app: App, token: String, request req: Request) throws {
+    public init(build: Build, token: String, request req: Request) throws {
         self.items = [
-            try Item(app: app, token: token, request: req)
+            try Item(build: build, token: token, request: req)
         ]
     }
     

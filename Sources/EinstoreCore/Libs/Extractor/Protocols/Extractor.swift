@@ -96,7 +96,7 @@ protocol Extractor {
     init(file: URL, request: Request) throws
     
     /// Process the file
-    func process(teamId: DbIdentifier, on: Request) throws -> Future<App>
+    func process(teamId: DbIdentifier, on: Request) throws -> Future<Build>
     
 }
 
@@ -104,43 +104,43 @@ protocol Extractor {
 extension Extractor {
     
     /// Compile an app & it's cluster from parsed data
-    func app(platform: App.Platform, teamId: DbIdentifier, on req: Request) throws -> Future<App> {
-        guard let appName = appName, let appIdentifier = appIdentifier else {
+    func app(platform: Build.Platform, teamId: DbIdentifier, on req: Request) throws -> Future<Build> {
+        guard let buildName = appName, let buildIdentifier = appIdentifier else {
             throw ExtractorError.invalidAppContent
         }
         
-        return ClusterManager.cluster(for: appIdentifier, platform: platform, teamId: teamId, on: req).flatMap(to: App.self) { cluster in
+        return ClusterManager.cluster(for: buildIdentifier, platform: platform, teamId: teamId, on: req).flatMap(to: Build.self) { cluster in
             let attr = try FileManager.default.attributesOfItem(atPath: self.file.path)
             let size = Int(truncating: (attr[FileAttributeKey.size] as? NSNumber) ?? 0)
             let iconDataSize = self.iconData?.count ?? 0
             let sizeTotal = size + iconDataSize
 
-            let app = App(teamId: teamId, clusterId: (cluster?.id ?? UUID()), name: appName, identifier: appIdentifier, version: self.versionLong ?? "0.0", build: self.versionShort ?? "0", platform: platform, built: self.built, size: size, sizeTotal: sizeTotal, minSdk: self.minSdk ?? "1", hasIcon: (iconDataSize > 0))
+            let build = Build(teamId: teamId, clusterId: (cluster?.id ?? UUID()), name: buildName, identifier: buildIdentifier, version: self.versionLong ?? "0.0", build: self.versionShort ?? "0", platform: platform, built: self.built, size: size, sizeTotal: sizeTotal, minSdk: self.minSdk ?? "1", hasIcon: (iconDataSize > 0))
             
             // Compile info (in any is present)
-            var info = try? req.query.decode(App.Info.self)
+            var info = try? req.query.decode(Build.Info.self)
             if let i = info, i.isEmpty {
                 info = nil
             }
-            app.info = info
+            build.info = info
             
             // Save app
-            return app.save(on: req).flatMap(to: App.self) { app in
+            return build.save(on: req).flatMap(to: Build.self) { build in
                 guard let cluster = cluster, cluster.id != nil else {
-                    let cluster = Cluster(latestApp: app)
-                    return cluster.save(on: req).flatMap(to: App.self) { cluster in
-                        app.clusterId = cluster.id!
-                        return app.save(on: req)
+                    let cluster = Cluster(latestBuild: build)
+                    return cluster.save(on: req).flatMap(to: Build.self) { cluster in
+                        build.clusterId = cluster.id!
+                        return build.save(on: req)
                     }
                 }
-                return app.save(on: req).flatMap(to: App.self) { app in
-                    cluster.latestAppName = app.name
-                    cluster.latestAppVersion = app.version
-                    cluster.latestAppBuild = app.build
-                    cluster.latestAppAdded = app.created
-                    cluster.appCount += 1
-                    return cluster.save(on: req).map(to: App.self) { cluster in
-                        return app
+                return build.save(on: req).flatMap(to: Build.self) { build in
+                    cluster.latestBuildName = build.name
+                    cluster.latestBuildVersion = build.version
+                    cluster.latestBuildBuildNo = build.build
+                    cluster.latestBuildAdded = build.created
+                    cluster.buildCount += 1
+                    return cluster.save(on: req).map(to: Build.self) { cluster in
+                        return build
                     }
                 }
             }
@@ -148,17 +148,17 @@ extension Extractor {
     }
     
     /// Save app files
-    func save(_ app: App, request req: Request) throws -> Future<Void> {
-        guard let path = app.appPath?.relativePath else {
+    func save(_ build: Build, request req: Request) throws -> Future<Void> {
+        guard let path = build.appPath?.relativePath else {
             throw ExtractorError.errorSavingFile
         }
         
         let fm = try req.makeFileCore()
         // TODO: These paths need refactor, they have the root added to them in a few places. This should be coming from one method!!!!!
         let tempFile = URL(fileURLWithPath: ApiCoreBase.configuration.storage.local.root)
-            .appendingPathComponent(App.localTempAppFile(on: req).relativePath).path
+            .appendingPathComponent(Build.localTempAppFile(on: req).relativePath).path
         return try fm.move(file: tempFile, to: path, on: req).flatMap(to: Void.self) { _ in
-            if let iconData = self.iconData, let path = app.iconPath?.relativePath, let mime = iconData.imageFileMediaType() {
+            if let iconData = self.iconData, let path = build.iconPath?.relativePath, let mime = iconData.imageFileMediaType() {
                 return try fm.save(file: iconData, to: path, mime: mime, on: req).map(to: Void.self) { _ in
                     try self.cleanUp()
                     return Void()

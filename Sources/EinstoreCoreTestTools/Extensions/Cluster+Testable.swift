@@ -15,13 +15,13 @@ import VaporTestTools
 
 extension TestableProperty where TestableType == Cluster {
     
-    @discardableResult public static func guaranteedCluster(identifier: String, platform: App.Platform, on app: Application) -> Cluster {
+    @discardableResult public static func guaranteedCluster(identifier: String, platform: Build.Platform, on app: Application) -> Cluster {
         let req = app.testable.fakeRequest()
         if let cluster = try! Cluster.query(on: req).filter(\Cluster.identifier == identifier).filter(\Cluster.platform == platform).first().wait() {
             return cluster
         } else {
-            let app = App(teamId: UUID(),clusterId: UUID(), name: identifier, identifier: identifier, version: "", build: "", platform: platform, built: Date(), size: 0, sizeTotal: 0)
-            let object = Cluster(latestApp: app, appCount: 0)
+            let build = Build(teamId: UUID(),clusterId: UUID(), name: identifier, identifier: identifier, version: "", build: "", platform: platform, built: Date(), size: 0, sizeTotal: 0)
+            let object = Cluster(latestBuild: build, appCount: 0)
             return try! object.save(on: req).wait()
         }
     }

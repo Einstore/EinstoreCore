@@ -11,7 +11,7 @@ import ApiCore
 
 
 /// Helpers for App
-extension App {
+extension Build {
     
     /// Default icon name
     public var iconName: String {

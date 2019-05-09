@@ -67,10 +67,10 @@ public class EinstoreCoreBase {
     public static func configure(_ config: inout Vapor.Config, _ env: inout Vapor.Environment, _ services: inout Services) throws {        
         // Add EinstoreCore models to the migrations
         ApiCoreBase.add(model: Cluster.self, database: .db)
-        ApiCoreBase.add(model: App.self, database: .db)
+        ApiCoreBase.add(model: Build.self, database: .db)
         ApiCoreBase.add(model: DownloadKey.self, database: .db)
         ApiCoreBase.add(model: Tag.self, database: .db)
-        ApiCoreBase.add(model: AppTag.self, database: .db)
+        ApiCoreBase.add(model: BuildTag.self, database: .db)
         ApiCoreBase.add(model: UsedTag.self, database: .db)
         ApiCoreBase.add(model: ApiKey.self, database: .db)
         ApiCoreBase.add(model: Config.self, database: .db)

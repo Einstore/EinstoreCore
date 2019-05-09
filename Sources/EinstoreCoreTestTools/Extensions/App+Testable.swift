@@ -13,16 +13,16 @@ import Fluent
 import VaporTestTools
 
 
-extension TestableProperty where TestableType == App {
+extension TestableProperty where TestableType == Build {
     
-    @discardableResult public static func create(team: Team, name: String, identifier: String? = nil, version: String, build: String, platform: App.Platform, on app: Application) -> App {
+    @discardableResult public static func create(team: Team, name: String, identifier: String? = nil, version: String, build: String, platform: Build.Platform, on app: Application) -> Build {
         let req = app.testable.fakeRequest()
         let identifier = (identifier ?? name.safeText)
         let cluster = Cluster.testable.guaranteedCluster(identifier: identifier, platform: platform, on: app)
         cluster.teamId = team.id!
-        let object = App(teamId: team.id!, clusterId: cluster.id!, name: name, identifier: identifier, version: version, build: build, platform: platform, built: Date(), size: 5000, sizeTotal: 5678)
-        cluster.appCount += 1
-        _ = try! cluster.add(app: object, on: req).wait()
+        let object = Build(teamId: team.id!, clusterId: cluster.id!, name: name, identifier: identifier, version: version, build: build, platform: platform, built: Date(), size: 5000, sizeTotal: 5678)
+        cluster.buildCount += 1
+        _ = try! cluster.add(build: object, on: req).wait()
         _ = try! cluster.save(on: req).wait()
         return try! object.save(on: req).wait()
     }

@@ -12,6 +12,6 @@ import EinstoreCore
 
 extension ApiKey: Testable { }
 extension DownloadKey: Testable { }
-extension App: Testable { }
+extension Build: Testable { }
 extension Cluster: Testable { }
 extension Tag: Testable { }
