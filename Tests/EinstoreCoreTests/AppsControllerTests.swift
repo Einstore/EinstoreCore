@@ -21,6 +21,7 @@ import PostgreSQL
 import FluentPostgreSQL
 import MailCore
 import MailCoreTestTools
+import Crypto
 
 
 class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
@@ -54,6 +55,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         ("testPartialAppSearch", testPartialAppSearch),
         ("testPartialInsensitiveAppSearch", testPartialInsensitiveAppSearch),
         ("testAppIconIsRetrieved", testAppIconIsRetrieved),
+        ("testAppIconIsRetrievedFromLocalStore", testAppIconIsRetrievedFromLocalStore),
         ("testAppTags", testAppTags),
         ("testAuthReturnsValidToken", testAuthReturnsValidToken),
         ("testBadTokenUpload", testBadTokenUpload),
@@ -72,8 +74,8 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         ("testOldIosAppWithInfo", testOldIosAppWithInfo),
         ("testOldIosAppTokenUpload", testOldIosAppTokenUpload),
         ("testPlistForApp", testPlistForApp),
-        ("testUnobfuscatedApkUploadWithJWTAuth", testUnobfuscatedApkUploadWithJWTAuth),
-        ]
+        ("testUnobfuscatedApkUploadWithJWTAuth", testUnobfuscatedApkUploadWithJWTAuth)
+    ]
     
     func testLinuxTests() {
         doTestLinuxTestsAreOk()
@@ -433,6 +435,8 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         let fakeReq = app.testable.fakeRequest()
         let postData = try! Data(contentsOf: resourcesIconUrl)
         try! app1.save(iconData: postData, on: fakeReq).wait()
+        app1.iconHash = try! postData.asMD5String()
+        _ = try! app1.save(on: fakeReq).wait()
         
         // Test
         let req = HTTPRequest.testable.get(uri: "/builds/\(app1.id!.uuidString)/icon", authorizedUser: user1, on: app)
@@ -440,14 +444,42 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         
         r.response.testable.debug()
         
-        // Temporarily disabling flaky tests
-        // TODO: FIX!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//        XCTAssertEqual(r.response.http.body.data!.count, postData.count, "Icon needs to be the same")
-//        XCTAssertTrue(r.response.testable.has(statusCode: .ok), "Wrong status code")
-//        XCTAssertTrue(r.response.testable.has(contentType: "image/png"), "Missing or incorrect content type")
+        XCTAssertTrue(r.response.testable.has(statusCode: .movedPermanently), "Wrong status code")
+        XCTAssertEqual(r.response.testable.header(name: "location"), "https://example.com/apps/icons/\(app1.iconHash!).png", "Missing or incorrect content type")
         
         // Cleaning
         try! app1.deleteIcon(on: fakeReq).wait()
+    }
+    
+    func testAppIconIsRetrievedFromLocalStore() {
+        let fakeReq = app.testable.fakeRequest()
+        let fm = try! fakeReq.makeFileCore() as! RemoteFileCoreServiceMock
+        
+        // Switch mock to local file store
+        fm.isRemote = false
+        
+        // Preps
+        let resourcesIconUrl = Application.testable.paths.resourcesUrl.appendingPathComponent("icons").appendingPathComponent("liveui.png")
+        
+        let postData: Data = try! Data(contentsOf: resourcesIconUrl)
+        
+        try! app1.save(iconData: postData, on: fakeReq).wait()
+        app1.iconHash = try! postData.asMD5String()
+        _ = try! app1.save(on: fakeReq).wait()
+        
+        // Test
+        let req = HTTPRequest.testable.get(uri: "/builds/\(app1.id!.uuidString)/icon", authorizedUser: user1, on: app)
+        let r = app.testable.response(to: req)
+        
+        r.response.testable.debug()
+        
+        XCTAssertEqual(r.response.http.body.data!.count, postData.count, "Icon needs to be the same")
+        XCTAssertTrue(r.response.testable.has(statusCode: .ok), "Wrong status code")
+        XCTAssertTrue(r.response.testable.has(contentType: "image/png"), "Missing or incorrect content type")
+        
+        // Cleaning
+        try! app1.deleteIcon(on: fakeReq).wait()
+        fm.isRemote = true
     }
     
     func testBadTokenUpload() {
@@ -633,13 +665,12 @@ extension AppsControllerTests {
         let path = "apps/\(object.created.year)/\(object.created.month)/\(object.created.day)/\(object.id!)/app.\(platform.fileExtension)"
         XCTAssertTrue(fm.movedFiles.contains(where: { $0.destination == path }), "Persistent file should be present")
         
-        // Test images are all oke
+        // Test images are all okey
         if let iconSize = iconSize, let iconPath = object.iconPath {
-            let iconFullPath = URL(fileURLWithPath: ApiCoreBase.configuration.storage.local.root)
-                .appendingPathComponent(iconPath.relativePath)
+            let savedFile = fm.savedFiles.icon(hash: object.iconHash!)
             
-            XCTAssertTrue(FileManager.default.fileExists(atPath: iconFullPath.path), "Icon file should be present")
-            XCTAssertEqual(try? Data(contentsOf: iconFullPath).count, iconSize, "Icon file size doesn't match")
+            XCTAssertEqual(savedFile!.path, iconPath.relativePath, "Icon file should at the right location")
+            XCTAssertEqual(savedFile!.file!.count, iconSize, "Icon file size doesn't match")
         }
         else if object.hasIcon {
             XCTFail("Icon is set on the App object but it has not been tested")

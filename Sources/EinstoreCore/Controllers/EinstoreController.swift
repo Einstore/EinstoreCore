@@ -81,8 +81,8 @@ public class EinstoreController: Controller {
                                 let hasIcon = (icon.http.status == .ok && icon.http.body.data != nil)
                                 let identifier = "io.liveui.\(name.lowercased())"
                                 var buildNumber = Int(Color.randomInt(max: 5000) + 1)
-                                for i1 in 0...4 {
-                                    for i2 in 0...4 {
+                                for i1 in 0...Color.randomInt(max: 4) {
+                                    for i2 in 0...Color.randomInt(max: 6) {
                                         let version = "1.\(i1).\(i2)"
                                         let sdk = "\(name)SDK_\(version)"
                                         let sdk2 = "AnotherSDK_1.\(i2)"
@@ -91,7 +91,7 @@ public class EinstoreController: Controller {
                                         let prId = UUID()
                                         let pmId = UUID()
                                         
-                                        let iconDataMD5 = icon.http.body.data?.md5.asUTF8String()
+                                        let iconDataMD5 = try icon.http.body.data?.asMD5String()
                                         
                                         let build = Build(
                                             teamId: team.id!,

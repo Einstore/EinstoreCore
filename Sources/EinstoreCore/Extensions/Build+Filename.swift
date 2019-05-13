@@ -14,26 +14,44 @@ import ApiCore
 extension Build {
     
     /// Full download URL for file data
-    public func fileUrl(token: String, on req: Request) -> URL {
-        let serverUrl = req.serverURL()
-        let url = serverUrl
-            .appendingPathComponent("apps")
-            .appendingPathComponent(id!.uuidString)
-            .appendingPathComponent("file")
-            .appendingPathComponent(token)
-            .appendingPathComponent(fileName.safeText)
-            .appendingPathExtension(platform.fileExtension)
-        return url
+    public func fileUrl(token: String, on req: Request) throws -> URL {
+        let fm = try req.makeFileCore()
+        if fm.isRemote {
+            let serverUrl = req.serverURL()
+            let url = serverUrl
+                .appendingPathComponent("apps")
+                .appendingPathComponent(id!.uuidString)
+                .appendingPathComponent("file")
+                .appendingPathComponent(token)
+                .appendingPathComponent(fileName.safeText)
+                .appendingPathExtension(platform.fileExtension)
+            return url
+        } else {
+            let serverUrl = req.serverURL()
+            let url = serverUrl
+                .appendingPathComponent("apps")
+                .appendingPathComponent(id!.uuidString)
+                .appendingPathComponent("file")
+                .appendingPathComponent(token)
+                .appendingPathComponent(fileName.safeText)
+                .appendingPathExtension(platform.fileExtension)
+            return url
+        }
     }
     
     /// Full icon url if exists
-    public func iconUrl(on req: Request) -> URL? {
+    public func iconUrl(on req: Request) throws -> URL? {
         guard hasIcon, let path = iconPath else {
             return nil
         }
-        let serverUrl = req.serverURL()
-        let url = serverUrl.appendingPathComponent(path.relativePath)
-        return url
+        let fm = try req.makeFileCore()
+        let url: URL?
+        if fm.isRemote {
+            url = try fm.serverUrl()
+        } else {
+            url = req.serverURL()
+        }
+        return url?.appendingPathComponent(path.relativePath)
     }
     
     /// Default icon name

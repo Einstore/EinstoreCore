@@ -127,13 +127,17 @@ class AppsController: Controller {
                     guard let build = build, let path = build.iconPath?.relativePath, build.hasIcon else {
                         throw ErrorsCore.HTTPError.notFound
                     }
-                    if false, let url = build.iconUrl(on: req) { // External file service
-                        print(url)
-                        fatalError()
+                    let fm = try req.makeFileCore()
+                    if fm.isRemote, let url = try build.iconUrl(on: req) { // External file service
+                        let res = req.redirect(to: url.absoluteString, type: .permanent)
+                        return req.eventLoop.newSucceededFuture(result: res)
                     } else { // Local file store
                         let fm = try req.makeFileCore()
                         let image = try fm.get(file: path, on: req)
                         return image.flatMap() { data in
+                            guard data.count > 0 else {
+                                throw ErrorsCore.HTTPError.notFound
+                            }
                             return try data.asResponse(.ok, contentType: "image/png", to: req)
                         }
                     }
@@ -267,7 +271,7 @@ class AppsController: Controller {
         }
         
         // Upload a build from CI with Upload API key
-        router.post("apps") { (req) -> Future<Response> in
+        router.post("builds") { (req) -> Future<Response> in
             guard let token = try? req.query.decode(ApiKey.Token.self) else {
                 throw ErrorsCore.HTTPError.missingAuthorizationData
             }
@@ -282,7 +286,7 @@ class AppsController: Controller {
         }
         
         // Upload a build from authenticated session (browser, app, etc ...)
-        secure.post("teams", UUID.parameter, "apps") { (req) -> Future<Response> in
+        secure.post("teams", UUID.parameter, "builds") { (req) -> Future<Response> in
             let teamId = try req.parameters.next(DbIdentifier.self)
             return try req.me.verifiedTeam(id: teamId).flatMap(to: Response.self) { (team) -> Future<Response> in
                 return try AppsManager.upload(team: team, on: req)

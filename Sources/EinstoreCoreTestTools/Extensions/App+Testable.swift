@@ -20,7 +20,7 @@ extension TestableProperty where TestableType == Build {
         let identifier = (identifier ?? name.safeText)
         let cluster = Cluster.testable.guaranteedCluster(identifier: identifier, platform: platform, on: app)
         cluster.teamId = team.id!
-        let object = Build(teamId: team.id!, clusterId: cluster.id!, name: name, identifier: identifier, version: version, build: build, platform: platform, built: Date(), size: 5000, sizeTotal: 5678)
+        let object = Build(teamId: team.id!, clusterId: cluster.id!, name: name, identifier: identifier, version: version, build: build, platform: platform, built: Date(), size: 5000, sizeTotal: 5678, iconHash: nil)
         cluster.buildCount += 1
         _ = try! cluster.add(build: object, on: req).wait()
         _ = try! cluster.save(on: req).wait()

@@ -355,7 +355,7 @@ extension Build {
         return children(\.buildId)
     }
     
-    var cluster: Parent<Build, Cluster> {
+    var app: Parent<Build, Cluster> {
         return parent(\Build.clusterId)
     }
     
@@ -384,7 +384,7 @@ extension Build: Migration {
             let col = PostgreSQLColumnDefinition.columnDefinition(.column(nil, "info"), .jsonb, [])
             schema.field(col)
             
-            schema.field(for: \.iconHash, type: .boolean)
+            schema.field(for: \.iconHash, type: .varchar(32))
             schema.field(for: \.minSdk, type: .varchar(20))
         }
     }

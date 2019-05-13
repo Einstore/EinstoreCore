@@ -13,12 +13,12 @@ import Fluent
 extension Build {
     
     public func save(iconData data: Data?, on req: Request) throws -> EventLoopFuture<Void> {
-        guard let data = data, let hash = data.md5.asUTF8String() else {
+        guard let data = data else {
             return req.eventLoop.newSucceededVoidFuture()
         }
-        iconHash = hash
-        return Build.query(on: req).filter(\Build.iconHash == hash).count().flatMap() { hashCount in
-            guard hashCount == 0 else {
+        iconHash = try data.asMD5String()
+        return Build.query(on: req).filter(\Build.iconHash == iconHash).count().flatMap() { hashCount in
+            guard hashCount <= 1 else {
                 return req.eventLoop.newSucceededVoidFuture()
             }
             guard let path = self.iconPath?.relativePath, let mime = data.imageFileMediaType() else {

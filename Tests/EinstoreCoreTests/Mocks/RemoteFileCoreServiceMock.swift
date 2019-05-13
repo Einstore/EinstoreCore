@@ -22,7 +22,7 @@ class RemoteFileCoreServiceMock: CoreManager, Service {
     var isRemote: Bool = true
     
     func serverUrl() throws -> URL? {
-        return URL(string: "https://example.com")!
+        return isRemote ? URL(string: "https://example.com")! : nil
     }
     
     var savedFiles: [File] = []
@@ -50,8 +50,9 @@ class RemoteFileCoreServiceMock: CoreManager, Service {
     }
     
     func get(file: String, on: Container) throws -> EventLoopFuture<Data> {
+        let data = savedFiles.first(where: { $0.path == file })?.file ?? Data()
         print("Get \(file)")
-        return on.eventLoop.newSucceededFuture(result: Data())
+        return on.eventLoop.newSucceededFuture(result: data)
     }
     
     var deletedFiles: [File] = []
@@ -67,6 +68,15 @@ class RemoteFileCoreServiceMock: CoreManager, Service {
     func exists(file: String, on: Container) throws -> EventLoopFuture<Bool> {
         print("File \(file) \(exists ? "exists" : "doesn't exist")")
         return on.eventLoop.newSucceededFuture(result: exists)
+    }
+    
+}
+
+
+extension Array where Element == RemoteFileCoreServiceMock.File {
+    
+    func icon(hash: String) -> Element? {
+        return first(where: { $0.path == "apps/icons/\(hash).png" })
     }
     
 }
