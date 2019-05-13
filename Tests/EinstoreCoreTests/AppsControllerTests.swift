@@ -9,6 +9,7 @@ import Foundation
 import XCTest
 @testable import Vapor
 @testable import NIO
+@testable import Service
 import VaporTestTools
 import FluentTestTools
 import ApiCoreTestTools
@@ -83,7 +84,10 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
     override func setUp() {
         super.setUp()
         
-        app = Application.testable.newBoostTestApp()
+        app = Application.testable.newBoostTestApp(configure: { (config, env, services) in
+            services.register(RemoteFileCoreServiceMock(), as: CoreManager.self)
+            config.prefer(RemoteFileCoreServiceMock.self, for: CoreManager.self)
+        })
         
         app.testable.delete(allFor: Token.self)
         
@@ -515,12 +519,14 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         let r = app.testable.response(to: HTTPRequest.testable.get(uri: "/builds/\(realBuild.id!)/file/\(token.token)/\(realBuild.fileName).ipa", authorizedUser: user1, on: app))
         r.response.testable.debug()
         
-        let data: Data = try! r.response.http.body.consumeData(on: app.testable.fakeRequest()).wait()
+        let fakeReq = app.testable.fakeRequest()
+        let fm = try! fakeReq.makeFileCore() as! RemoteFileCoreServiceMock
         
-        let buildUrl = Application.testable.paths.resourcesUrl.appendingPathComponent("apps").appendingPathComponent("app.ipa")
-        let buildData = try! Data(contentsOf: buildUrl)
+//        let buildUrl = Application.testable.paths.resourcesUrl.appendingPathComponent("apps").appendingPathComponent("app.ipa")
         
-        XCTAssertEqual(data, buildData, "Downloaded app doesn't match the one uploaded")
+        let path = "apps/\(realBuild.created.year)/\(realBuild.created.month)/\(realBuild.created.day)/\(realBuild.id!)/app.ipa"
+        
+        XCTAssertEqual(path, fm.movedFiles.first!.destination, "Downloaded app doesn't match the one uploaded")
         
         XCTAssertTrue(r.response.testable.has(statusCode: .ok), "Wrong status code")
         XCTAssertTrue(r.response.testable.has(contentType: "application/octet-stream"), "Missing or incorrect content type")
@@ -534,12 +540,12 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         let r = app.testable.response(to: HTTPRequest.testable.get(uri: "/builds/\(realBuild.id!)/file/\(token.token)/\(realBuild.fileName).apk", authorizedUser: user1, on: app))
         r.response.testable.debug()
         
-        let data: Data = try! r.response.http.body.consumeData(on: app.testable.fakeRequest()).wait()
+        let fakeReq = app.testable.fakeRequest()
+        let fm = try! fakeReq.makeFileCore() as! RemoteFileCoreServiceMock
         
-        let buildUrl = Application.testable.paths.resourcesUrl.appendingPathComponent("apps").appendingPathComponent("app.apk")
-        let buildData = try! Data(contentsOf: buildUrl)
+        let path = "apps/\(realBuild.created.year)/\(realBuild.created.month)/\(realBuild.created.day)/\(realBuild.id!)/app.apk"
         
-        XCTAssertEqual(data, buildData, "Downloaded app doesn't match the one uploaded")
+        XCTAssertEqual(path, fm.movedFiles.first!.destination, "Downloaded app doesn't match the one uploaded")
         
         XCTAssertTrue(r.response.testable.has(statusCode: .ok), "Wrong status code")
         XCTAssertTrue(r.response.testable.has(contentType: "application/vnd.android.package-archive"), "Missing or incorrect content type")
@@ -616,15 +622,16 @@ extension AppsControllerTests {
         XCTAssertEqual(object.version, version ?? "0.0", "Wrong version")
         XCTAssertEqual(object.build, build ?? "0", "Wrong build")
         
+        let fakeReq = app.testable.fakeRequest()
+        let fm = try! fakeReq.makeFileCore() as! RemoteFileCoreServiceMock
+        
         // Temp file should have been deleted
-        var pathUrl = Build.localTempAppFile(on: r.request)
+        let pathUrl = Build.localTempAppFile(on: r.request)
         XCTAssertFalse(FileManager.default.fileExists(atPath: pathUrl.path), "Temporary file should have been deleted")
         
         // App should be saved in the persistent storage
-        pathUrl = object.appPath!
-        let appFullPath = URL(fileURLWithPath: ApiCoreBase.configuration.storage.local.root)
-            .appendingPathComponent(pathUrl.relativePath)
-        XCTAssertTrue(FileManager.default.fileExists(atPath: appFullPath.path), "Persistent file should be present")
+        let path = "apps/\(object.created.year)/\(object.created.month)/\(object.created.day)/\(object.id!)/app.\(platform.fileExtension)"
+        XCTAssertTrue(fm.movedFiles.contains(where: { $0.destination == path }), "Persistent file should be present")
         
         // Test images are all oke
         if let iconSize = iconSize, let iconPath = object.iconPath {
@@ -641,7 +648,6 @@ extension AppsControllerTests {
         // TODO: Test iOS images are decoded!!!!!!!!!
         
         // Check all created tags
-        let fakeReq = app.testable.fakeRequest()
         let allTags = try! object.tags.query(on: fakeReq).all().wait()
         for tag in tags {
             XCTAssertTrue(allTags.contains(identifier: tag.safeText), "Tags need to be present")
