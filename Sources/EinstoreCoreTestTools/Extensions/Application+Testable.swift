@@ -15,10 +15,11 @@ import ApiCoreTestTools
 
 extension TestableProperty where TestableType: Application {
     
-    public static func newBoostTestApp() -> Application {
+    public static func newBoostTestApp(configure: ((inout Vapor.Config, inout Environment, inout Services) -> ())? = nil) -> Application {
         let app = newApiCoreTestApp({ (config, env, services) in
             Env.print()
             try! EinstoreCoreBase.configure(&config, &env, &services)
+            configure?(&config, &env, &services)
         }) { (router) in
             
         }

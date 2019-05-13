@@ -42,7 +42,7 @@ final public class Cluster: DbCoreModel {
         public var latestBuildBuildNo: String
         public var latestBuildAdded: Date?
         public var latestBuildId: DbIdentifier?
-        public var latestBuildHasIcon: Bool
+        public var latestBuildIconHash: String?
         public var buildCount: Int
         public var platform: Build.Platform
         public var identifier: String
@@ -55,7 +55,7 @@ final public class Cluster: DbCoreModel {
             case latestBuildBuildNo = "latest_build_buildno"
             case latestBuildAdded = "latest_build_added"
             case latestBuildId = "latest_build_id"
-            case latestBuildHasIcon = "latest_build_icon"
+            case latestBuildIconHash = "latest_build_icon"
             case buildCount = "build_count"
             case platform
             case identifier
@@ -69,7 +69,7 @@ final public class Cluster: DbCoreModel {
             self.latestBuildBuildNo = cluster.latestBuildBuildNo
             self.latestBuildAdded = cluster.latestBuildAdded
             self.latestBuildId = cluster.latestBuildId
-            self.latestBuildHasIcon = cluster.latestBuildHasIcon
+            self.latestBuildIconHash = cluster.latestBuildIconHash
             self.buildCount = cluster.buildCount
             self.platform = cluster.platform
             self.identifier = cluster.identifier
@@ -84,7 +84,7 @@ final public class Cluster: DbCoreModel {
     public var latestBuildBuildNo: String
     public var latestBuildAdded: Date
     public var latestBuildId: DbIdentifier?
-    public var latestBuildHasIcon: Bool
+    public var latestBuildIconHash: String?
     public var buildCount: Int
     public var platform: Build.Platform
     public var identifier: String
@@ -97,7 +97,7 @@ final public class Cluster: DbCoreModel {
         case latestBuildBuildNo = "latest_build_buildno"
         case latestBuildAdded = "latest_build_added"
         case latestBuildId = "latest_build_id"
-        case latestBuildHasIcon = "latest_build_icon"
+        case latestBuildIconHash = "latest_build_icon"
         case buildCount = "build_count"
         case platform
         case identifier
@@ -111,7 +111,7 @@ final public class Cluster: DbCoreModel {
         self.latestBuildBuildNo = latestBuild.build
         self.latestBuildAdded = latestBuild.created
         self.latestBuildId = latestBuild.id
-        self.latestBuildHasIcon = latestBuild.hasIcon
+        self.latestBuildIconHash = latestBuild.iconHash
         self.buildCount = appCount
         self.platform = latestBuild.platform
         self.identifier = latestBuild.identifier
@@ -142,7 +142,7 @@ extension Cluster: Migration {
             schema.field(for: \.latestBuildBuildNo, type: .varchar(20))
             schema.field(for: \.latestBuildId)
             schema.field(for: \.latestBuildAdded)
-            schema.field(for: \.latestBuildHasIcon)
+            schema.field(for: \.latestBuildIconHash)
             schema.field(for: \.buildCount)
             schema.field(for: \.platform, type: .varchar(10))
             schema.field(for: \.identifier, type: .varchar(140))
@@ -164,7 +164,7 @@ extension Cluster {
         latestBuildVersion = build.version
         latestBuildBuildNo = build.build
         latestBuildAdded = build.created
-        latestBuildHasIcon = build.hasIcon
+        latestBuildIconHash = build.iconHash
         return save(on: req)
     }
     

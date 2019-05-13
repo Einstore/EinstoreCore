@@ -9,6 +9,7 @@ import Foundation
 import XCTest
 @testable import Vapor
 @testable import NIO
+@testable import Service
 import VaporTestTools
 import FluentTestTools
 import ApiCoreTestTools
@@ -20,6 +21,7 @@ import PostgreSQL
 import FluentPostgreSQL
 import MailCore
 import MailCoreTestTools
+import Crypto
 
 
 class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
@@ -53,6 +55,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         ("testPartialAppSearch", testPartialAppSearch),
         ("testPartialInsensitiveAppSearch", testPartialInsensitiveAppSearch),
         ("testAppIconIsRetrieved", testAppIconIsRetrieved),
+        ("testAppIconIsRetrievedFromLocalStore", testAppIconIsRetrievedFromLocalStore),
         ("testAppTags", testAppTags),
         ("testAuthReturnsValidToken", testAuthReturnsValidToken),
         ("testBadTokenUpload", testBadTokenUpload),
@@ -65,14 +68,15 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         ("testGetApps", testGetApps),
         ("testLinuxTests", testLinuxTests),
         ("testObfuscatedApkUploadWithJWTAuth", testObfuscatedApkUploadWithJWTAuth),
+        ("testAuthReturnsValidToken", testAuthReturnsValidToken),
         ("testIosApp", testIosApp),
         ("testOldIosApp", testOldIosApp),
         ("testAppUploadsToRightTeamAndCluster", testAppUploadsToRightTeamAndCluster),
         ("testOldIosAppWithInfo", testOldIosAppWithInfo),
         ("testOldIosAppTokenUpload", testOldIosAppTokenUpload),
         ("testPlistForApp", testPlistForApp),
-        ("testUnobfuscatedApkUploadWithJWTAuth", testUnobfuscatedApkUploadWithJWTAuth),
-        ]
+        ("testUnobfuscatedApkUploadWithJWTAuth", testUnobfuscatedApkUploadWithJWTAuth)
+    ]
     
     func testLinuxTests() {
         doTestLinuxTestsAreOk()
@@ -83,7 +87,10 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
     override func setUp() {
         super.setUp()
         
-        app = Application.testable.newBoostTestApp()
+        app = Application.testable.newBoostTestApp(configure: { (config, env, services) in
+            services.register(RemoteFileCoreServiceMock(), as: CoreManager.self)
+            config.prefer(RemoteFileCoreServiceMock.self, for: CoreManager.self)
+        })
         
         app.testable.delete(allFor: Token.self)
         
@@ -138,9 +145,6 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         let objects = r.response.testable.content(as: [Cluster.Public].self)!
         
         let sortedObjects = objects.sorted { $0.latestBuildName < $1.latestBuildName }
-        
-        print(objects)
-        print(sortedObjects)
         
         var x = 0
         for original in objects {
@@ -430,9 +434,10 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         let resourcesIconUrl = Application.testable.paths.resourcesUrl.appendingPathComponent("icons").appendingPathComponent("liveui.png")
         
         let fakeReq = app.testable.fakeRequest()
-        let fc = try! fakeReq.makeFileCore()
         let postData = try! Data(contentsOf: resourcesIconUrl)
-        try! fc.save(file: postData, to: app1!.iconPath!.relativePath, mime: MediaType.png, on: fakeReq).wait()
+        try! app1.save(iconData: postData, on: fakeReq).wait()
+        app1.iconHash = try! postData.asMD5String()
+        _ = try! app1.save(on: fakeReq).wait()
         
         // Test
         let req = HTTPRequest.testable.get(uri: "/builds/\(app1.id!.uuidString)/icon", authorizedUser: user1, on: app)
@@ -440,20 +445,48 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         
         r.response.testable.debug()
         
-        // Temporarily disabling flaky tests
-        // TODO: FIX!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//        XCTAssertEqual(r.response.http.body.data!.count, postData.count, "Icon needs to be the same")
-//        XCTAssertTrue(r.response.testable.has(statusCode: .ok), "Wrong status code")
-//        XCTAssertTrue(r.response.testable.has(contentType: "image/png"), "Missing or incorrect content type")
+        XCTAssertTrue(r.response.testable.has(statusCode: .movedPermanently), "Wrong status code")
+        XCTAssertEqual(r.response.testable.header(name: "location"), "https://example.com/apps/icons/\(app1.iconHash!).png", "Missing or incorrect content type")
         
         // Cleaning
-        try! fc.delete(file: app1!.iconPath!.relativePath, on: fakeReq).wait()
+        try! app1.deleteIcon(on: fakeReq).wait()
+    }
+    
+    func testAppIconIsRetrievedFromLocalStore() {
+        let fakeReq = app.testable.fakeRequest()
+        let fm = try! fakeReq.makeFileCore() as! RemoteFileCoreServiceMock
+        
+        // Switch mock to local file store
+        fm.isRemote = false
+        
+        // Preps
+        let resourcesIconUrl = Application.testable.paths.resourcesUrl.appendingPathComponent("icons").appendingPathComponent("liveui.png")
+        
+        let postData: Data = try! Data(contentsOf: resourcesIconUrl)
+        
+        try! app1.save(iconData: postData, on: fakeReq).wait()
+        app1.iconHash = try! postData.asMD5String()
+        _ = try! app1.save(on: fakeReq).wait()
+        
+        // Test
+        let req = HTTPRequest.testable.get(uri: "/builds/\(app1.id!.uuidString)/icon", authorizedUser: user1, on: app)
+        let r = app.testable.response(to: req)
+        
+        r.response.testable.debug()
+        
+        XCTAssertEqual(r.response.http.body.data!.count, postData.count, "Icon needs to be the same")
+        XCTAssertTrue(r.response.testable.has(statusCode: .ok), "Wrong status code")
+        XCTAssertTrue(r.response.testable.has(contentType: "image/png"), "Missing or incorrect content type")
+        
+        // Cleaning
+        try! app1.deleteIcon(on: fakeReq).wait()
+        fm.isRemote = true
     }
     
     func testBadTokenUpload() {
         let appUrl = Application.testable.paths.resourcesUrl.appendingPathComponent("apps").appendingPathComponent("app.ipa")
         let postData = try! Data(contentsOf: appUrl)
-        let req = HTTPRequest.testable.post(uri: "/apps?token=bad_token_yo", data: postData, headers: [
+        let req = HTTPRequest.testable.post(uri: "/builds?token=bad_token_yo", data: postData, headers: [
             "Content-Type": "application/octet-stream"
             ]
         )
@@ -465,7 +498,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         let object = r.response.testable.content(as: ErrorResponse.self)!
         
         XCTAssertEqual(object.error, "auth_error.authentication_failed", "Wrong code")
-        XCTAssertEqual(object.description, "Authentication has failed", "Wrong desctiption")
+        XCTAssertEqual(object.description, "Authentication has failed", "Wrong description")
     }
     
     func testUnobfuscatedApkUploadWithJWTAuth() {
@@ -479,7 +512,30 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
     }
     
     func testAuthReturnsValidToken() {
-        // TODO: Finish!!!!!!!!!!!!
+        let req = HTTPRequest.testable.get(uri: "/builds/\(app1.id!.uuidString)/auth", authorizedUser: user1, on: app)
+        let r = app.testable.response(to: req)
+        
+        r.response.testable.debug()
+        
+        let auth = r.response.testable.content(as: DownloadKey.Public.self)!
+        
+        let plist = "http://localhost:8080/builds/\(app1.id!.uuidString)/plist/\(auth.token)/app.plist"
+        
+        XCTAssertTrue(!auth.token.isEmpty, "Token can not be empty")
+        XCTAssertNotNil(UUID(auth.token), "Token needs to be a valid UUID")
+        XCTAssertEqual(UUID(auth.token)?.uuidString.uppercased(), auth.token.uppercased(), "Token needs to be a valid UUID")
+        XCTAssertEqual(auth.buildId, app1.id!, "Needs correct build ID")
+        XCTAssertEqual(auth.file, "https://example.com/\(app1.appPath!.relativePath)", "Needs correct file URL")
+        XCTAssertEqual(auth.plist, plist, "Needs correct plist URL")
+        XCTAssertEqual(auth.userId, user1.id!, "Needs correct user ID")
+        XCTAssertEqual(auth.ios, "itms-services://?action=download-manifest&url=\(plist)", "Needs correct iTunes URL")
+        
+        let fakeReq = app.testable.fakeRequest()
+        let dbToken = try! DownloadKey.query(on: fakeReq).filter(\DownloadKey.token == auth.token.sha()).first().wait()!
+        try! XCTAssertEqual(auth.token.sha(), dbToken.token, "Token needs to be valid")
+        
+        XCTAssertTrue(r.response.testable.has(statusCode: .ok), "Wrong status code")
+        XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing or invalid content type")
     }
     
     func testPlistForApp() {
@@ -492,7 +548,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         
         let plistData = r.response.testable.contentString!.data(using: .utf8)!
         
-        let link = "http://localhost:8080/apps/\(realBuild.id!)/file/\(token.token)/app-ipa.ipa"
+        let link = "https://example.com/\(realBuild.appPath!.relativeString)"
         
         // Temporary hack before PropertyListDecoder becomes available on linux (https://bugs.swift.org/browse/SR-8259)
         #if os(Linux)
@@ -500,8 +556,6 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         XCTAssertTrue(plistString.contains(link))
         #elseif os(macOS)
         let plist = try! PropertyListDecoder().decode(BuildPlist.self, from: plistData)
-        
-        print(plist)
         
         XCTAssertEqual(plist.items[0].assets[0].kind, "software-package")
         XCTAssertEqual(plist.items[0].assets[0].url, link)
@@ -521,12 +575,12 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         let r = app.testable.response(to: HTTPRequest.testable.get(uri: "/builds/\(realBuild.id!)/file/\(token.token)/\(realBuild.fileName).ipa", authorizedUser: user1, on: app))
         r.response.testable.debug()
         
-        let data: Data = try! r.response.http.body.consumeData(on: app.testable.fakeRequest()).wait()
+        let fakeReq = app.testable.fakeRequest()
+        let fm = try! fakeReq.makeFileCore() as! RemoteFileCoreServiceMock
         
-        let buildUrl = Application.testable.paths.resourcesUrl.appendingPathComponent("apps").appendingPathComponent("app.ipa")
-        let buildData = try! Data(contentsOf: buildUrl)
+        let path = "apps/\(realBuild.created.year)/\(realBuild.created.month)/\(realBuild.created.day)/\(realBuild.id!)/app.ipa"
         
-        XCTAssertEqual(data, buildData, "Downloaded app doesn't match the one uploaded")
+        XCTAssertEqual(path, fm.movedFiles.first!.destination, "Downloaded app doesn't match the one uploaded")
         
         XCTAssertTrue(r.response.testable.has(statusCode: .ok), "Wrong status code")
         XCTAssertTrue(r.response.testable.has(contentType: "application/octet-stream"), "Missing or incorrect content type")
@@ -540,12 +594,12 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         let r = app.testable.response(to: HTTPRequest.testable.get(uri: "/builds/\(realBuild.id!)/file/\(token.token)/\(realBuild.fileName).apk", authorizedUser: user1, on: app))
         r.response.testable.debug()
         
-        let data: Data = try! r.response.http.body.consumeData(on: app.testable.fakeRequest()).wait()
+        let fakeReq = app.testable.fakeRequest()
+        let fm = try! fakeReq.makeFileCore() as! RemoteFileCoreServiceMock
         
-        let buildUrl = Application.testable.paths.resourcesUrl.appendingPathComponent("apps").appendingPathComponent("app.apk")
-        let buildData = try! Data(contentsOf: buildUrl)
+        let path = "apps/\(realBuild.created.year)/\(realBuild.created.month)/\(realBuild.created.day)/\(realBuild.id!)/app.apk"
         
-        XCTAssertEqual(data, buildData, "Downloaded app doesn't match the one uploaded")
+        XCTAssertEqual(path, fm.movedFiles.first!.destination, "Downloaded app doesn't match the one uploaded")
         
         XCTAssertTrue(r.response.testable.has(statusCode: .ok), "Wrong status code")
         XCTAssertTrue(r.response.testable.has(contentType: "application/vnd.android.package-archive"), "Missing or incorrect content type")
@@ -572,7 +626,7 @@ extension AppsControllerTests {
         let buildUrl = Application.testable.paths.resourcesUrl.appendingPathComponent("apps").appendingPathComponent(fileName)
         let postData = try! Data(contentsOf: buildUrl)
         let encodedTags: String = tags.joined(separator: "|").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
-        let req = HTTPRequest.testable.post(uri: "/apps?tags=\(encodedTags)&token=\(key1.token)", data: postData, headers: [
+        let req = HTTPRequest.testable.post(uri: "/builds?tags=\(encodedTags)&token=\(key1.token)", data: postData, headers: [
             "Content-Type": (platform == .ios ? "application/octet-stream" : "application/vnd.android.package-archive")
             ]
         )
@@ -585,7 +639,7 @@ extension AppsControllerTests {
         let postData = try! Data(contentsOf: buildUrl)
         let encodedTags: String = tags.joined(separator: "|").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
         let safeInfo = (info ?? "")
-        let uri = "/teams/\((team ?? team1).id!.uuidString)/apps?tags=\(encodedTags)\(safeInfo)"
+        let uri = "/teams/\((team ?? team1).id!.uuidString)/builds?tags=\(encodedTags)\(safeInfo)"
         let req = HTTPRequest.testable.post(uri: uri, data: postData, headers: [
             "Content-Type": (platform == .ios ? "application/octet-stream" : "application/vnd.android.package-archive")
             ], authorizedUser: user1, on: app
@@ -622,23 +676,23 @@ extension AppsControllerTests {
         XCTAssertEqual(object.version, version ?? "0.0", "Wrong version")
         XCTAssertEqual(object.build, build ?? "0", "Wrong build")
         
+        let fakeReq = app.testable.fakeRequest()
+        let fm = try! fakeReq.makeFileCore() as! RemoteFileCoreServiceMock
+        
         // Temp file should have been deleted
-        var pathUrl = Build.localTempAppFile(on: r.request)
+        let pathUrl = Build.localTempAppFile(on: r.request)
         XCTAssertFalse(FileManager.default.fileExists(atPath: pathUrl.path), "Temporary file should have been deleted")
         
         // App should be saved in the persistent storage
-        pathUrl = object.appPath!
-        let appFullPath = URL(fileURLWithPath: ApiCoreBase.configuration.storage.local.root)
-            .appendingPathComponent(pathUrl.relativePath)
-        XCTAssertTrue(FileManager.default.fileExists(atPath: appFullPath.path), "Persistent file should be present")
+        let path = "apps/\(object.created.year)/\(object.created.month)/\(object.created.day)/\(object.id!)/app.\(platform.fileExtension)"
+        XCTAssertTrue(fm.movedFiles.contains(where: { $0.destination == path }), "Persistent file should be present")
         
-        // Test images are all oke
+        // Test images are all okey
         if let iconSize = iconSize, let iconPath = object.iconPath {
-            let iconFullPath = URL(fileURLWithPath: ApiCoreBase.configuration.storage.local.root)
-                .appendingPathComponent(iconPath.relativePath)
+            let savedFile = fm.savedFiles.icon(hash: object.iconHash!)
             
-            XCTAssertTrue(FileManager.default.fileExists(atPath: iconFullPath.path), "Icon file should be present")
-            XCTAssertEqual(try? Data(contentsOf: iconFullPath).count, iconSize, "Icon file size doesn't match")
+            XCTAssertEqual(savedFile!.path, iconPath.relativePath, "Icon file should at the right location")
+            XCTAssertEqual(savedFile!.file!.count, iconSize, "Icon file size doesn't match")
         }
         else if object.hasIcon {
             XCTFail("Icon is set on the App object but it has not been tested")
@@ -647,7 +701,6 @@ extension AppsControllerTests {
         // TODO: Test iOS images are decoded!!!!!!!!!
         
         // Check all created tags
-        let fakeReq = app.testable.fakeRequest()
         let allTags = try! object.tags.query(on: fakeReq).all().wait()
         for tag in tags {
             XCTAssertTrue(allTags.contains(identifier: tag.safeText), "Tags need to be present")

@@ -6,7 +6,7 @@
         "repositoryURL": "https://github.com/LiveUI/ApiCore.git",
         "state": {
           "branch": "master",
-          "revision": "1b0e52132ec28f208c74b946de9c98b2cf936831",
+          "revision": "40b05fc43ee5ae74a56b87113e4c3f06c52ee092",
           "version": null
         }
       },
@@ -15,8 +15,8 @@
         "repositoryURL": "https://github.com/IBM-Swift/BlueCryptor.git",
         "state": {
           "branch": null,
-          "revision": "5ae583051e20dd7731171abb2927e8558f8d966e",
-          "version": "1.0.27"
+          "revision": "6f79b4ea0a7ef8acb08ba3f3e23da32e83acaca3",
+          "version": "1.0.28"
         }
       },
       {
@@ -213,7 +213,7 @@
         "repositoryURL": "https://github.com/LiveUI/S3.git",
         "state": {
           "branch": "master",
-          "revision": "b1aae3772e22bad4af2ac58c538d6472e87e9df9",
+          "revision": "48367b8256bcc71becf573f427973da5192a6845",
           "version": null
         }
       },
@@ -366,8 +366,8 @@
         "repositoryURL": "https://github.com/twof/VaporMailgunService.git",
         "state": {
           "branch": null,
-          "revision": "353706a5c73f4aa79494a9bc681113bd5400017f",
-          "version": "1.5.0"
+          "revision": "4270d8e1eb84ceffa82cbf3d787c1d739ca4dd9c",
+          "version": "1.6.0"
         }
       },
       {

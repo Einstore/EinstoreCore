@@ -115,7 +115,7 @@ extension Extractor {
             let iconDataSize = self.iconData?.count ?? 0
             let sizeTotal = size + iconDataSize
 
-            let build = Build(teamId: teamId, clusterId: (cluster?.id ?? UUID()), name: buildName, identifier: buildIdentifier, version: self.versionLong ?? "0.0", build: self.versionShort ?? "0", platform: platform, built: self.built, size: size, sizeTotal: sizeTotal, minSdk: self.minSdk ?? "1", hasIcon: (iconDataSize > 0))
+            let build = try Build(teamId: teamId, clusterId: (cluster?.id ?? UUID()), name: buildName, identifier: buildIdentifier, version: self.versionLong ?? "0.0", build: self.versionShort ?? "0", platform: platform, built: self.built, size: size, sizeTotal: sizeTotal, minSdk: self.minSdk ?? "1", iconHash: self.iconData?.asMD5String())
             
             // Compile info (in any is present)
             var info = try? req.query.decode(Build.Info.self)
@@ -158,14 +158,9 @@ extension Extractor {
         let tempFile = URL(fileURLWithPath: ApiCoreBase.configuration.storage.local.root)
             .appendingPathComponent(Build.localTempAppFile(on: req).relativePath).path
         return try fm.move(file: tempFile, to: path, on: req).flatMap(to: Void.self) { _ in
-            if let iconData = self.iconData, let path = build.iconPath?.relativePath, let mime = iconData.imageFileMediaType() {
-                return try fm.save(file: iconData, to: path, mime: mime, on: req).map(to: Void.self) { _ in
-                    try self.cleanUp()
-                    return Void()
-                }
-            } else {
+            return try build.save(iconData: self.iconData, on: req).map(to: Void.self) { _ in
                 try self.cleanUp()
-                return req.eventLoop.newSucceededFuture(result: Void())
+                return Void()
             }
         }
     }

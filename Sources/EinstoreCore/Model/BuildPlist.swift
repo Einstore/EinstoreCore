@@ -21,15 +21,7 @@ public struct BuildPlist: Codable {
             let url: String
             
             public init(build: Build, token: String, request req: Request) throws {
-                let serverUrl = req.serverURL()
-                self.url = serverUrl
-                    .appendingPathComponent("apps")
-                    .appendingPathComponent(build.id!.uuidString)
-                    .appendingPathComponent("file")
-                    .appendingPathComponent(token)
-                    .appendingPathComponent(build.fileName.safeText)
-                    .appendingPathExtension(build.platform.fileExtension)
-                    .absoluteString
+                self.url = try build.fileUrl(token: token, on: req).absoluteString
             }
             
         }
