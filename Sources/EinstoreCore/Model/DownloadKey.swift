@@ -25,7 +25,7 @@ final public class DownloadKey: DbCoreModel {
         let file: String
         let ios: String
         
-        init(build: Build, downloadKey: DownloadKey, request req: Request) {
+        init(build: Build, downloadKey: DownloadKey, request req: Request) throws {
             token = downloadKey.token
             
             guard let buildId = build.id else {
@@ -37,20 +37,24 @@ final public class DownloadKey: DbCoreModel {
                 case plist
             }
             
-            func urlBuilder(type: URLType) -> String {
-                let ext = type == .plist ? "plist" : build.platform.fileExtension
-                let url = req.serverURL()
-                    .appendingPathComponent("apps")
-                    .appendingPathComponent(buildId.uuidString)
-                    .appendingPathComponent(type.rawValue)
-                    .appendingPathComponent(downloadKey.token)
-                    .appendingPathComponent(build.fileName.stripExtension())
-                    .appendingPathExtension(ext).absoluteString
-                return url
+            func urlBuilder(type: URLType) throws -> String {
+                let url: URL
+                if type == .plist {
+                    url = req.serverURL()
+                        .appendingPathComponent("builds")
+                        .appendingPathComponent(buildId.uuidString)
+                        .appendingPathComponent(type.rawValue)
+                        .appendingPathComponent(downloadKey.token)
+                        .appendingPathComponent(build.fileName.stripExtension())
+                        .appendingPathExtension("plist")
+                } else {
+                    url = try build.fileUrl(token: downloadKey.token, on: req)
+                }
+                return url.absoluteString
             }
             
-            plist = urlBuilder(type: .plist)
-            file = urlBuilder(type: .file)
+            plist = try urlBuilder(type: .plist)
+            file = try urlBuilder(type: .file)
             ios = "itms-services://?action=download-manifest&url=\(plist.encodeURLforUseAsQuery())"
             userId = downloadKey.userId
             self.buildId = buildId

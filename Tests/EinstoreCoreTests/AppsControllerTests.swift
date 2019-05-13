@@ -68,6 +68,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         ("testGetApps", testGetApps),
         ("testLinuxTests", testLinuxTests),
         ("testObfuscatedApkUploadWithJWTAuth", testObfuscatedApkUploadWithJWTAuth),
+        ("testAuthReturnsValidToken", testAuthReturnsValidToken),
         ("testIosApp", testIosApp),
         ("testOldIosApp", testOldIosApp),
         ("testAppUploadsToRightTeamAndCluster", testAppUploadsToRightTeamAndCluster),
@@ -485,7 +486,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
     func testBadTokenUpload() {
         let appUrl = Application.testable.paths.resourcesUrl.appendingPathComponent("apps").appendingPathComponent("app.ipa")
         let postData = try! Data(contentsOf: appUrl)
-        let req = HTTPRequest.testable.post(uri: "/apps?token=bad_token_yo", data: postData, headers: [
+        let req = HTTPRequest.testable.post(uri: "/builds?token=bad_token_yo", data: postData, headers: [
             "Content-Type": "application/octet-stream"
             ]
         )
@@ -497,7 +498,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         let object = r.response.testable.content(as: ErrorResponse.self)!
         
         XCTAssertEqual(object.error, "auth_error.authentication_failed", "Wrong code")
-        XCTAssertEqual(object.description, "Authentication has failed", "Wrong desctiption")
+        XCTAssertEqual(object.description, "Authentication has failed", "Wrong description")
     }
     
     func testUnobfuscatedApkUploadWithJWTAuth() {
@@ -511,7 +512,30 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
     }
     
     func testAuthReturnsValidToken() {
-        // TODO: Finish!!!!!!!!!!!!
+        let req = HTTPRequest.testable.get(uri: "/builds/\(app1.id!.uuidString)/auth", authorizedUser: user1, on: app)
+        let r = app.testable.response(to: req)
+        
+        r.response.testable.debug()
+        
+        let auth = r.response.testable.content(as: DownloadKey.Public.self)!
+        
+        let plist = "http://localhost:8080/builds/\(app1.id!.uuidString)/plist/\(auth.token)/app.plist"
+        
+        XCTAssertTrue(!auth.token.isEmpty, "Token can not be empty")
+        XCTAssertNotNil(UUID(auth.token), "Token needs to be a valid UUID")
+        XCTAssertEqual(UUID(auth.token)?.uuidString.uppercased(), auth.token.uppercased(), "Token needs to be a valid UUID")
+        XCTAssertEqual(auth.buildId, app1.id!, "Needs correct build ID")
+        XCTAssertEqual(auth.file, "https://example.com/\(app1.appPath!.relativePath)", "Needs correct file URL")
+        XCTAssertEqual(auth.plist, plist, "Needs correct plist URL")
+        XCTAssertEqual(auth.userId, user1.id!, "Needs correct user ID")
+        XCTAssertEqual(auth.ios, "itms-services://?action=download-manifest&url=\(plist)", "Needs correct iTunes URL")
+        
+        let fakeReq = app.testable.fakeRequest()
+        let dbToken = try! DownloadKey.query(on: fakeReq).filter(\DownloadKey.token == auth.token.sha()).first().wait()!
+        try! XCTAssertEqual(auth.token.sha(), dbToken.token, "Token needs to be valid")
+        
+        XCTAssertTrue(r.response.testable.has(statusCode: .ok), "Wrong status code")
+        XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing or invalid content type")
     }
     
     func testPlistForApp() {
@@ -524,7 +548,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         
         let plistData = r.response.testable.contentString!.data(using: .utf8)!
         
-        let link = "http://localhost:8080/apps/\(realBuild.id!)/file/\(token.token)/app-ipa.ipa"
+        let link = "https://example.com/\(realBuild.appPath!.relativeString)"
         
         // Temporary hack before PropertyListDecoder becomes available on linux (https://bugs.swift.org/browse/SR-8259)
         #if os(Linux)
@@ -553,8 +577,6 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         
         let fakeReq = app.testable.fakeRequest()
         let fm = try! fakeReq.makeFileCore() as! RemoteFileCoreServiceMock
-        
-//        let buildUrl = Application.testable.paths.resourcesUrl.appendingPathComponent("apps").appendingPathComponent("app.ipa")
         
         let path = "apps/\(realBuild.created.year)/\(realBuild.created.month)/\(realBuild.created.day)/\(realBuild.id!)/app.ipa"
         
@@ -604,7 +626,7 @@ extension AppsControllerTests {
         let buildUrl = Application.testable.paths.resourcesUrl.appendingPathComponent("apps").appendingPathComponent(fileName)
         let postData = try! Data(contentsOf: buildUrl)
         let encodedTags: String = tags.joined(separator: "|").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
-        let req = HTTPRequest.testable.post(uri: "/apps?tags=\(encodedTags)&token=\(key1.token)", data: postData, headers: [
+        let req = HTTPRequest.testable.post(uri: "/builds?tags=\(encodedTags)&token=\(key1.token)", data: postData, headers: [
             "Content-Type": (platform == .ios ? "application/octet-stream" : "application/vnd.android.package-archive")
             ]
         )
@@ -617,7 +639,7 @@ extension AppsControllerTests {
         let postData = try! Data(contentsOf: buildUrl)
         let encodedTags: String = tags.joined(separator: "|").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
         let safeInfo = (info ?? "")
-        let uri = "/teams/\((team ?? team1).id!.uuidString)/apps?tags=\(encodedTags)\(safeInfo)"
+        let uri = "/teams/\((team ?? team1).id!.uuidString)/builds?tags=\(encodedTags)\(safeInfo)"
         let req = HTTPRequest.testable.post(uri: uri, data: postData, headers: [
             "Content-Type": (platform == .ios ? "application/octet-stream" : "application/vnd.android.package-archive")
             ], authorizedUser: user1, on: app

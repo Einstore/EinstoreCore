@@ -6,7 +6,7 @@
         "repositoryURL": "https://github.com/LiveUI/ApiCore.git",
         "state": {
           "branch": "master",
-          "revision": "1c438c2a364e17341c4088e911725645f774c94f",
+          "revision": "40b05fc43ee5ae74a56b87113e4c3f06c52ee092",
           "version": null
         }
       },
@@ -213,7 +213,7 @@
         "repositoryURL": "https://github.com/LiveUI/S3.git",
         "state": {
           "branch": "master",
-          "revision": "b1aae3772e22bad4af2ac58c538d6472e87e9df9",
+          "revision": "48367b8256bcc71becf573f427973da5192a6845",
           "version": null
         }
       },

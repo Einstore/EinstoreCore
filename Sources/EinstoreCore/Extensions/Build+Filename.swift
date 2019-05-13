@@ -16,20 +16,13 @@ extension Build {
     /// Full download URL for file data
     public func fileUrl(token: String, on req: Request) throws -> URL {
         let fm = try req.makeFileCore()
-        if fm.isRemote {
-            let serverUrl = req.serverURL()
-            let url = serverUrl
-                .appendingPathComponent("apps")
-                .appendingPathComponent(id!.uuidString)
-                .appendingPathComponent("file")
-                .appendingPathComponent(token)
-                .appendingPathComponent(fileName.safeText)
-                .appendingPathExtension(platform.fileExtension)
+        if fm.isRemote, let serverUrl = try fm.serverUrl(), let path = appPath?.relativeString {
+            let url = serverUrl.appendingPathComponent(path)
             return url
         } else {
             let serverUrl = req.serverURL()
             let url = serverUrl
-                .appendingPathComponent("apps")
+                .appendingPathComponent("builds")
                 .appendingPathComponent(id!.uuidString)
                 .appendingPathComponent("file")
                 .appendingPathComponent(token)
