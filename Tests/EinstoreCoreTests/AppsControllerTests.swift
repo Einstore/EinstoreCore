@@ -519,12 +519,14 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         
         let auth = r.response.testable.content(as: DownloadKey.Public.self)!
         
+        // PLIST links to a local endpoint
         let plist = "http://localhost:8080/builds/\(app1.id!.uuidString)/plist/\(auth.token)/app.plist"
         
         XCTAssertTrue(!auth.token.isEmpty, "Token can not be empty")
         XCTAssertNotNil(UUID(auth.token), "Token needs to be a valid UUID")
         XCTAssertEqual(UUID(auth.token)?.uuidString.uppercased(), auth.token.uppercased(), "Token needs to be a valid UUID")
         XCTAssertEqual(auth.buildId, app1.id!, "Needs correct build ID")
+        // File links to a remote location
         XCTAssertEqual(auth.file, "https://example.com/\(app1.appPath!.relativePath)", "Needs correct file URL")
         XCTAssertEqual(auth.plist, plist, "Needs correct plist URL")
         XCTAssertEqual(auth.userId, user1.id!, "Needs correct user ID")
