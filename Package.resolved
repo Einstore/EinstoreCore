@@ -6,7 +6,7 @@
         "repositoryURL": "https://github.com/LiveUI/ApiCore.git",
         "state": {
           "branch": "master",
-          "revision": "40b05fc43ee5ae74a56b87113e4c3f06c52ee092",
+          "revision": "ce77d3075f7c7c444b4905f31a6a657ed4061a7a",
           "version": null
         }
       },
@@ -188,15 +188,6 @@
           "branch": null,
           "revision": "f919a01c4d10a281d6236a21b0b1d1759a72b8eb",
           "version": "3.0.4"
-        }
-      },
-      {
-        "package": "OpenSSL",
-        "repositoryURL": "https://github.com/IBM-Swift/OpenSSL.git",
-        "state": {
-          "branch": null,
-          "revision": "6c7e2e3610037fbc05c0d846cec981518961d8bf",
-          "version": "2.2.2"
         }
       },
       {
