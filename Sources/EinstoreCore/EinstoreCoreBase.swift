@@ -65,6 +65,9 @@ public class EinstoreCoreBase {
     
     /// Main Vapor configuration method
     public static func configure(_ config: inout Vapor.Config, _ env: inout Vapor.Environment, _ services: inout Services) throws {
+        // Override original default logo from ApiCore
+        EinstoreLogo.overrideOriginal()
+        
         // Add EinstoreCore models to the migrations
         ApiCoreBase.add(model: Cluster.self, database: .db)
         ApiCoreBase.add(model: Build.self, database: .db)
