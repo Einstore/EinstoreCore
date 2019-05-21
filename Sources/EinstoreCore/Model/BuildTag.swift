@@ -30,7 +30,7 @@ public final class BuildTag: ModifiablePivot, DbCoreModel {
     public var tagId: DbIdentifier
     
     enum CodingKeys: String, CodingKey {
-        case id
+        case id = "join_id"
         case buildId = "build_id"
         case tagId = "tag_id"
     }

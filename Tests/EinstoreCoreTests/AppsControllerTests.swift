@@ -49,6 +49,8 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
     // MARK: Linux
     
     static let allTests: [(String, Any)] = [
+        ("testGetApps", testGetApps),
+        ("testGetAppsThroughFilter", testGetAppsThroughFilter),
         ("testGetAppsOverview", testGetAppsOverview),
         ("testGetAppsOverviewSortedByNameAsc", testGetAppsOverviewSortedByNameAsc),
         ("testAppSearch", testAppSearch),
@@ -65,10 +67,8 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         ("testDownloadAndroidApp", testDownloadAndroidApp),
         ("testDownloadIosApp", testDownloadIosApp),
         ("testGetApp", testGetApp),
-        ("testGetApps", testGetApps),
         ("testLinuxTests", testLinuxTests),
         ("testObfuscatedApkUploadWithJWTAuth", testObfuscatedApkUploadWithJWTAuth),
-        ("testAuthReturnsValidToken", testAuthReturnsValidToken),
         ("testIosApp", testIosApp),
         ("testOldIosApp", testOldIosApp),
         ("testAppUploadsToRightTeamAndCluster", testAppUploadsToRightTeamAndCluster),
@@ -106,6 +106,23 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
     // MARK: Tests
     
     func testGetApps() {
+        let count = app.testable.count(allFor: Build.self)
+        XCTAssertEqual(count, 65, "There should be right amount of apps to begin with")
+        
+        let req = HTTPRequest.testable.get(uri: "/builds", authorizedUser: user1, on: app)
+        let r = app.testable.response(to: req)
+        
+        r.response.testable.debug()
+        
+        let objects = r.response.testable.content(as: Builds.self)!
+        
+        XCTAssertEqual(objects.count, 57, "There should be right amount of apps")
+        
+        XCTAssertTrue(r.response.testable.has(statusCode: .ok), "Wrong status code")
+        XCTAssertTrue(r.response.testable.has(contentType: "application/json; charset=utf-8"), "Missing or invalid content type")
+    }
+    
+    func testGetAppsThroughFilter() {
         let count = app.testable.count(allFor: Build.self)
         XCTAssertEqual(count, 65, "There should be right amount of apps to begin with")
         
@@ -461,10 +478,9 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         
         // Preps
         let resourcesIconUrl = Application.testable.paths.resourcesUrl.appendingPathComponent("icons").appendingPathComponent("liveui.png")
-        
         let postData: Data = try! Data(contentsOf: resourcesIconUrl)
+        fm.getFile = postData
         
-        try! app1.save(iconData: postData, on: fakeReq).wait()
         app1.iconHash = try! postData.asMD5String()
         _ = try! app1.save(on: fakeReq).wait()
         
@@ -481,6 +497,7 @@ class AppsControllerTests: XCTestCase, AppTestCaseSetup, LinuxTests {
         // Cleaning
         try! app1.deleteIcon(on: fakeReq).wait()
         fm.isRemote = true
+        fm.getFile = nil
     }
     
     func testBadTokenUpload() {
@@ -651,6 +668,11 @@ extension AppsControllerTests {
     }
     
     @discardableResult private func doTest(request req: HTTPRequest, platform: Build.Platform, name: String, identifier: String, version: String?, build: String?, tags: [String], iconSize: Int?, appsTotal: Int = 65) -> TestResponse {
+        let fakeReq = app.testable.fakeRequest()
+        let fm = try! fakeReq.makeFileCore() as! RemoteFileCoreServiceMock
+        
+        fm.exists = false
+        
         // Check initial app count
         var count = app.testable.count(allFor: Build.self)
         XCTAssertEqual(count, appsTotal, "There should be right amount of apps to begin with")
@@ -678,9 +700,6 @@ extension AppsControllerTests {
         XCTAssertEqual(object.version, version ?? "0.0", "Wrong version")
         XCTAssertEqual(object.build, build ?? "0", "Wrong build")
         
-        let fakeReq = app.testable.fakeRequest()
-        let fm = try! fakeReq.makeFileCore() as! RemoteFileCoreServiceMock
-        
         // Temp file should have been deleted
         let pathUrl = Build.localTempAppFile(on: r.request)
         XCTAssertFalse(FileManager.default.fileExists(atPath: pathUrl.path), "Temporary file should have been deleted")
@@ -693,8 +712,8 @@ extension AppsControllerTests {
         if let iconSize = iconSize, let iconPath = object.iconPath {
             let savedFile = fm.savedFiles.icon(hash: object.iconHash!)
             
-            XCTAssertEqual(savedFile!.path, iconPath.relativePath, "Icon file should at the right location")
-            XCTAssertEqual(savedFile!.file!.count, iconSize, "Icon file size doesn't match")
+            XCTAssertEqual(savedFile?.path, iconPath.relativePath, "Icon file should be at the right location")
+            XCTAssertEqual(savedFile?.file!.count, iconSize, "Icon file size doesn't match")
         }
         else if object.hasIcon {
             XCTFail("Icon is set on the App object but it has not been tested")
@@ -711,6 +730,8 @@ extension AppsControllerTests {
         // Check final app count after the upload
         count = app.testable.count(allFor: Build.self)
         XCTAssertEqual(count, (appsTotal + 1), "There should be right amount of apps to begin with")
+        
+        fm.exists = true
         
         return r
     }
