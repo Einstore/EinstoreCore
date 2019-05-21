@@ -49,8 +49,10 @@ class RemoteFileCoreServiceMock: CoreManager, Service {
         return on.eventLoop.newSucceededVoidFuture()
     }
     
+    var getFile: Data? = nil
+    
     func get(file: String, on: Container) throws -> EventLoopFuture<Data> {
-        let data = savedFiles.first(where: { $0.path == file })?.file ?? Data()
+        let data = getFile ?? savedFiles.first(where: { $0.path == file })?.file ?? Data()
         print("Get \(file)")
         return on.eventLoop.newSucceededFuture(result: data)
     }

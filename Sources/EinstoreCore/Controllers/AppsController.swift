@@ -132,7 +132,6 @@ class AppsController: Controller {
                         let res = req.redirect(to: url.absoluteString, type: .permanent)
                         return req.eventLoop.newSucceededFuture(result: res)
                     } else { // Local file store
-                        let fm = try req.makeFileCore()
                         let image = try fm.get(file: path, on: req)
                         return image.flatMap() { data in
                             guard data.count > 0 else {

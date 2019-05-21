@@ -17,14 +17,14 @@ extension Build {
             return req.eventLoop.newSucceededVoidFuture()
         }
         iconHash = try data.asMD5String()
-        return Build.query(on: req).filter(\Build.iconHash == iconHash).count().flatMap() { hashCount in
-            guard hashCount <= 1 else {
+        let fm = try req.makeFileCore()
+        guard let path = self.iconPath?.relativePath, let mime = data.imageFileMediaType() else {
+            throw ExtractorError.errorSavingFile
+        }
+        return try fm.exists(file: path, on: req).flatMap() { exists in
+            guard !exists else {
                 return req.eventLoop.newSucceededVoidFuture()
             }
-            guard let path = self.iconPath?.relativePath, let mime = data.imageFileMediaType() else {
-                throw ExtractorError.errorSavingFile
-            }
-            let fm = try req.makeFileCore()
             return try fm.save(file: data, to: path, mime: mime, on: req)
         }
     }
