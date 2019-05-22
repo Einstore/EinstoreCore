@@ -15,7 +15,7 @@ struct SdkInfo: Content {
     let version: String
     let build: String
     let created: Date
-    let sdk: String
+    let sdkVersion: String
     let language: String?
     let platform: Build.Platform
     let osVersion: String
@@ -25,7 +25,7 @@ struct SdkInfo: Content {
         case version
         case build
         case created
-        case sdk
+        case sdkVersion = "sdk_version"
         case language
         case platform
         case osVersion = "os_version"
