@@ -145,15 +145,19 @@ class AppsController: Controller {
         }
         
         // Build download history
-        secure.get("builds", DbIdentifier.parameter, "history") { (req) -> Future<[Download]> in
+        secure.get("builds", DbIdentifier.parameter, "history") { (req) -> Future<[Download.Public]> in
             let buildId = try req.parameters.next(DbIdentifier.self)
             return try req.me.teams().flatMap() { teams in
                 return try Build.query(on: req).safeBuild(id: buildId, teamIds: teams.ids).first().flatMap() { build in
-                    guard let _ = build, let userId = try req.me.user().id else {
+                    guard let _ = build else {
                         throw ErrorsCore.HTTPError.notFound
                     }
                     
-                    return Download.query(on: req).filter(\Download.buildId == buildId).filter(\Download.userId == userId).sort(\Download.created, .descending).all()
+                    let q = Download.query(on: req).join(\User.id, to: \Download.userId)
+                    q.filter(\Download.buildId == buildId).filter(\Download.teamId ~~ teams.ids)
+                    return q.sort(\Download.created, .descending).alsoDecode(User.self).all().map() { arr in
+                        return arr.map({ Download.Public(user: $1, created: $0.created) })
+                    }
                 }
             }
         }
@@ -229,7 +233,7 @@ class AppsController: Controller {
                     response.http.headers = HTTPHeaders([("Content-Type", "\(build.platform.mime)"), ("Content-Disposition", "attachment; filename=\"\(build.name.safeText).\(build.platform.fileExtension)\"")])
                     
                     // Save an info about the download
-                    let download = Download(buildId: key.buildId, userId: key.userId)
+                    let download = Download(buildId: key.buildId, userId: key.userId, teamId: build.teamId)
                     return download.save(on: req).flatMap() { download in
                         // Serve the file
                         let fm = try req.makeFileCore()
