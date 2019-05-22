@@ -9,6 +9,7 @@ RUN apt-get update && \
     libssl-dev \
     openssl \
     software-properties-common \
+    gd \
     unzip && \
     rm -rf /var/lib/apt/lists/*
 
