@@ -19,12 +19,12 @@ class SdkController: Controller {
             guard let token = req.http.headers.authorizationToken else {
                 throw AuthError.authenticationFailed
             }
-            return try ApiKey.query(on: req).filter(\ApiKey.token == token.sha()).filter(\ApiKey.type == 1).first().flatMap(to: Build.self) { token in
+            return try ApiKey.query(on: req).filter(\ApiKey.token == token.sha()).filter(\ApiKey.type == 1).first().flatMap() { token in
                 guard let token = token else {
                     throw AuthError.authenticationFailed
                 }
                 return try req.content.decode(SdkInfo.self).flatMap({ info in
-                    return Cluster.query(on: req).filter(\Cluster.identifier == info.identifier).filter(\Cluster.platform == info.platform).filter(\Cluster.teamId == token.teamId).first().flatMap(to: Build.self) { cluster in
+                    return Cluster.query(on: req).filter(\Cluster.identifier == info.identifier).filter(\Cluster.platform == info.platform).filter(\Cluster.teamId == token.teamId).first().flatMap() { cluster in
                         guard let cluster = cluster else {
                             throw ErrorsCore.HTTPError.notFound
                         }

@@ -109,7 +109,7 @@ extension Extractor {
             throw ExtractorError.invalidAppContent
         }
         
-        return ClusterManager.cluster(for: buildIdentifier, platform: platform, teamId: teamId, on: req).flatMap(to: Build.self) { cluster in
+        return ClusterManager.cluster(for: buildIdentifier, platform: platform, teamId: teamId, on: req).flatMap() { cluster in
             let attr = try FileManager.default.attributesOfItem(atPath: self.file.path)
             let size = Int(truncating: (attr[FileAttributeKey.size] as? NSNumber) ?? 0)
             let iconDataSize = self.iconData?.count ?? 0
@@ -125,21 +125,21 @@ extension Extractor {
             build.info = info
             
             // Save app
-            return build.save(on: req).flatMap(to: Build.self) { build in
+            return build.save(on: req).flatMap() { build in
                 guard let cluster = cluster, cluster.id != nil else {
                     let cluster = Cluster(latestBuild: build)
-                    return cluster.save(on: req).flatMap(to: Build.self) { cluster in
+                    return cluster.save(on: req).flatMap() { cluster in
                         build.clusterId = cluster.id!
                         return build.save(on: req)
                     }
                 }
-                return build.save(on: req).flatMap(to: Build.self) { build in
+                return build.save(on: req).flatMap() { build in
                     cluster.latestBuildName = build.name
                     cluster.latestBuildVersion = build.version
                     cluster.latestBuildBuildNo = build.build
                     cluster.latestBuildAdded = build.created
                     cluster.buildCount += 1
-                    return cluster.save(on: req).map(to: Build.self) { cluster in
+                    return cluster.save(on: req).map() { cluster in
                         return build
                     }
                 }
@@ -157,8 +157,8 @@ extension Extractor {
         // TODO: These paths need refactor, they have the root added to them in a few places. This should be coming from one method!!!!!
         let tempFile = URL(fileURLWithPath: ApiCoreBase.configuration.storage.local.root)
             .appendingPathComponent(Build.localTempAppFile(on: req).relativePath).path
-        return try fm.move(file: tempFile, to: path, on: req).flatMap(to: Void.self) { _ in
-            return try build.save(iconData: self.iconData, on: req).map(to: Void.self) { _ in
+        return try fm.move(file: tempFile, to: path, on: req).flatMap() { _ in
+            return try build.save(iconData: self.iconData, on: req).map() { _ in
                 try self.cleanUp()
                 return Void()
             }

@@ -22,7 +22,7 @@ public class UsedTagsManager {
         guard let id = tag.id else {
             throw ErrorsCore.HTTPError.notFound
         }
-        return UsedTag.query(on: req).filter(\UsedTag.tagId == id).first().flatMap(to: UsedTag.self) { object in
+        return UsedTag.query(on: req).filter(\UsedTag.tagId == id).first().flatMap() { object in
             guard let object = object else {
                 let object = UsedTag(teamId: tag.teamId, tagId: id)
                 return object.save(on: req)
@@ -38,7 +38,7 @@ public class UsedTagsManager {
         if let teamId = teamId {
             q.filter(\UsedTag.teamId == teamId)
         } else {
-            return try req.me.teams().flatMap(to: [UsedTag.Public].self) { teams in
+            return try req.me.teams().flatMap() { teams in
                 q.filter(\UsedTag.teamId ~~ teams.ids)
                 return q.all().toPublic()
             }

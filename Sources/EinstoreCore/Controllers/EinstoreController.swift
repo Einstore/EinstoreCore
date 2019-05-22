@@ -48,7 +48,7 @@ public class EinstoreController: Controller {
         
         // Install demo data
         debug.get("demo") { (req)->Future<Response> in
-            return Team.query(on: req).first().flatMap(to: Response.self) { team in
+            return Team.query(on: req).first().flatMap() { team in
                 guard let team = team else {
                     throw Error.installMissing
                 }
@@ -77,7 +77,7 @@ public class EinstoreController: Controller {
                         )
                         let future = cluster.save(on: req).flatMap(to: Void.self) { cluster in
                             let client = try req.make(Client.self)
-                            return client.get("https://api.adorable.io/avatars/256/\(name.lowercased())@\(name.lowercased()).io.png").flatMap(to: Void.self) { icon in
+                            return client.get("https://api.adorable.io/avatars/256/\(name.lowercased())@\(name.lowercased()).io.png").flatMap() { icon in
                                 let hasIcon = (icon.http.status == .ok && icon.http.body.data != nil)
                                 let identifier = "io.liveui.\(name.lowercased())"
                                 var buildNumber = Int(Color.randomInt(max: 5000) + 1)
@@ -131,10 +131,10 @@ public class EinstoreController: Controller {
                                         let save = build.save(on: req).flatMap(to: Void.self) { build in
                                             func saveTags() -> Future<Void> {
                                                 let tags: [Future<Void>] = [
-                                                    Tag(teamId: team.id!, identifier: sdk.lowercased()).save(on: req).flatMap(to: Void.self) { tag in
+                                                    Tag(teamId: team.id!, identifier: sdk.lowercased()).save(on: req).flatMap() { tag in
                                                         return build.tags.attach(tag, on: req).flatten()
                                                     },
-                                                    Tag(teamId: team.id!, identifier: sdk2.lowercased()).save(on: req).flatMap(to: Void.self) { tag in
+                                                    Tag(teamId: team.id!, identifier: sdk2.lowercased()).save(on: req).flatMap() { tag in
                                                         return build.tags.attach(tag, on: req).flatten()
                                                     }
                                                 ]
@@ -165,7 +165,7 @@ public class EinstoreController: Controller {
                         futures.append(future)
                     }
                 }
-                return futures.flatten(on: req).map(to: Response.self) { _ in
+                return futures.flatten(on: req).map() { _ in
                     return try req.response.maintenanceFinished(message: "Demo ready for inspection captain!")
                 }
             }
