@@ -37,7 +37,7 @@ public class AppsManager {
     }
     
     static func builds(clusterId: DbIdentifier? = nil, on req: Request) throws -> Future<Builds> {
-        return try req.me.teams().flatMap(to: Builds.self) { teams in
+        return try req.me.teams().flatMap() { teams in
             let q = try Build.query(on: req).filter(\Build.teamId ~~ teams.ids).sort(\Build.created, .descending).paginate(on: req).appFilters(on: req).decode(Build.Public.self)
             if let clusterId = clusterId {
                 q.filter(\Build.clusterId == clusterId)
@@ -47,13 +47,13 @@ public class AppsManager {
                 q.filter(\Build.clusterId == id)
             }
             if let tags = req.query.app.tags, !tags.isEmpty {
-                return Tag.query(on: req).filter(\Tag.teamId ~~ teams.ids).filter(\Tag.identifier ~~ tags.safeTagText()).all().flatMap(to: Builds.self) { tags in
+                return Tag.query(on: req).filter(\Tag.teamId ~~ teams.ids).filter(\Tag.identifier ~~ tags.safeTagText()).all().flatMap() { tags in
                     // Account for the searched tags
                     var futures: [Future<UsedTag>] = []
                     for tag in tags {
                         try futures.append(UsedTagsManager.add(statsFor: tag, on: req))
                     }
-                    return futures.flatten(on: req).flatMap(to: Builds.self) { _ in
+                    return futures.flatten(on: req).flatMap() { _ in
                         // Make the search query
                         q.join(\BuildTag.buildId, to: \Build.id).filter(\BuildTag.tagId ~~ tags.ids)
                         return q.all()
@@ -71,11 +71,11 @@ public class AppsManager {
             throw Team.Error.invalidTeam
         }
         // TODO: Change to copy file when https://github.com/vapor/core/pull/83 is done
-        return req.fileData.flatMap(to: Response.self) { (data) -> Future<Response> in
+        return req.fileData.flatMap() { (data) -> Future<Response> in
             // TODO: Think of a better way of identifying the iOS/Android apps
             let url = URL(fileURLWithPath: ApiCoreBase.configuration.storage.local.root)
                 .appendingPathComponent(Build.localTempAppFolder(on: req).relativePath)
-            return try EinstoreCoreBase.tempFileHandler.createFolderStructure(url: url, on: req).flatMap(to: Response.self) { _ in
+            return try EinstoreCoreBase.tempFileHandler.createFolderStructure(url: url, on: req).flatMap() { _ in
                 let tempFilePath = URL(fileURLWithPath: ApiCoreBase.configuration.storage.local.root)
                     .appendingPathComponent(Build.localTempAppFile(on: req).relativePath)
                 try data.write(to: tempFilePath)
@@ -100,9 +100,9 @@ public class AppsManager {
                 
                 let extractor: Extractor = try BaseExtractor.decoder(file: tempFilePath.path, platform: platform, on: req)
                 do {
-                    return try extractor.process(teamId: teamId, on: req).flatMap(to: Response.self) { build in
-                        return try extractor.save(build, request: req).flatMap(to: Response.self) { (_) -> Future<Response> in
-                            return try handleTags(on: req, team: team, build: build).flatMap(to: Response.self) { (_) -> Future<Response> in
+                    return try extractor.process(teamId: teamId, on: req).flatMap() { build in
+                        return try extractor.save(build, request: req).flatMap() { (_) -> Future<Response> in
+                            return try handleTags(on: req, team: team, build: build).flatMap() { (_) -> Future<Response> in
                                 let inputLinkFromQuery = try? req.query.decode(Build.DetailTemplate.Link.self)
                                 let user = try req.me.user()
                                 let templateModel = try Build.DetailTemplate(
@@ -113,15 +113,15 @@ public class AppsManager {
                                 )
                                 let templator = try req.make(Templates<ApiCoreDatabase>.self)
                                 let htmlTemplate = try templator.get(EmailAppNotificationTemplateHTML.self, data: templateModel, on: req)
-                                return htmlTemplate.flatMap(to: Response.self) { htmlTemplate in
+                                return htmlTemplate.flatMap() { htmlTemplate in
                                     let plainTemplate = try templator.get(EmailAppNotificationEmailPlain.self, data: templateModel, on: req)
-                                    return plainTemplate.flatMap(to: Response.self) { plainTemplate in
+                                    return plainTemplate.flatMap() { plainTemplate in
                                         let from = ApiCoreBase.configuration.mail.email
                                         let subject = "Install \(build.name) - \(ApiCoreBase.configuration.server.name)" // TODO: Localize!!!!!!
-                                        return try team.users.query(on: req).all().flatMap(to: Response.self) { teamUsers in
+                                        return try team.users.query(on: req).all().flatMap() { teamUsers in
                                             let userEmails: [String] = teamUsers.map({ $0.email }) // QUESTION: Do we want name in the email too?
                                             let mail = Mailer.Message(from: from, to: from, bcc: userEmails, subject: subject, text: plainTemplate, html: htmlTemplate)
-                                            return try req.mail.send(mail).flatMap(to: Response.self) { mailResult in
+                                            return try req.mail.send(mail).flatMap() { mailResult in
                                                 switch mailResult {
                                                 case .success:
                                                     return try build.asResponse(.created, to: req)
@@ -173,14 +173,14 @@ public class AppsManager {
         guard let cluster = cluster, let teamId = cluster.teamId else {
             throw AppsController.Error.clusterInconsistency
         }
-        return try req.me.verifiedTeam(id: teamId).flatMap(to: Response.self) { team in
-            return try cluster.builds.query(on: req).all().flatMap(to: Response.self) { apps in
+        return try req.me.verifiedTeam(id: teamId).flatMap() { team in
+            return try cluster.builds.query(on: req).all().flatMap() { apps in
                 var futures: [Future<Void>] = []
                 try apps.forEach({
                     try futures.append(contentsOf: self.delete(build: $0, on: req))
                 })
                 
-                return futures.flatten(on: req).flatMap(to: Response.self) { _ in
+                return futures.flatten(on: req).flatMap() { _ in
                     return try cluster.delete(on: req).asResponse(to: req)
                 }
             }

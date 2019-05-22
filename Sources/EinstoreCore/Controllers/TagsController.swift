@@ -25,16 +25,16 @@ class TagsController: Controller {
         // Submit new tags
         secure.post("builds", DbIdentifier.parameter, "tags") { (req) -> Future<Response> in
             let buildId = try req.parameters.next(DbIdentifier.self)
-            return try [String].fill(post: req).flatMap(to: Response.self) { tags in
+            return try [String].fill(post: req).flatMap() { tags in
                 guard !tags.isEmpty else {
                     throw ErrorsCore.HTTPError.missingRequestData
                 }
-                return try req.me.teams().flatMap(to: Response.self) { teams in
-                    return try Build.query(on: req).safeBuild(id: buildId, teamIds: teams.ids).first().flatMap(to: Response.self) { build in
+                return try req.me.teams().flatMap() { teams in
+                    return try Build.query(on: req).safeBuild(id: buildId, teamIds: teams.ids).first().flatMap() { build in
                         guard let build = build else {
                             throw ErrorsCore.HTTPError.notFound
                         }
-                        return Team.query(on: req).filter(\Team.id == build.teamId).first().flatMap(to: Response.self) { team in
+                        return Team.query(on: req).filter(\Team.id == build.teamId).first().flatMap() { team in
                             guard let team = team else {
                                 throw ErrorsCore.HTTPError.notFound
                             }
@@ -57,7 +57,7 @@ class TagsController: Controller {
         // Tags available for a team
         secure.get("teams", DbIdentifier.parameter, "tags") { (req) -> Future<[String]> in
             let teamId = try req.parameters.next(DbIdentifier.self)
-            return try req.me.verifiedTeam(id: teamId).flatMap(to: [String].self) { team in
+            return try req.me.verifiedTeam(id: teamId).flatMap() { team in
                 var search: [String] = []
                 if let searchTerm = req.query.search {
                     search.append(searchTerm)
@@ -69,7 +69,7 @@ class TagsController: Controller {
         // Most commonly used tags for a team
         secure.get("teams", DbIdentifier.parameter, "tags", "common") { (req) -> Future<[UsedTag.Public]> in
             let teamId = try req.parameters.next(DbIdentifier.self)
-            return try req.me.verifiedTeam(id: teamId).flatMap(to: [UsedTag.Public].self) { team in
+            return try req.me.verifiedTeam(id: teamId).flatMap() { team in
                 return try UsedTagsManager.get(for: teamId, on: req)
             }
         }
