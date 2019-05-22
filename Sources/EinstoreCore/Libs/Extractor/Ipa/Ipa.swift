@@ -119,15 +119,11 @@ extension Ipa {
             }
         }
         
-        guard let iconData = iconData else {
-            return
-        }
-        let iconUrl = archive.appendingPathComponent("icon.png")
-        do {
-            let normalized = try Normalize.getNormalizedPNG(data: iconData)
-            try normalized.write(to: iconUrl)
-        } catch {
-            try iconData.write(to: iconUrl)
+        if let iconData = iconData {
+            do {
+                let normalized = try Normalize.getNormalizedPNG(data: iconData)
+                self.iconData = normalized
+            } catch { }
         }
     }
     
