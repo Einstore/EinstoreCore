@@ -37,16 +37,39 @@ public class Configuration: Configurable {
         
     }
     
+    /// Conver tags from build info data
+    public class TagsFromInfo: Codable {
+        
+        public internal(set) var enable: Bool
+        
+        public internal(set) var commit: Bool
+        public internal(set) var pr: Bool
+        public internal(set) var pm: Bool
+        
+        /// Initializer
+        init(enable: Bool, commit: Bool, pr: Bool, pm: Bool) {
+            self.enable = enable
+            self.commit = commit
+            self.pr = pr
+            self.pm = pm
+        }
+        
+    }
+    
     /// Filesystem
     public internal(set) var storage: Storage
+    
+    // Tags form build info
+    public internal(set) var tagsFromInfo: TagsFromInfo
     
     /// Demo mode
     public internal(set) var demo: Bool
     
     /// Initializer
-    init(storage: Storage, demo: Bool) {
+    init(storage: Storage, demo: Bool, tagsFromInfo: TagsFromInfo) {
         self.storage = storage
         self.demo = demo
+        self.tagsFromInfo = tagsFromInfo
     }
     
 }
@@ -60,7 +83,13 @@ extension EinstoreCore.Configuration {
                 rootTempPath: "tmp",
                 appDestinationPath: "apps"
             ),
-            demo: false
+            demo: false,
+            tagsFromInfo: TagsFromInfo(
+                enable: true,
+                commit: true,
+                pr: true,
+                pm: true
+            )
         )
     }
     
@@ -71,6 +100,11 @@ extension EinstoreCore.Configuration {
         load("BOOSTCORE_STORAGE_APP_DESTINATION_PATH", to: &storage.appDestinationPath)
         
         load("BOOSTCORE_DEMO", to: &demo)
+        
+        load("BOOSTCORE_TAGS_FROM_INFO_ENABLED", to: &tagsFromInfo.enable)
+        load("BOOSTCORE_TAGS_FROM_INFO_COMMIT", to: &tagsFromInfo.commit)
+        load("BOOSTCORE_TAGS_FROM_INFO_PR", to: &tagsFromInfo.pr)
+        load("BOOSTCORE_TAGS_FROM_INFO_PM", to: &tagsFromInfo.pm)
     }
     
 }
