@@ -233,7 +233,7 @@ class AppsController: Controller {
                     response.http.headers = HTTPHeaders([("Content-Type", "\(build.platform.mime)"), ("Content-Disposition", "attachment; filename=\"\(build.name.safeText).\(build.platform.fileExtension)\"")])
                     
                     // Save an info about the download
-                    let download = Download(buildId: key.buildId, userId: key.userId, teamId: build.teamId)
+                    let download = Download(buildId: key.buildId, userId: key.userId, teamId: build.teamId, action: .download)
                     return download.save(on: req).flatMap() { download in
                         // Serve the file
                         let fm = try req.makeFileCore()

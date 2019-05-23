@@ -17,6 +17,11 @@ public typealias Downloads = [Download]
 
 final public class Download: DbCoreModel {
     
+    public enum Action: Int, Codable {
+        case download = 0
+        case opened = 1
+    }
+    
     public struct Public: Content {
         public var user: User
         public var created: Date
@@ -26,6 +31,7 @@ final public class Download: DbCoreModel {
     public var buildId: DbIdentifier
     public var userId: DbIdentifier
     public var teamId: DbIdentifier
+    public var action: Action
     public var created: Date
     
     enum CodingKeys: String, CodingKey {
@@ -33,14 +39,16 @@ final public class Download: DbCoreModel {
         case buildId = "build_id"
         case userId = "user_id"
         case teamId = "team_id"
+        case action
         case created
     }
     
-    public init(id: DbIdentifier? = nil, buildId: DbIdentifier, userId: DbIdentifier, teamId: DbIdentifier) {
+    public init(id: DbIdentifier? = nil, buildId: DbIdentifier, userId: DbIdentifier, teamId: DbIdentifier, action: Action) {
         self.id = id
         self.buildId = buildId
         self.userId = userId
         self.teamId = teamId
+        self.action = action
         self.created = Date()
     }
     
