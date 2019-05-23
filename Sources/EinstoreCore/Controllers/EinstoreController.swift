@@ -138,7 +138,9 @@ public class EinstoreController: Controller {
                                                         return build.tags.attach(tag, on: req).flatten()
                                                     }
                                                 ]
-                                                return tags.flatten(on: req)
+                                                return tags.flatten(on: req).flatMap() { _ in
+                                                    return try AppsManager.handleTags(on: req, team: team, build: build).flatten()
+                                                }
                                             }
                                             cluster.identifier = build.identifier
                                             cluster.platform = build.platform

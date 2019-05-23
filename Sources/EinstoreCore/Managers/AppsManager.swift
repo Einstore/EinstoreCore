@@ -145,6 +145,22 @@ public class AppsManager {
     
     /// Handle tags during upload
     static func handleTags(on req: Request, team: Team, build: Build) throws -> Future<Tags> {
+        var stringTags: [String] = []
+        
+        // Process info tags
+        if EinstoreCoreBase.configuration.tagsFromInfo.enable {
+            if EinstoreCoreBase.configuration.tagsFromInfo.commit, let commit = build.info?.sourceControl?.commit?.id {
+                stringTags.append("commit_\(commit)")
+            }
+            if EinstoreCoreBase.configuration.tagsFromInfo.pr, let pr = build.info?.sourceControl?.commit?.id {
+                stringTags.append("pr_\(pr)")
+            }
+            if EinstoreCoreBase.configuration.tagsFromInfo.pm, let pm = build.info?.sourceControl?.commit?.id {
+                stringTags.append("pm_\(pm)")
+            }
+        }
+        
+        // Process custom tags
         if req.http.url.query != nil {
             // Internal struct for tags in the URL
             struct Tags: Decodable {
@@ -157,16 +173,17 @@ public class AppsManager {
             }
             // Decode tags
             if let tags = try? req.query.decode(Tags.self) {
-                // Parse tags as ?tags=tag1|tag2|tag3
-                if let tags = tags.value?.split(separator: "|").map({ String($0) }) {
-                    return try TagsManager.save(tags: tags.safeTagText(), for: build, team: team, on: req)
+                if let tags = tags.value?.split(separator: "|").map({ String($0) }) { // Parse tags as ?tags=tag1|tag2|tag3
+                    stringTags.append(contentsOf: tags)
                 } else if let tags = tags.values { // Parse tags as URL array (?tag[0]=tag1&tag[1]=tag2)
-                    return try TagsManager.save(tags: tags.safeTagText(), for: build, team: team, on: req)
+                    stringTags.append(contentsOf: tags)
                 }
             }
         }
-        let tags: Tags = []
-        return req.eventLoop.newSucceededFuture(result: tags)
+        guard !stringTags.isEmpty else {
+            return req.eventLoop.newSucceededFuture(result: [])
+        }
+        return try TagsManager.save(tags: stringTags.safeTagText(), for: build, team: team, on: req)
     }
     
     static func delete(cluster: Cluster?, on req: Request) throws -> Future<Response> {
