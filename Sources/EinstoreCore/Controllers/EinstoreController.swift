@@ -81,6 +81,8 @@ public class EinstoreController: Controller {
                                 let hasIcon = (icon.http.status == .ok && icon.http.body.data != nil)
                                 let identifier = "io.liveui.\(name.lowercased())"
                                 var buildNumber = Int(Color.randomInt(max: 5000) + 1)
+                                var prId = Color.randomInt(max: 8000)
+                                
                                 for i1 in 0...Color.randomInt(max: 4) {
                                     for i2 in 0...Color.randomInt(max: 6) {
                                         let version = "1.\(i1).\(i2)"
@@ -88,8 +90,9 @@ public class EinstoreController: Controller {
                                         let sdk2 = "AnotherSDK_1.\(i2)"
                                         
                                         let commitId = UUID()
-                                        let prId = UUID()
                                         let pmId = UUID()
+                                        
+                                        prId += 1
                                         
                                         let iconDataMD5 = try icon.http.body.data?.asMD5String()
                                         
@@ -107,13 +110,13 @@ public class EinstoreController: Controller {
                                             info: Build.Info(
                                                 sourceControl: Build.Info.SourceControl(
                                                     commit: Build.Info.URLMessagePair(
-                                                        id: commitId.uuidString,
+                                                        id: String(commitId.uuidString.split(separator: "-").first!),
                                                         url: "https://github.example.com/team/project/commit/\(commitId.uuidString)",
                                                         message: "Lorem implemented"
                                                     ),
                                                     pr: Build.Info.URLMessagePair(
-                                                        id: prId.uuidString,
-                                                        url: "https://github.example.com/team/project/pr/\(prId.uuidString)",
+                                                        id: String(prId),
+                                                        url: "https://github.example.com/team/project/pr/\(prId)",
                                                         message: "Lorem ipsum dolor sit amet has been implemented"
                                                     )
                                                 ),
