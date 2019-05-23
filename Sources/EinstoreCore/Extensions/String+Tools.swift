@@ -28,7 +28,7 @@ extension String {
     public var safeTagText: String {
         var text = components(separatedBy: CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_.-").inverted).joined(separator: "-").lowercased()
         text = text.components(separatedBy: CharacterSet(charactersIn: "-")).filter { !$0.isEmpty }.joined(separator: "-")
-        return text
+        return text.lowercased()
     }
     
     func condenseWhitespace() -> String {
