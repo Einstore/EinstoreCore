@@ -62,16 +62,16 @@ public class AppsManager {
                         return req.withPooledConnection(to: .db) { conn in
                             let q = """
                             SELECT * FROM "Build"
-                                WHERE EXISTS (
-                                    SELECT 1 FROM "Build_Tag"
-                                        WHERE "Build_Tag"."build_id" = "Build"."id"
-                                        AND "Build_Tag"."tag_id" IN (\(idString))
-                                )
+                                WHERE "Build"."id" IN (
+                                    SELECT "Build_Tag"."build_id"
+                                        FROM "Build_Tag"
+                                        WHERE "Build_Tag"."tag_id" IN (\(idString))
+                                        GROUP BY "Build_Tag"."build_id" HAVING COUNT("Build_Tag"."build_id") = \(ids.count)
+                                    )
                                 ORDER BY "Build"."created" DESC
                                 LIMIT 12 OFFSET 0
                             """
                             return conn.raw(q)
-//                                .bind(ids.first!)
                                 .all(decoding: Build.Public.self)
                         }
                     }
