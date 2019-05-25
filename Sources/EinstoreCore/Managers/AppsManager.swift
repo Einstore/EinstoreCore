@@ -48,15 +48,32 @@ public class AppsManager {
             }
             if let tags = req.query.app.tags, !tags.isEmpty {
                 return Tag.query(on: req).filter(\Tag.teamId ~~ teams.ids).filter(\Tag.identifier ~~ tags.safeTagText()).all().flatMap() { tags in
+                    guard !tags.isEmpty else {
+                        return q.all()
+                    }
                     // Account for the searched tags
                     var futures: [Future<UsedTag>] = []
                     for tag in tags {
                         try futures.append(UsedTagsManager.add(statsFor: tag, on: req))
                     }
                     return futures.flatten(on: req).flatMap() { _ in
-                        // Make the search query
-                        q.join(\BuildTag.buildId, to: \Build.id).filter(\BuildTag.tagId ~~ tags.ids)
-                        return q.all()
+                        let ids = tags.ids.map({ "'\($0.uuidString)'" })
+                        let idString = ids.joined(separator: ", " )
+                        return req.withPooledConnection(to: .db) { conn in
+                            let q = """
+                            SELECT * FROM "Build"
+                                WHERE EXISTS (
+                                    SELECT 1 FROM "Build_Tag"
+                                        WHERE "Build_Tag"."build_id" = "Build"."id"
+                                        AND "Build_Tag"."tag_id" IN (\(idString))
+                                )
+                                ORDER BY "Build"."created" DESC
+                                LIMIT 12 OFFSET 0
+                            """
+                            return conn.raw(q)
+//                                .bind(ids.first!)
+                                .all(decoding: Build.Public.self)
+                        }
                     }
                 }
             } else {
