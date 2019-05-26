@@ -58,6 +58,7 @@ public class AppsManager {
                     return futures.flatten(on: req).flatMap() { _ in
                         let ids = tags.ids.map({ "'\($0.uuidString)'" })
                         let idString = ids.joined(separator: ", " )
+                        // TODO: Use ?, ?, ? for the ids and bind them onto the query!!!
                         return req.withPooledConnection(to: .db) { conn in
                             let q = """
                             SELECT * FROM "Build"
