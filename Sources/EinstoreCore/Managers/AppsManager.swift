@@ -20,7 +20,6 @@ public class AppsManager {
 
     /// Overview app query
     static func overviewQuery(teams: Teams, on req: Request) throws -> QueryBuilder<ApiCoreDatabase, Cluster.Public> {
-        // TODO: add sorting!!!!!!!!!! name:asc, date:desc
         let q = try Cluster.query(on: req).filter(\Cluster.teamId ~~ teams.ids).clusterFilters(on: req).clusterSorting(on: req).decode(Cluster.Public.self)
         return q
     }
@@ -59,19 +58,20 @@ public class AppsManager {
                     return futures.flatten(on: req).flatMap() { _ in
                         let ids = tags.ids.map({ "'\($0.uuidString)'" })
                         let idString = ids.joined(separator: ", " )
+                        // TODO: Use ?, ?, ? for the ids and bind them onto the query!!!
                         return req.withPooledConnection(to: .db) { conn in
                             let q = """
                             SELECT * FROM "Build"
-                                WHERE EXISTS (
-                                    SELECT 1 FROM "Build_Tag"
-                                        WHERE "Build_Tag"."build_id" = "Build"."id"
-                                        AND "Build_Tag"."tag_id" IN (\(idString))
-                                )
+                                WHERE "Build"."id" IN (
+                                    SELECT "Build_Tag"."build_id"
+                                        FROM "Build_Tag"
+                                        WHERE "Build_Tag"."tag_id" IN (\(idString))
+                                        GROUP BY "Build_Tag"."build_id" HAVING COUNT("Build_Tag"."build_id") = \(ids.count)
+                                    )
                                 ORDER BY "Build"."created" DESC
                                 LIMIT 12 OFFSET 0
                             """
                             return conn.raw(q)
-//                                .bind(ids.first!)
                                 .all(decoding: Build.Public.self)
                         }
                     }
