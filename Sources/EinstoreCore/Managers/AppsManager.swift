@@ -20,7 +20,6 @@ public class AppsManager {
 
     /// Overview app query
     static func overviewQuery(teams: Teams, on req: Request) throws -> QueryBuilder<ApiCoreDatabase, Cluster.Public> {
-        // TODO: add sorting!!!!!!!!!! name:asc, date:desc
         let q = try Cluster.query(on: req).filter(\Cluster.teamId ~~ teams.ids).clusterFilters(on: req).clusterSorting(on: req).decode(Cluster.Public.self)
         return q
     }
