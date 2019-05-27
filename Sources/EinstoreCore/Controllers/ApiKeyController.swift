@@ -94,12 +94,14 @@ class ApiKeyController: Controller {
                     throw ErrorsCore.HTTPError.notFound
                 }
                 return try req.me.verifiedTeam(id: key.teamId).flatMap() { team in
-                    return try req.content.decode(ApiKey.New.self).flatMap() { newKey in
-                        return ApiKeysManager.check(nameExists: newKey.name, type: key.type, teamId: key.teamId, on: req).flatMap() { exists in
+                    return try req.content.decode(ApiKey.Update.self).flatMap() { newKey in
+                        return ApiKeysManager.check(nameExists: newKey.name, type: key.type, teamId: key.teamId, except: keyId, on: req).flatMap() { exists in
                             guard !exists else {
                                 throw Error.nameExists
                             }
                             key.name = newKey.name
+                            key.tags = newKey.tags
+                            key.checkTags()
                             key.expires = newKey.expires
                             return key.save(on: req).map() { key in
                                 return key.asDisplay()

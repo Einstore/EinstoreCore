@@ -33,13 +33,17 @@ public class TagsManager {
                     guard let tagObject = tagObject else {
                         let t = Tag(id: nil, teamId: teamId, identifier: tag)
                         return t.save(on: req).flatMap() { tag in
-                            return build.tags.attach(tag, on: req).map() { _ in
-                                return tag
+                            return build.tags.attach(tag, on: req).flatMap() { _ in
+                                return try UsedTagsManager.add(statsFor: tag, on: req).map() { _ in
+                                    return tag
+                                }
                             }
                         }
                     }
-                    return build.tags.attach(tagObject, on: req).map() { _ in
-                        return tagObject
+                    return build.tags.attach(tagObject, on: req).flatMap() { _ in
+                        return try UsedTagsManager.add(statsFor: tagObject, on: req).map() { _ in
+                            return tagObject
+                        }
                     }
                 }
                 futures.append(future)
@@ -69,11 +73,15 @@ public class TagsManager {
         return try tag.builds.query(on: req).count().flatMap() { count in
             let delete = BuildTag.query(on: req).filter(\BuildTag.tagId == tag.id!).delete()
             guard count == 1 else {
-                return delete
+                return try UsedTagsManager.remove(statsFor: tag, on: req).flatMap() { _ in
+                    return delete
+                }
             }
             return delete.flatMap() { _ in
                 return try tag.usedTagInfo.query(on: req).delete().flatMap() { _ in
-                    return tag.delete(on: req)
+                    return try UsedTagsManager.remove(statsFor: tag, on: req).flatMap() { _ in
+                        return tag.delete(on: req)
+                    }
                 }
             }
         }
