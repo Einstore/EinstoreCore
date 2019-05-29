@@ -13,7 +13,6 @@ import Fluent
 import FluentPostgreSQL
 import SwiftShell
 import MailCore
-import Templator
 
 
 public class AppsManager {
@@ -129,11 +128,13 @@ public class AppsManager {
                                     user: user,
                                     on: req
                                 )
-                                let templator = try req.make(Templates<ApiCoreDatabase>.self)
-                                let htmlTemplate = try templator.get(EmailAppNotificationTemplateHTML.self, data: templateModel, on: req)
-                                return htmlTemplate.flatMap() { htmlTemplate in
-                                    let plainTemplate = try templator.get(EmailAppNotificationEmailPlain.self, data: templateModel, on: req)
-                                    return plainTemplate.flatMap() { plainTemplate in
+                                
+                                let templator = try req.make(Templator.self)
+                                let htmlFuture = try templator.get(name: "email.app-notification.html", data: templateModel, on: req)
+                                let plainFuture = try templator.get(name: "email.app-notification.plain", data: templateModel, on: req)
+                                
+                                return htmlFuture.flatMap() { htmlTemplate in
+                                    return plainFuture.flatMap() { plainTemplate in
                                         let from = ApiCoreBase.configuration.mail.email
                                         let subject = "Install \(build.name) - \(ApiCoreBase.configuration.server.name)" // TODO: Localize!!!!!!
                                         return try team.users.query(on: req).all().flatMap() { teamUsers in
