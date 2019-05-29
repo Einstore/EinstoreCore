@@ -6,7 +6,7 @@
         "repositoryURL": "https://github.com/LiveUI/ApiCore.git",
         "state": {
           "branch": "master",
-          "revision": "04ed3a82e07d7f5f27d1ade64085da88b23309e9",
+          "revision": "02347cf91ff13464c86dc919a926ba6ffc741587",
           "version": null
         }
       },
@@ -44,15 +44,6 @@
           "branch": null,
           "revision": "2e370814715c3557bb1cbdcd96e610ce29e83e45",
           "version": "0.2.0"
-        }
-      },
-      {
-        "package": "Configure",
-        "repositoryURL": "https://github.com/LiveUI/Configure.git",
-        "state": {
-          "branch": "master",
-          "revision": "854fa7fed8e81bd00530081b92d0db1178fc1793",
-          "version": null
         }
       },
       {
@@ -236,15 +227,6 @@
         }
       },
       {
-        "package": "SettingsCore",
-        "repositoryURL": "https://github.com/LiveUI/SettingsCore.git",
-        "state": {
-          "branch": "master",
-          "revision": "8dde150be2070773c8e045647e7ea40956a7110e",
-          "version": null
-        }
-      },
-      {
         "package": "SQL",
         "repositoryURL": "https://github.com/vapor/sql.git",
         "state": {
@@ -323,15 +305,6 @@
           "branch": null,
           "revision": "121ae51433df94cf6e15c09e1f1b0f7c77ff8d5c",
           "version": "1.2.0"
-        }
-      },
-      {
-        "package": "Templator",
-        "repositoryURL": "https://github.com/Einstore/Templator.git",
-        "state": {
-          "branch": "master",
-          "revision": "4f4fdc5cdccd1860d9da91da4975a4f6fb81a581",
-          "version": null
         }
       },
       {

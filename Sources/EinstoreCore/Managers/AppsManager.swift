@@ -121,31 +121,36 @@ public class AppsManager {
                             let baseTags = uploadToken?.tags?.split(separator: ",").asStrings()
                             return try handleTags(on: req, baseTags: baseTags, team: team, build: build).flatMap() { (_) -> Future<Response> in
                                 let inputLinkFromQuery = try? req.query.decode(Build.DetailTemplate.Link.self)
-                                let user = try req.me.user()
+                                let user = (try? req.me.user()) ?? User(
+                                    username: "",
+                                    firstname: "",
+                                    lastname: "",
+                                    email: ""
+                                )
                                 let templateModel = try Build.DetailTemplate(
                                     link: inputLinkFromQuery?.value,
                                     build: build,
-                                    user: user,
                                     on: req
                                 )
                                 
-                                let templator = try req.make(Templator.self)
-                                let htmlFuture = try templator.get(name: "email.app-notification.html", data: templateModel, on: req)
-                                let plainFuture = try templator.get(name: "email.app-notification.plain", data: templateModel, on: req)
-                                
-                                return htmlFuture.flatMap() { htmlTemplate in
-                                    return plainFuture.flatMap() { plainTemplate in
-                                        let from = ApiCoreBase.configuration.mail.email
-                                        let subject = "Install \(build.name) - \(ApiCoreBase.configuration.server.name)" // TODO: Localize!!!!!!
-                                        return try team.users.query(on: req).all().flatMap() { teamUsers in
-                                            let userEmails: [String] = teamUsers.map({ $0.email }) // QUESTION: Do we want name in the email too?
-                                            let mail = Mailer.Message(from: from, to: from, bcc: userEmails, subject: subject, text: plainTemplate, html: htmlTemplate)
-                                            return try req.mail.send(mail).flatMap() { mailResult in
-                                                switch mailResult {
-                                                case .success:
-                                                    return try build.asResponse(.created, to: req)
-                                                default:
-                                                    throw AuthError.emailFailedToSend
+                                return try templateModel.setup(user: user.asDisplay(), on: req).flatMap() { _ in
+                                    let templator = try req.make(Templator.self)
+                                    let htmlFuture = try templator.get(name: "email.app-notification.html", data: templateModel, on: req)
+                                    let plainFuture = try templator.get(name: "email.app-notification.plain", data: templateModel, on: req)
+                                    return htmlFuture.flatMap() { htmlTemplate in
+                                        return plainFuture.flatMap() { plainTemplate in
+                                            let from = ApiCoreBase.configuration.mail.email
+                                            let subject = "Install \(build.name) - \(ApiCoreBase.configuration.server.name)" // TODO: Localize!!!!!!
+                                            return try team.users.query(on: req).all().flatMap() { teamUsers in
+                                                let userEmails: [String] = teamUsers.map({ $0.email }) // QUESTION: Do we want name in the email too?
+                                                let mail = Mailer.Message(from: from, to: from, bcc: userEmails, subject: subject, text: plainTemplate, html: htmlTemplate)
+                                                return try req.mail.send(mail).flatMap() { mailResult in
+                                                    switch mailResult {
+                                                    case .success:
+                                                        return try build.asResponse(.created, to: req)
+                                                    default:
+                                                        throw AuthError.emailFailedToSend
+                                                    }
                                                 }
                                             }
                                         }

@@ -17,10 +17,8 @@ let package = Package(
         .package(url: "https://github.com/LiveUI/ErrorsCore.git", .branch("master")),
         .package(url: "https://github.com/LiveUI/ApiCore.git", .branch("master")),
         .package(url: "https://github.com/LiveUI/MailCore.git", .branch("master")),
-        .package(url: "https://github.com/LiveUI/SettingsCore.git", .branch("master")),
         .package(url: "https://github.com/LiveUI/VaporTestTools.git", from: "0.1.5"),
         .package(url: "https://github.com/LiveUI/FluentTestTools.git", .branch("master")),
-        .package(url: "https://github.com/LiveUI/Configure.git", .branch("master")),
         .package(url: "https://github.com/apple/swift-nio-zlib-support.git", from: "1.0.0")
     ],
     targets: [
@@ -54,9 +52,7 @@ let package = Package(
                 "ErrorsCore",
                 "SwiftShell",
                 "MailCore",
-                "SettingsCore",
                 "S3",
-                "Configure",
                 "Normalized"
             ]
         ),
