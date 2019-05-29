@@ -18,7 +18,7 @@ public typealias Builds = [Build.Public]
 final public class Build: DbCoreModel {
     
     /// Detail link template
-    public struct DetailTemplate: Content {
+    public final class DetailTemplate: EmailTemplateData {
         
         /// Link
         public struct Link: Codable {
@@ -32,14 +32,12 @@ final public class Build: DbCoreModel {
             
         }
         
-        /// User
-        public var user: User
+        public var user: User.Display?
+        public var info: ApiCore.Info?
+        public var settings: [String: String]?
         
         /// Build detail link
         public var link: String
-        
-        /// System wide template data
-        public var system: FrontendSystemData
         
         /// Build info
         public var build: Build
@@ -53,11 +51,9 @@ final public class Build: DbCoreModel {
         ///   - user: User model
         ///   - req: Request
         /// - Throws: whatever comes it's way
-        public init(link: String? = nil, build: Build, user: User, on req: Request) throws {
-            self.user = user
+        public init(link: String? = nil, build: Build, on req: Request) throws {
             let serverUrl = ApiCoreBase.configuration.server.interface ?? req.serverURL().absoluteString
             self.link = link ?? serverUrl.finished(with: "/") + "build/\(build.id?.uuidString ?? "error")"
-            system = try FrontendSystemData(req)
             self.build = build
         }
         

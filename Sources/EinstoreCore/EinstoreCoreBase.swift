@@ -11,7 +11,6 @@ import ApiCore
 import ErrorsCore
 import Fluent
 import FluentPostgreSQL
-import SettingsCore
 import MailCore
 
 
@@ -84,9 +83,6 @@ public class EinstoreCoreBase {
         for c in controllers {
             ApiCoreBase.controllers.append(c)
         }
-        
-        // Setup SettingsCore
-        try SettingsCoreBase.configure(&config, &env, &services)
         
         // Custom migrations
         ApiCoreBase.migrationConfig.add(migration: BaseMigration.self, database: .db)
