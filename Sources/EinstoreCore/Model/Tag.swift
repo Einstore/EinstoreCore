@@ -66,6 +66,10 @@ extension Tag {
         return children(\UsedTag.tagId)
     }
     
+    var apiKeys: Siblings<Tag, ApiKey, ApiKeyTag> {
+        return siblings()
+    }
+    
 }
 
 // MARK: - Migrations

@@ -83,7 +83,7 @@ public class AppsManager {
     }
     
     /// Shared upload method
-    static func upload(team: Team, on req: Request) throws -> Future<Response> {
+    static func upload(team: Team, apiKey uploadToken: ApiKey? = nil, on req: Request) throws -> Future<Response> {
         guard let teamId = team.id else {
             throw Team.Error.invalidTeam
         }
@@ -119,7 +119,8 @@ public class AppsManager {
                 do {
                     return try extractor.process(teamId: teamId, on: req).flatMap() { build in
                         return try extractor.save(build, request: req).flatMap() { (_) -> Future<Response> in
-                            return try handleTags(on: req, team: team, build: build).flatMap() { (_) -> Future<Response> in
+                            let baseTags = uploadToken?.tags?.split(separator: ",").asStrings()
+                            return try handleTags(on: req, baseTags: baseTags, team: team, build: build).flatMap() { (_) -> Future<Response> in
                                 let inputLinkFromQuery = try? req.query.decode(Build.DetailTemplate.Link.self)
                                 let user = try req.me.user()
                                 let templateModel = try Build.DetailTemplate(
@@ -161,8 +162,8 @@ public class AppsManager {
     }
     
     /// Handle tags during upload
-    static func handleTags(on req: Request, team: Team, build: Build) throws -> Future<Tags> {
-        var stringTags: [String] = []
+    static func handleTags(on req: Request, baseTags: [String]? = nil, team: Team, build: Build) throws -> Future<Tags> {
+        var stringTags: [String] = baseTags ?? []
         
         // Process info tags
         if EinstoreCoreBase.configuration.tagsFromInfo.enable {

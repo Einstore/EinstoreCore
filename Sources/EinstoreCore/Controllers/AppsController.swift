@@ -283,7 +283,7 @@ class AppsController: Controller {
                     throw AuthError.authenticationFailed
                 }
                 return try req.me.verifiedTeam(id: uploadToken.teamId).flatMap() { team in
-                    return try AppsManager.upload(team: team, on: req)
+                    return try AppsManager.upload(team: team, apiKey: uploadToken, on: req)
                 }
             }
         }
