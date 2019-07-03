@@ -78,6 +78,7 @@ public class EinstoreCoreBase {
         ApiCoreBase.add(model: Config.self, database: .db)
         ApiCoreBase.add(model: Download.self, database: .db)
         ApiCoreBase.add(model: ApiKeyTag.self, database: .db)
+        ApiCoreBase.add(model: Setting.self, database: .db)
         
         // Register controllers
         for c in controllers {
