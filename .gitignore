@@ -24,3 +24,4 @@ DerivedData/
 
 # Docker-compose
 /docker-compose.override.yaml
+/.swiftpm
