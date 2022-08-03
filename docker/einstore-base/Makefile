@@ -1,6 +1,6 @@
 REPO = einstore
 IMAGE = einstore-base
-TAG = 2.1
+TAG = 2.1.1
 
 all: build publish
 
