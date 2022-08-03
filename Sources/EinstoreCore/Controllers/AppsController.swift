@@ -278,7 +278,12 @@ class AppsController: Controller {
             guard let token = try? req.query.decode(ApiKey.Token.self) else {
                 throw ErrorsCore.HTTPError.missingAuthorizationData
             }
-            return try ApiKey.query(on: req).filter(\ApiKey.token == token.value.sha()).filter(\ApiKey.type == 0).first().flatMap() { uploadToken in
+            return try ApiKey.query(on: req)
+                .filter(\ApiKey.token == token.value.sha())
+                // TODO: Uncomment when token keys become more relevant
+                // .filter(\ApiKey.type == 1)
+                .first()
+                .flatMap() { uploadToken in
                 guard let uploadToken = uploadToken else {
                     throw AuthError.authenticationFailed
                 }
