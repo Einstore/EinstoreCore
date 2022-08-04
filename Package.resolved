@@ -204,8 +204,8 @@
         "repositoryURL": "https://github.com/LiveUI/S3.git",
         "state": {
           "branch": null,
-          "revision": "48367b8256bcc71becf573f427973da5192a6845",
-          "version": "3.0.0"
+          "revision": "616ff54a50f45dba54c29af04742ad0ba2c85366",
+          "version": "3.0.1"
         }
       },
       {
@@ -294,8 +294,8 @@
         "repositoryURL": "https://github.com/kareman/SwiftShell.git",
         "state": {
           "branch": null,
-          "revision": "beebe43c986d89ea5359ac3adcb42dac94e5e08a",
-          "version": "4.1.2"
+          "revision": "99680b2efc7c7dbcace1da0b3979d266f02e213c",
+          "version": "5.1.0"
         }
       },
       {

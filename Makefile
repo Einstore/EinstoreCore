@@ -1,3 +1,7 @@
+REPO = einstore
+IMAGE = einstore-core
+TAG = 0.1.2
+
 help:  ## Display this help
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n\nTargets:\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-13s\033[0m %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
 
@@ -44,3 +48,16 @@ upgrade:  ## Upgrade all dependencies to the latest versions
 
 linuxmain:  ## Generate linuxmain file
 	swift test --generate-linuxmain
+
+build-docker: ## Build new docker image
+	docker build -t $(REPO)/$(IMAGE):$(TAG) .
+
+publish-docker: build-docker ## Build, tag and upload new docker image
+	docker tag $(REPO)/$(IMAGE):$(TAG) $(REPO)/$(IMAGE):latest
+	docker push $(REPO)/$(IMAGE):$(TAG)
+	docker push $(REPO)/$(IMAGE):latest
+
+publish-docker-only: ## Tag and upload new docker image
+	docker tag $(REPO)/$(IMAGE):$(TAG) $(REPO)/$(IMAGE):latest
+	docker push $(REPO)/$(IMAGE):$(TAG)
+	docker push $(REPO)/$(IMAGE):latest

@@ -1,15 +1,16 @@
-FROM einstore/einstore-base:2.0 as builder
+FROM einstore/einstore-base:3.0 as builder
 
 WORKDIR /app
 COPY . /app
 
 ARG CONFIGURATION="release"
 
+RUN swift 
 RUN swift build --configuration ${CONFIGURATION} --product EinstoreRun
 
 # ------------------------------------------------------------------------------
 
-FROM einstore/einstore-base:2.0
+FROM einstore/einstore-base:3.0
 
 ARG CONFIGURATION="release"
 

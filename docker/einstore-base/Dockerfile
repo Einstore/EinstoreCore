@@ -1,4 +1,4 @@
-FROM swift:4.2
+FROM vapor3/swift:5.2.1
 
 RUN apt-get update && \
     apt-get install -y \
@@ -9,21 +9,22 @@ RUN apt-get update && \
     libssl-dev \
     openssl \
     software-properties-common \
-    gd \
     unzip && \
     rm -rf /var/lib/apt/lists/*
 
+RUN apt-get install -y libgd-dev
+    
 RUN add-apt-repository ppa:openjdk-r/ppa && \
     apt-get update && \
-    apt-get install -y openjdk-7-jdk="7u95-*" && \
+    apt-get install -y openjdk-8-jdk && \
     rm -rf /var/lib/apt/lists/*
 
 RUN apt-get update && \
     apt-get install -y \
-    python="2.7.12-*" \
+    python \
     python-dev \
     python-pip \
-    python-software-properties \
+    software-properties-common \
     python-virtualenv && \
     rm -rf /var/lib/apt/lists/*
 
